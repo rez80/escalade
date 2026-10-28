@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Escalade">
+<title>Escalade</title>
+<style>
+/* ---------- Couleurs (modifiables ici) ---------- */
+:root {
+  --fond: #EEF1F2;      /* gris magnésie */
+  --carte: #FFFFFF;
+  --texte: #1C2A33;
+  --doux: #5E6E78;
+  --marque: #1F4E5A;    /* même bleu-vert que l'Excel */
+  --prise: #F2C200;     /* jaune « prise » pour ce qui est coché */
+  --alerte: #C0392B;
+  --bord: #D5DCE0;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --fond:#141B20; --carte:#1E282F; --texte:#E6ECEF; --doux:#9AAAB3;
+          --marque:#6FB3C2; --bord:#33424B; }
+}
+* { box-sizing: border-box; }
+body { margin:0; font-family:-apple-system, system-ui, sans-serif; font-size:17px;
+       line-height:1.45; background:var(--fond); color:var(--texte);
+       padding:env(safe-area-inset-top) 0 calc(80px + env(safe-area-inset-bottom)); }
+header { position:sticky; top:0; z-index:5; background:var(--fond);
+         display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid var(--bord); }
+header button { font-size:24px; width:48px; height:48px; }
+#titre-date { flex:1; text-align:center; background:none; border:none; color:var(--texte); font-size:16px; }
+main { padding:12px; max-width:640px; margin:auto; }
+h1 { font-size:34px; line-height:1.1; margin:6px 0 2px; color:var(--marque); }
+.phase { color:var(--doux); margin:0 0 14px; }
+.carte { background:var(--carte); border:1px solid var(--bord); border-radius:14px; padding:14px; margin-bottom:14px; }
+.etape { display:flex; gap:12px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--bord); }
+.etape:last-child { border-bottom:none; }
+.etape input { width:26px; height:26px; flex:none; accent-color:var(--prise); margin-top:2px; }
+.etape.fait span { color:var(--doux); text-decoration:line-through; }
+label.champ { display:block; font-weight:600; margin:14px 0 6px; }
+label.champ:first-child { margin-top:0; }
+input[type=text], input[type=number], select, textarea {
+  width:100%; font:inherit; padding:10px; border-radius:10px; border:1px solid var(--bord);
+  background:var(--fond); color:var(--texte); }
+textarea { min-height:80px; }
+.boutons { display:flex; flex-wrap:wrap; gap:6px; }
+.boutons button { min-width:44px; height:44px; flex:1 0 44px; }
+button { font:inherit; border-radius:10px; border:1px solid var(--bord);
+         background:var(--carte); color:var(--texte); }
+button.choisi { background:var(--prise); color:#1C2A33; border-color:var(--prise); font-weight:700; }
+.compteur { display:flex; gap:8px; align-items:center; }
+.compteur button { width:52px; height:44px; font-size:22px; }
+.compteur input { text-align:center; }
+#alerte { display:none; color:#fff; background:var(--alerte); border-radius:10px; padding:10px; margin-top:10px; }
+nav { position:fixed; bottom:0; left:0; right:0; display:flex; gap:10px; padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+      background:var(--fond); border-top:1px solid var(--bord); }
+nav button { flex:1; height:50px; font-weight:600; }
+details { border-bottom:1px solid var(--bord); padding:10px 0; }
+summary { font-weight:600; }
+.cat { color:var(--marque); font-size:20px; margin:18px 0 4px; }
+.petit { color:var(--doux); font-size:15px; }
+</style>
+</head>
+<body>
+
+<header>
+  <button id="prec" aria-label="Séance précédente">◀</button>
+  <button id="titre-date" title="Revenir à aujourd'hui"></button>
+  <button id="suiv" aria-label="Séance suivante">▶</button>
+</header>
+
+<main id="ecran"></main>
+
+<nav>
+  <button id="btn-vue">Exercices</button>
+  <button id="btn-export">Exporter</button>
+</nav>
+
+<script src="data.js"></script>
+<script>
+// ===================== Outils =====================
+const JOURS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const $ = id => document.getElementById(id);
+const esc = t => String(t ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+
+// Date d'une séance = date de début + (semaine - 1) × 7 jours + jour de la semaine
+function dateSeance(s) {
+  const d = new Date(DATE_DEBUT + "T12:00:00");
+  d.setDate(d.getDate() + (s.semaine - 1) * 7 + JOURS.indexOf(s.jour));
+  return d;
+}
+const cle = s => `seance-${s.semaine}-${s.jour}-${s.activite}`;           // identifiant de la séance
+const lire = s => JSON.parse(localStorage.getItem(cle(s)) || "{}");          // saisies enregistrées
+const ecrire = (s, donnees) => localStorage.setItem(cle(s), JSON.stringify(donnees));
+
+// Séance à afficher au démarrage : celle du jour, sinon la prochaine
+function indexAujourdhui() {
+  const aujourdhui = new Date(); aujourdhui.setHours(0,0,0,0);
+  const i = SEANCES.findIndex(s => dateSeance(s) >= aujourdhui);
+  return i === -1 ? SEANCES.length - 1 : i;
+}
+let index = indexAujourdhui();
+let vue = "seance";   // "seance" ou "exercices"
+
+// ===================== Écran séance =====================
+function afficherSeance() {
+  const s = SEANCES[index];
+  const d = lire(s);
+  const date = dateSeance(s);
+  $("titre-date").textContent = `${s.jour} ${date.toLocaleDateString("fr-BE", {day:"2-digit", month:"2-digit"})} · sem. ${s.semaine}`;
+
+  // Le contenu est découpé en étapes à chaque « • »
+  const parties = s.contenu.split("•").map(t => t.trim()).filter(Boolean);
+  const intro = s.contenu.trim().startsWith("•") ? "" : parties.shift() || "";
+  const coches = d.coches || [];
+
+  $("ecran").innerHTML = `
+    <h1>${s.activite}</h1>
+    <p class="phase">${s.phase}</p>
+    <div class="carte">
+      ${intro ? `<p>${intro}</p>` : ""}
+      ${parties.map((t, i) => `
+        <label class="etape ${coches[i] ? "fait" : ""}">
+          <input type="checkbox" data-etape="${i}" ${coches[i] ? "checked" : ""}><span>${t}</span>
+        </label>`).join("")}
+    </div>
+    <div class="carte">
+      <label class="champ">Fait ?</label>
+      <div class="boutons" data-champ="fait">${["Oui","Non","Sautée"].map(v => bouton(v, d.fait)).join("")}</div>
+      <label class="champ">Durée (min)</label>
+      <input type="number" inputmode="numeric" data-champ="duree" value="${d.duree ?? ""}">
+      <label class="champ">Effort (1 à 10)</label>
+      <div class="boutons" data-champ="effort">${serie(1,10).map(v => bouton(v, d.effort)).join("")}</div>
+      <label class="champ">Douleur max (0 à 10)</label>
+      <div class="boutons" data-champ="douleur">${serie(0,10).map(v => bouton(v, d.douleur)).join("")}</div>
+      <div id="alerte">Douleur à 5 ou plus : arrête l'exercice. Repos, glace, et consulte si ça dure.</div>
+      <label class="champ">Zone de douleur</label>
+      <select data-champ="zone"><option value=""></option>
+        ${ZONES.map(z => `<option ${d.zone === z ? "selected" : ""}>${z}</option>`).join("")}</select>
+      <label class="champ">Meilleure perf</label>
+      <input type="text" data-champ="perf" value="${esc(d.perf)}">
+      <label class="champ">Nb de « sec »</label>
+      <div class="compteur">
+        <button data-sec="-1">−</button>
+        <input type="number" inputmode="numeric" data-champ="sec" value="${d.sec ?? ""}">
+        <button data-sec="1">+</button>
+      </div>
+      <label class="champ">Notes</label>
+      <textarea data-champ="notes">${esc(d.notes)}</textarea>
+    </div>`;
+  $("alerte").style.display = Number(d.douleur) >= 5 ? "block" : "none";
+}
+const serie = (a, b) => Array.from({length: b - a + 1}, (_, i) => a + i);
+const bouton = (v, actuel) => `<button data-valeur="${v}" class="${String(actuel) === String(v) ? "choisi" : ""}">${v}</button>`;
+
+// Enregistre une valeur et rafraîchit l'écran si besoin
+function enregistrer(champ, valeur, rafraichir) {
+  const s = SEANCES[index];
+  const d = lire(s);
+  d[champ] = valeur;
+  ecrire(s, d);
+  if (rafraichir) afficherSeance();
+}
+
+// Un seul écouteur pour tous les clics et toutes les saisies
+$("ecran").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  if (b.dataset.valeur !== undefined) {                       // boutons Fait / Effort / Douleur
+    const champ = b.parentElement.dataset.champ;
+    const v = isNaN(b.dataset.valeur) ? b.dataset.valeur : Number(b.dataset.valeur);
+    enregistrer(champ, lire(SEANCES[index])[champ] === v ? null : v, true);  // 2e appui = effacer
+  }
+  if (b.dataset.sec) {                                          // boutons − et +
+    const n = Math.max(0, (Number(lire(SEANCES[index]).sec) || 0) + Number(b.dataset.sec));
+    enregistrer("sec", n, true);
+  }
+});
+function surSaisie(e) {
+  const t = e.target;
+  if (t.dataset.etape !== undefined) {                          // cases à cocher des étapes
+    const d = lire(SEANCES[index]);
+    d.coches = d.coches || [];
+    d.coches[t.dataset.etape] = t.checked;
+    ecrire(SEANCES[index], d);
+    t.parentElement.classList.toggle("fait", t.checked);
+  } else if (t.dataset.champ) {                                 // champs texte, nombre, liste
+    enregistrer(t.dataset.champ, t.type === "number" && t.value !== "" ? Number(t.value) : t.value, false);
+  }
+}
+$("ecran").addEventListener("change", surSaisie);
+$("ecran").addEventListener("input", surSaisie);   // enregistre pendant la frappe
+
+// ===================== Écran exercices =====================
+function afficherExercices() {
+  $("titre-date").textContent = "Exercices";
+  // Routines d'abord (échauffement, retour au calme…), puis les exercices
+  let html = "", categorie = "";
+  for (const r of ROUTINES) {
+    if (r.routine !== categorie) { categorie = r.routine; html += `<h2 class="cat">${categorie}</h2>`; }
+    html += `<details><summary>${r.etape}${r.duree ? " · " + r.duree : ""}</summary><p>${r.quoi}</p></details>`;
+  }
+  for (const x of EXERCICES) {
+    if (x.categorie !== categorie) { categorie = x.categorie; html += `<h2 class="cat">${categorie}</h2>`; }
+    html += `<details><summary>${x.nom}</summary>
+      <p>${x.comment}</p><p class="petit">${x.cle}${x.depuis ? " · à partir de : " + x.depuis : ""}</p></details>`;
+  }
+  $("ecran").innerHTML = `<div class="carte">${html}</div>`;
+}
+
+// ===================== Export CSV =====================
+// Une ligne par séance, dans l'ordre du Journal.
+// Colonnes D à K du CSV = colonnes H à O du Journal.
+function exporter() {
+  const entete = ["Semaine","Jour","Activité","Fait ?","Durée (min)","Effort (1-10)","Douleur max (0-10)",
+                  "Zone de douleur","Meilleure perf","Nb de « sec »","Notes"];
+  const champ = v => typeof v === "number" ? v : `"${String(v ?? "").replace(/"/g, '""')}"`;  // nombres sans guillemets
+  const lignes = SEANCES.map(s => {
+    const d = lire(s);
+    return [s.semaine, s.jour, s.activite, d.fait, d.duree, d.effort, d.douleur, d.zone, d.perf, d.sec, d.notes]
+      .map(champ).join(";");
+  });
+  const csv = "\uFEFF" + [entete.map(champ).join(";"), ...lignes].join("\r\n");
+  const nom = `journal-escalade-${new Date().toISOString().slice(0,10)}.csv`;
+  const fichier = new File([csv], nom, {type: "text/csv"});
+  if (navigator.canShare && navigator.canShare({files: [fichier]})) {
+    navigator.share({files: [fichier], title: nom}).catch(() => {});   // menu Partager de l'iPhone
+  } else {
+    const a = document.createElement("a");                              // ordinateur : téléchargement
+    a.href = URL.createObjectURL(fichier); a.download = nom; a.click();
+  }
+}
+
+// ===================== Navigation =====================
+function afficher() { vue === "seance" ? afficherSeance() : afficherExercices();
+                      $("btn-vue").textContent = vue === "seance" ? "Exercices" : "Séance"; window.scrollTo(0, 0); }
+$("prec").onclick = () => { vue = "seance"; index = Math.max(0, index - 1); afficher(); };
+$("suiv").onclick = () => { vue = "seance"; index = Math.min(SEANCES.length - 1, index + 1); afficher(); };
+$("titre-date").onclick = () => { vue = "seance"; index = indexAujourdhui(); afficher(); };
+$("btn-vue").onclick = () => { vue = vue === "seance" ? "exercices" : "seance"; afficher(); };
+$("btn-export").onclick = exporter;
+afficher();
+
+// Fonctionnement hors connexion
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+</script>
+</body>
+</html>
