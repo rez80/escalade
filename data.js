@@ -21,1148 +21,1148 @@ const SEANCES = [
   "phase": "C1 · Pieds précis, bras tendus",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "6 × (2 min course + 2 min marche) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "! Avant de démarrer course et renforcement, un bilan simple chez ton médecin traitant est une bonne précaution.\n> Course · avant\n6× 2 min course + 2 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 1,
   "phase": "C1 · Pieds précis, bras tendus",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. • 2 passages sur les voies en 4 et 5a avec « pieds silencieux », puis 2 passages avec « bras tendus ». • 1 à 2 voies en 5b (verticale si possible, sinon en dévers) travaillées au point : autant de « sec » que nécessaire, le but est d'arriver en haut. • Repos entre les voies : au minimum 5 min (le temps d'assurer). • Note le nb de « sec » dans la 5b en dévers. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n2× Voie en 4 ou 5a · « Pieds silencieux »\n2× Voie en 4 ou 5a · « Bras tendus »\n2× Voie en 5b · « Travail au point »\n! 5b verticale si possible, sinon en dévers. Note tes « sec » avec le bouton + Voie.\n! Repos au moins 5 min entre les voies.\n> Retour au calme salle"
  },
  {
   "semaine": 1,
   "phase": "C1 · Pieds précis, bras tendus",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×20 s • planche latérale 2×15 s/côté • dead bug 3×6/côté • pompes mains sur une table 3×6 • rowing inversé genoux pliés 3×5 • suspension active pieds sur une chaise 3×5 (si barre) • rotations externes élastique 2×12/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 20 s\n2× « Planche latérale » · 15 s par côté\n3× « Dead bug » · 6 par côté\n3× « Pompes » · 6, mains sur une table\n3× « Rowing inversé » · 5, genoux pliés\n3× « Suspension active » · 5, pieds sur une chaise (si barre)\n2× « Rotations externes à l'élastique » · 12 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 1,
   "phase": "C1 · Pieds précis, bras tendus",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "5 × (2 min course + 2 min marche) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n5× 2 min course + 2 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 1,
   "phase": "C1 · Pieds précis, bras tendus",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). • Circuit de 10 blocs verticaux de niveau 3 et 4, chacun 2 fois (la 2e fois plus calmement). • 20 min en dévers sur des blocs de niveau 3 avec « hanches collées ». • 2 essais au maximum sur 2 blocs verticaux de niveau 5. • Désescalade dès que possible plutôt que sauter. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n10× Bloc vertical niveau 3-4, 2 fois chacun (repos 1 min)\n1× 20 min en dévers niveau 3 · « Hanches collées »\n2× Bloc vertical niveau 5 · 2 essais maximum\n! « Désescalade » plutôt que sauter.\n> Retour au calme salle"
  },
  {
   "semaine": 2,
   "phase": "C1 · Pieds précis, bras tendus",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "6 × (2 min course + 2 min marche) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n6× 2 min course + 2 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 2,
   "phase": "C1 · Pieds précis, bras tendus",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. • 2 passages sur les voies en 4 et 5a avec « pieds silencieux », puis 2 passages avec « bras tendus ». • 1 à 2 voies en 5b (verticale si possible, sinon en dévers) travaillées au point : autant de « sec » que nécessaire, le but est d'arriver en haut. • Repos entre les voies : au minimum 5 min (le temps d'assurer). • Note le nb de « sec » dans la 5b en dévers. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n2× Voie en 4 ou 5a · « Pieds silencieux »\n2× Voie en 4 ou 5a · « Bras tendus »\n2× Voie en 5b · « Travail au point »\n! 5b verticale si possible, sinon en dévers. Note tes « sec » avec le bouton + Voie.\n! Repos au moins 5 min entre les voies.\n> Retour au calme salle"
  },
  {
   "semaine": 2,
   "phase": "C1 · Pieds précis, bras tendus",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×20 s • planche latérale 2×15 s/côté • dead bug 3×6/côté • pompes mains sur une table 3×6 • rowing inversé genoux pliés 3×5 • suspension active pieds sur une chaise 3×5 (si barre) • rotations externes élastique 2×12/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 20 s\n2× « Planche latérale » · 15 s par côté\n3× « Dead bug » · 6 par côté\n3× « Pompes » · 6, mains sur une table\n3× « Rowing inversé » · 5, genoux pliés\n3× « Suspension active » · 5, pieds sur une chaise (si barre)\n2× « Rotations externes à l'élastique » · 12 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 2,
   "phase": "C1 · Pieds précis, bras tendus",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "5 × (2 min course + 2 min marche) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n5× 2 min course + 2 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 2,
   "phase": "C1 · Pieds précis, bras tendus",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). • Circuit de 10 blocs verticaux de niveau 3 et 4, chacun 2 fois (la 2e fois plus calmement). • 20 min en dévers sur des blocs de niveau 3 avec « hanches collées ». • 2 essais au maximum sur 2 blocs verticaux de niveau 5. • Désescalade dès que possible plutôt que sauter. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n10× Bloc vertical niveau 3-4, 2 fois chacun (repos 1 min)\n1× 20 min en dévers niveau 3 · « Hanches collées »\n2× Bloc vertical niveau 5 · 2 essais maximum\n! « Désescalade » plutôt que sauter.\n> Retour au calme salle"
  },
  {
   "semaine": 3,
   "phase": "C1 · Profil et drop knee",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "5 × (3 min course + 1 min 30 marche) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n5× 3 min course + 1 min 30 marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 3,
   "phase": "C1 · Profil et drop knee",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. • 2 passages sur les 5a avec « main qui plane » puis « grimpe au ralenti ». • 2 passages au point sur la même 5b en dévers avec « profil alterné » ; repère les endroits où tu prends « sec ». • 1 essai d'enchaînement sur une 5b verticale, en moulinette, sans pression. • Note le nb de « sec ». Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n1× Voie en 5a · « Main qui plane »\n1× Voie en 5a · « Grimpe au ralenti »\n2× Voie en 5b en dévers · « Travail au point » · « Profil alterné »\n! Repère les endroits où tu prends « sec ».\n1× Voie en 5b verticale · essai d'enchaînement, sans pression\n! Pense à réserver une séance avec un moniteur pour la semaine suivante.\n> Retour au calme salle"
  },
  {
   "semaine": 3,
   "phase": "C1 · Profil et drop knee",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×30 s • planche latérale 2×20 s/côté • dead bug 3×8/côté • hollow body genoux pliés 3×15 s • pompes mains sur une table 3×8 • rowing inversé genoux pliés 3×8 • suspension active pieds sur une chaise 3×6 • rotations externes 2×12/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 30 s\n2× « Planche latérale » · 20 s par côté\n3× « Dead bug » · 8 par côté\n3× « Hollow body » · 15 s, genoux pliés\n3× « Pompes » · 8, mains sur une table\n3× « Rowing inversé » · 8, genoux pliés\n3× « Suspension active » · 6, pieds sur une chaise\n2× « Rotations externes à l'élastique » · 12 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 3,
   "phase": "C1 · Profil et drop knee",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "4 × (3 min course + 1 min 30 marche) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n4× 3 min course + 1 min 30 marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 3,
   "phase": "C1 · Profil et drop knee",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). • Pyramide verticale : 4 blocs de niveau 3, 3 de niveau 4, 2 de niveau 5. • 25 min en dévers sur des blocs de niveau 3-4 : « profil alterné » et premiers « drop knee », en douceur. • « Désescalade » sur au moins 5 blocs. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n4× Bloc niveau 3 (repos 1 min)\n3× Bloc niveau 4 (repos 2 min)\n2× Bloc niveau 5\n1× 25 min en dévers niveau 3-4 · « Profil alterné » · « Drop knee »\n5× « Désescalade » d'un bloc facile (repos 1 min)\n> Retour au calme salle"
  },
  {
   "semaine": 4,
   "phase": "C1 · Profil et drop knee",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "5 × (3 min course + 1 min 30 marche) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n5× 3 min course + 1 min 30 marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 4,
   "phase": "C1 · Profil et drop knee",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. • 2 passages sur les 5a avec « main qui plane » puis « grimpe au ralenti ». • 2 passages au point sur la même 5b en dévers avec « profil alterné » ; repère les endroits où tu prends « sec ». • 1 essai d'enchaînement sur une 5b verticale, en moulinette, sans pression. • Note le nb de « sec ». Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n1× Séance avec un moniteur, si réservée : hanches, pieds, dévers\n1× Voie en 5a · « Main qui plane »\n1× Voie en 5a · « Grimpe au ralenti »\n2× Voie en 5b en dévers · « Travail au point » · « Profil alterné »\n! Repère les endroits où tu prends « sec ».\n1× Voie en 5b verticale · essai d'enchaînement, sans pression\n> Retour au calme salle"
  },
  {
   "semaine": 4,
   "phase": "C1 · Profil et drop knee",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×30 s • planche latérale 2×20 s/côté • dead bug 3×8/côté • hollow body genoux pliés 3×15 s • pompes mains sur une table 3×8 • rowing inversé genoux pliés 3×8 • suspension active pieds sur une chaise 3×6 • rotations externes 2×12/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 30 s\n2× « Planche latérale » · 20 s par côté\n3× « Dead bug » · 8 par côté\n3× « Hollow body » · 15 s, genoux pliés\n3× « Pompes » · 8, mains sur une table\n3× « Rowing inversé » · 8, genoux pliés\n3× « Suspension active » · 6, pieds sur une chaise\n2× « Rotations externes à l'élastique » · 12 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 4,
   "phase": "C1 · Profil et drop knee",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "4 × (3 min course + 1 min 30 marche) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n4× 3 min course + 1 min 30 marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 4,
   "phase": "C1 · Profil et drop knee",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). • Pyramide verticale : 4 blocs de niveau 3, 3 de niveau 4, 2 de niveau 5. • 25 min en dévers sur des blocs de niveau 3-4 : « profil alterné » et premiers « drop knee », en douceur. • « Désescalade » sur au moins 5 blocs. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n4× Bloc niveau 3 (repos 1 min)\n3× Bloc niveau 4 (repos 2 min)\n2× Bloc niveau 5\n1× 25 min en dévers niveau 3-4 · « Profil alterné » · « Drop knee »\n5× « Désescalade » d'un bloc facile (repos 1 min)\n> Retour au calme salle"
  },
  {
   "semaine": 5,
   "phase": "C1 · Gainage et pieds actifs",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "4 × (5 min course + 1 min marche) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n4× 5 min course + 1 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 5,
   "phase": "C1 · Gainage et pieds actifs",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. • Endurance : une 4 puis une 5a enchaînées avec quelques secondes de repos en bas, 2 fois (10 min de repos entre les deux). • 2 passages sur ta 5b en dévers avec « pieds qui tirent » et « bras tendus » : objectif, moins de « sec » que la fois précédente. • 1 passage au point sur une 5c pour découvrir les mouvements. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n2× Voie en 4 puis 5a enchaînées · endurance (repos 10 min)\n2× Voie en 5b en dévers · « Pieds qui tirent » · « Bras tendus »\n! Objectif : moins de « sec » que la fois précédente.\n1× Voie en 5c · « Travail au point »\n> Retour au calme salle"
  },
  {
   "semaine": 5,
   "phase": "C1 · Gainage et pieds actifs",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×40 s • planche latérale 2×30 s/côté • dead bug 3×10/côté • hollow body genoux pliés 3×25 s • pompes au sol sur les genoux 3×8 • rowing inversé genoux pliés 3×10 • suspension active pieds sur une chaise 3×8 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 40 s\n2× « Planche latérale » · 30 s par côté\n3× « Dead bug » · 10 par côté\n3× « Hollow body » · 25 s, genoux pliés\n3× « Pompes » · 8, au sol sur les genoux\n3× « Rowing inversé » · 10, genoux pliés\n3× « Suspension active » · 8, pieds sur une chaise\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 5,
   "phase": "C1 · Gainage et pieds actifs",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "3 × (5 min course + 1 min marche) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n3× 5 min course + 1 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 5,
   "phase": "C1 · Gainage et pieds actifs",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). • 3 séries de 3 blocs faciles (niveau 3-4) enchaînés, 4 min de repos entre les séries. • 30 min en dévers sur des blocs de niveau 4 avec « ne jamais lâcher les pieds » ; premiers « crochets de pointe ». • 1 bloc projet de niveau 5, au maximum 3 essais par mouvement. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n3× Série de 3 blocs faciles enchaînés (repos 4 min)\n1× 30 min en dévers niveau 4 · « Ne jamais lâcher les pieds » · « Crochet de pointe »\n3× Essai sur un bloc projet niveau 5 (repos 4 min)\n! 3 essais maximum par mouvement.\n> Retour au calme salle"
  },
  {
   "semaine": 6,
   "phase": "C1 · Gainage et pieds actifs",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "4 × (5 min course + 1 min marche) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n4× 5 min course + 1 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 6,
   "phase": "C1 · Gainage et pieds actifs",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. • Endurance : une 4 puis une 5a enchaînées avec quelques secondes de repos en bas, 2 fois (10 min de repos entre les deux). • 2 passages sur ta 5b en dévers avec « pieds qui tirent » et « bras tendus » : objectif, moins de « sec » que la fois précédente. • 1 passage au point sur une 5c pour découvrir les mouvements. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n2× Voie en 4 puis 5a enchaînées · endurance (repos 10 min)\n2× Voie en 5b en dévers · « Pieds qui tirent » · « Bras tendus »\n! Objectif : moins de « sec » que la fois précédente.\n1× Voie en 5c · « Travail au point »\n> Retour au calme salle"
  },
  {
   "semaine": 6,
   "phase": "C1 · Gainage et pieds actifs",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×40 s • planche latérale 2×30 s/côté • dead bug 3×10/côté • hollow body genoux pliés 3×25 s • pompes au sol sur les genoux 3×8 • rowing inversé genoux pliés 3×10 • suspension active pieds sur une chaise 3×8 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 40 s\n2× « Planche latérale » · 30 s par côté\n3× « Dead bug » · 10 par côté\n3× « Hollow body » · 25 s, genoux pliés\n3× « Pompes » · 8, au sol sur les genoux\n3× « Rowing inversé » · 10, genoux pliés\n3× « Suspension active » · 8, pieds sur une chaise\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 6,
   "phase": "C1 · Gainage et pieds actifs",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "3 × (5 min course + 1 min marche) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n3× 5 min course + 1 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 6,
   "phase": "C1 · Gainage et pieds actifs",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). • 3 séries de 3 blocs faciles (niveau 3-4) enchaînés, 4 min de repos entre les séries. • 30 min en dévers sur des blocs de niveau 4 avec « ne jamais lâcher les pieds » ; premiers « crochets de pointe ». • 1 bloc projet de niveau 5, au maximum 3 essais par mouvement. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n3× Série de 3 blocs faciles enchaînés (repos 4 min)\n1× 30 min en dévers niveau 4 · « Ne jamais lâcher les pieds » · « Crochet de pointe »\n3× Essai sur un bloc projet niveau 5 (repos 4 min)\n! 3 essais maximum par mouvement.\n> Retour au calme salle"
  },
  {
   "semaine": 7,
   "phase": "C1 · Projets",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "2 × (10 min course + 2 min marche) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n2× 10 min course + 2 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 7,
   "phase": "C1 · Projets",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. • 2 à 3 essais d'enchaînement sur ta 5b en dévers, au moins 10 min de repos entre les essais. • 1 passage au point sur ta 5c. • Le reste de la séance en 4 et 5a, grimpées proprement. • Arrête dès que la qualité baisse. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n3× Essai d'enchaînement 5b en dévers (repos 10 min)\n1× Voie en 5c · « Travail au point »\n3× Voie en 4 ou 5a, grimpée proprement\n! Arrête dès que la qualité baisse.\n> Retour au calme salle"
  },
  {
   "semaine": 7,
   "phase": "C1 · Projets",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×40 s • planche latérale 2×30 s/côté • dead bug 3×10/côté • hollow body genoux pliés 3×25 s • pompes au sol sur les genoux 3×8 • rowing inversé genoux pliés 3×10 • suspension active pieds sur une chaise 3×8 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 40 s\n2× « Planche latérale » · 30 s par côté\n3× « Dead bug » · 10 par côté\n3× « Hollow body » · 25 s, genoux pliés\n3× « Pompes » · 8, au sol sur les genoux\n3× « Rowing inversé » · 10, genoux pliés\n3× « Suspension active » · 8, pieds sur une chaise\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 7,
   "phase": "C1 · Projets",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "20 min de course continue très lente (ou la séance du mardi) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 20 min de course continue très lente\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 7,
   "phase": "C1 · Projets",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). • 1 bloc projet vertical de niveau 5 et 1 bloc projet en dévers de niveau 4. • 3 à 4 min de repos entre deux essais. • Arrête dès que la qualité baisse. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n4× Essai sur projet vertical niveau 5 (repos 4 min)\n4× Essai sur projet en dévers niveau 4 (repos 4 min)\n! Arrête dès que la qualité baisse.\n> Retour au calme salle"
  },
  {
   "semaine": 8,
   "phase": "C1 · Allègement et bilan",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "20 min de course continue facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 20 min de course continue facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 8,
   "phase": "C1 · Allègement et bilan",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Allègement : volume réduit d'un tiers. • Refais la 5b en dévers des semaines 1-2 et compare le nb de « sec » avec ta première fois. • Remplis l'onglet Bilan (colonne Semaine 8). Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n! Semaine d'allègement : volume réduit d'un tiers.\n1× Voie en 5b en dévers des semaines 1-2 · compte les « sec »\n2× Voie en 4 ou 5a, tranquille\n! Remplis le Bilan (semaine 8) dans l'Excel.\n> Retour au calme salle"
  },
  {
   "semaine": 8,
   "phase": "C1 · Allègement et bilan",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Allègement : planche 2×30 s • planche latérale 2×20 s/côté • dead bug 2×8/côté • hollow body 2×15 s • pompes 2×8 • rowing 2×8 • suspension active 2×5 • rotations externes 2×12/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n2× « Planche » · 30 s\n2× « Planche latérale » · 20 s par côté\n2× « Dead bug » · 8 par côté\n2× « Hollow body » · 15 s\n2× « Pompes » · 8\n2× « Rowing inversé » · 8\n2× « Suspension active » · 5\n2× « Rotations externes à l'élastique » · 12 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 8,
   "phase": "C1 · Allègement et bilan",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "Facultatif : 30 min de marche rapide • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× Facultatif : 30 min de marche rapide\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 8,
   "phase": "C1 · Allègement et bilan",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Allègement : volume réduit d'un tiers. • Refais les blocs en dévers des semaines 1-2 et note la différence. • Remplis l'onglet Bilan (colonne Semaine 8). Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n! Semaine d'allègement : volume réduit d'un tiers.\n1× Refaire les blocs en dévers des semaines 1-2\n6× Bloc facile niveau 3-4 (repos 1 min)\n! Remplis le Bilan (semaine 8) dans l'Excel.\n> Retour au calme salle"
  },
  {
   "semaine": 9,
   "phase": "Repos actif entre cycles",
   "jour": "Mardi",
   "activite": "Repos actif",
-  "contenu": "Semaine sans escalade ni renforcement : 30 à 45 min de marche, de vélo tranquille ou d'étirements doux. Les tendons se consolident."
+  "contenu": "1× 30 à 45 min de marche, vélo tranquille ou étirements doux\n! Semaine sans escalade ni renforcement : les tendons se consolident."
  },
  {
   "semaine": 9,
   "phase": "Repos actif entre cycles",
   "jour": "Samedi",
   "activite": "Repos actif",
-  "contenu": "Semaine sans escalade ni renforcement : 30 à 45 min de marche, de vélo tranquille ou d'étirements doux. Les tendons se consolident."
+  "contenu": "1× 30 à 45 min de marche, vélo tranquille ou étirements doux\n! Semaine sans escalade ni renforcement : les tendons se consolident.\n! Pense à réserver une séance avec un moniteur pour la semaine suivante."
  },
  {
   "semaine": 10,
   "phase": "C2 · Mois 3, semaine 1 (reprise)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "25 min de course continue • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 25 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 10,
   "phase": "C2 · Mois 3, semaine 1 (reprise)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Reprise : • volume sur les 4 et 5a avec une consigne technique différente à chaque passage • 2 passages sur des 5b (1 verticale, 1 en dévers), sans chercher l'enchaînement • pas de projet dur. Technique du mois : crochet de talon, en douceur, sans forcer sur le genou. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n1× Séance avec un moniteur, si réservée : hanches, pieds, dévers\n1× Voie en 4 · « Pieds silencieux »\n1× Voie en 5a · « Bras tendus »\n1× Voie en 5b verticale, sans chercher l'enchaînement\n1× Voie en 5b en dévers, sans chercher l'enchaînement\n! Pas de projet dur cette semaine.\n1× Technique du mois : « Crochet de talon », en douceur\n> Retour au calme salle"
  },
  {
   "semaine": 10,
   "phase": "C2 · Mois 3, semaine 1 (reprise)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×45 s • hollow body genoux pliés 3×25 s • pompes complètes au sol 3×5 • rowing inversé genoux pliés 3×10 • suspension active pieds sur une chaise 3×8 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 45 s\n3× « Hollow body » · 25 s, genoux pliés\n3× « Pompes » · 5 complètes\n3× « Rowing inversé » · 10, genoux pliés\n3× « Suspension active » · 8, pieds sur une chaise\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 10,
   "phase": "C2 · Mois 3, semaine 1 (reprise)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "15 à 20 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 15 à 20 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 10,
   "phase": "C2 · Mois 3, semaine 1 (reprise)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Reprise : • circuit de blocs faciles (niveau 3-4) • 20 min en dévers sur des blocs de niveau 4 • pas de projet dur. Technique du mois : crochet de talon, en douceur, sans forcer sur le genou. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n8× Bloc facile niveau 3-4 (repos 1 min)\n1× 20 min en dévers niveau 4\n! Pas de projet dur cette semaine.\n1× Technique du mois : « Crochet de talon », en douceur\n> Retour au calme salle"
  },
  {
   "semaine": 11,
   "phase": "C2 · Mois 3, semaine 2 (progression)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "25 min de course continue • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 25 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 11,
   "phase": "C2 · Mois 3, semaine 2 (progression)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Progression : • volume sur les 4 et 5a avec une consigne technique • 2 essais d'enchaînement sur des 5b (alterne vertical et dévers) • 1 à 2 passages au point sur une 5c • endurance : une 5a puis une 5b enchaînées, 2 fois. Technique du mois : crochet de talon, en douceur, sans forcer sur le genou. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n2× Voie en 4 ou 5a · « Main qui plane »\n2× Essai d'enchaînement sur une 5b, vertical puis dévers\n2× Voie en 5c · « Travail au point »\n2× Voie en 5a puis 5b enchaînées · endurance (repos 10 min)\n1× Technique du mois : « Crochet de talon », en douceur\n> Retour au calme salle"
  },
  {
   "semaine": 11,
   "phase": "C2 · Mois 3, semaine 2 (progression)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×45 s • hollow body genoux pliés 3×25 s • pompes complètes au sol 3×5 • rowing inversé genoux pliés 3×10 • suspension active pieds sur une chaise 3×8 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 45 s\n3× « Hollow body » · 25 s, genoux pliés\n3× « Pompes » · 5 complètes\n3× « Rowing inversé » · 10, genoux pliés\n3× « Suspension active » · 8, pieds sur une chaise\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 11,
   "phase": "C2 · Mois 3, semaine 2 (progression)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "15 à 20 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 15 à 20 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 11,
   "phase": "C2 · Mois 3, semaine 2 (progression)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Progression : • 30 à 40 min en dévers sur des blocs de niveau 4 • 2 à 3 blocs projets de niveau 5, dont un en dévers • circuit : 3 blocs faciles enchaînés, 3 fois. Technique du mois : crochet de talon, en douceur, sans forcer sur le genou. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n1× 30 à 40 min en dévers niveau 4\n3× Bloc projet niveau 5, dont un en dévers\n3× Série de 3 blocs faciles enchaînés (repos 4 min)\n1× Technique du mois : « Crochet de talon », en douceur\n> Retour au calme salle"
  },
  {
   "semaine": 12,
   "phase": "C2 · Mois 3, semaine 3 (pic)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "25 min de course continue • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 25 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 12,
   "phase": "C2 · Mois 3, semaine 3 (pic)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Pic : • 2 à 3 essais d'enchaînement sur ton projet du mois (5b en dévers ou 5c verticale), 10 min de repos entre les essais • 1 passage au point sur une 5c • le reste en voies faciles propres. Technique du mois : crochet de talon, en douceur, sans forcer sur le genou. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n3× Essai sur ton projet du mois, 5b en dévers ou 5c verticale (repos 10 min)\n1× Voie en 5c · « Travail au point »\n2× Voie en 4 ou 5a, grimpée proprement\n! Arrête dès que la qualité baisse.\n1× Technique du mois : « Crochet de talon », en douceur\n> Retour au calme salle"
  },
  {
   "semaine": 12,
   "phase": "C2 · Mois 3, semaine 3 (pic)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×45 s • hollow body genoux pliés 3×25 s • pompes complètes au sol 3×5 • rowing inversé genoux pliés 3×10 • suspension active pieds sur une chaise 3×8 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 45 s\n3× « Hollow body » · 25 s, genoux pliés\n3× « Pompes » · 5 complètes\n3× « Rowing inversé » · 10, genoux pliés\n3× « Suspension active » · 8, pieds sur une chaise\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 12,
   "phase": "C2 · Mois 3, semaine 3 (pic)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "15 à 20 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 15 à 20 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 12,
   "phase": "C2 · Mois 3, semaine 3 (pic)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Pic : • projets de niveau 5 (dont un en dévers) • 3 à 4 min de repos entre deux essais, 3 essais maximum par mouvement. Technique du mois : crochet de talon, en douceur, sans forcer sur le genou. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n6× Essai sur projet niveau 5, dont un en dévers (repos 4 min)\n! 3 essais maximum par mouvement.\n1× Technique du mois : « Crochet de talon », en douceur\n> Retour au calme salle"
  },
  {
   "semaine": 13,
   "phase": "C2 · Mois 3, semaine 4 (allègement)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "Allègement : 15 min de course continue facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 15 min de course continue facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 13,
   "phase": "C2 · Mois 3, semaine 4 (allègement)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Allègement : volume réduit d'un tiers • refais les voies du mois et note le nb de « sec » dans ta voie en dévers suivie. Technique du mois : crochet de talon, en douceur, sans forcer sur le genou. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n! Semaine d'allègement : volume réduit d'un tiers.\n1× Refaire ta voie en dévers suivie · compte les « sec »\n2× Voie du mois, tranquille\n> Retour au calme salle"
  },
  {
   "semaine": 13,
   "phase": "C2 · Mois 3, semaine 4 (allègement)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Allègement : 2 séries au lieu de 3. Planche 3×45 s • hollow body genoux pliés 3×25 s • pompes complètes au sol 3×5 • rowing inversé genoux pliés 3×10 • suspension active pieds sur une chaise 3×8 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n! Semaine d'allègement : 2 séries au lieu de 3.\n2× « Planche » · 45 s\n2× « Hollow body » · 25 s, genoux pliés\n2× « Pompes » · 5 complètes\n2× « Rowing inversé » · 10, genoux pliés\n2× « Suspension active » · 8, pieds sur une chaise\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 13,
   "phase": "C2 · Mois 3, semaine 4 (allègement)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "Facultatif : 30 min de marche rapide • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× Facultatif : 30 min de marche rapide\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 13,
   "phase": "C2 · Mois 3, semaine 4 (allègement)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Allègement : volume réduit d'un tiers • refais les blocs du mois. Technique du mois : crochet de talon, en douceur, sans forcer sur le genou. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n! Semaine d'allègement : volume réduit d'un tiers.\n1× Refaire les blocs du mois\n6× Bloc facile niveau 3-4 (repos 1 min)\n> Retour au calme salle"
  },
  {
   "semaine": 14,
   "phase": "C2 · Mois 4, semaine 1 (reprise)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "30 min de course continue • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 30 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 14,
   "phase": "C2 · Mois 4, semaine 1 (reprise)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Reprise : • volume sur les 4 et 5a avec une consigne technique différente à chaque passage • 2 passages sur des 5b (1 verticale, 1 en dévers), sans chercher l'enchaînement • pas de projet dur. Technique du mois : changement de pied sur une même prise et opposition (pousser d'un côté, tirer de l'autre). Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n1× Voie en 4 · « Pieds silencieux »\n1× Voie en 5a · « Bras tendus »\n1× Voie en 5b verticale, sans chercher l'enchaînement\n1× Voie en 5b en dévers, sans chercher l'enchaînement\n! Pas de projet dur cette semaine.\n1× Technique du mois : « Changement de pied » et « Opposition »\n> Retour au calme salle"
  },
  {
   "semaine": 14,
   "phase": "C2 · Mois 4, semaine 1 (reprise)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×50 s • hollow body jambes tendues 3×20 s • pompes complètes 3×8 • rowing inversé jambes tendues 3×8 • suspension active pieds libres 3×5 • tractions assistées (pieds sur chaise ou élastique) 3×3 lentes, seulement si la suspension ne gêne pas les coudes ni les épaules • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 50 s\n3× « Hollow body » · 20 s, jambes tendues\n3× « Pompes » · 8 complètes\n3× « Rowing inversé » · 8, jambes tendues\n3× « Suspension active » · 5, pieds libres\n3× « Tractions assistées » · 3 lentes\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Tractions assistées seulement si la suspension active ne gêne ni les coudes ni les épaules.\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 14,
   "phase": "C2 · Mois 4, semaine 1 (reprise)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "20 à 25 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 20 à 25 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 14,
   "phase": "C2 · Mois 4, semaine 1 (reprise)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Reprise : • circuit de blocs faciles (niveau 3-4) • 20 min en dévers sur des blocs de niveau 4 • pas de projet dur. Technique du mois : changement de pied sur une même prise et opposition (pousser d'un côté, tirer de l'autre). Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n8× Bloc facile niveau 3-4 (repos 1 min)\n1× 20 min en dévers niveau 4\n! Pas de projet dur cette semaine.\n1× Technique du mois : « Changement de pied » et « Opposition »\n> Retour au calme salle"
  },
  {
   "semaine": 15,
   "phase": "C2 · Mois 4, semaine 2 (progression)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "30 min de course continue • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 30 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 15,
   "phase": "C2 · Mois 4, semaine 2 (progression)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Progression : • volume sur les 4 et 5a avec une consigne technique • 2 essais d'enchaînement sur des 5b (alterne vertical et dévers) • 1 à 2 passages au point sur une 5c en dévers • endurance : une 5a puis une 5b enchaînées, 2 fois. Option : cours de grimpe en tête si la salle en propose (sinon, moulinette). Technique du mois : changement de pied sur une même prise et opposition (pousser d'un côté, tirer de l'autre). Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n2× Voie en 4 ou 5a · « Main qui plane »\n2× Essai d'enchaînement sur une 5b, vertical puis dévers\n2× Voie en 5c en dévers · « Travail au point »\n2× Voie en 5a puis 5b enchaînées · endurance (repos 10 min)\n! Option : cours de grimpe en tête si la salle en propose. Sinon, moulinette.\n1× Technique du mois : « Changement de pied » et « Opposition »\n> Retour au calme salle"
  },
  {
   "semaine": 15,
   "phase": "C2 · Mois 4, semaine 2 (progression)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×50 s • hollow body jambes tendues 3×20 s • pompes complètes 3×8 • rowing inversé jambes tendues 3×8 • suspension active pieds libres 3×5 • tractions assistées (pieds sur chaise ou élastique) 3×3 lentes, seulement si la suspension ne gêne pas les coudes ni les épaules • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 50 s\n3× « Hollow body » · 20 s, jambes tendues\n3× « Pompes » · 8 complètes\n3× « Rowing inversé » · 8, jambes tendues\n3× « Suspension active » · 5, pieds libres\n3× « Tractions assistées » · 3 lentes\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Tractions assistées seulement si la suspension active ne gêne ni les coudes ni les épaules.\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 15,
   "phase": "C2 · Mois 4, semaine 2 (progression)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "20 à 25 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 20 à 25 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 15,
   "phase": "C2 · Mois 4, semaine 2 (progression)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Progression : • 30 à 40 min en dévers sur des blocs de niveau 4 • 2 à 3 blocs projets de niveau 5, dont un en dévers • circuit : 3 blocs faciles enchaînés, 3 fois. Technique du mois : changement de pied sur une même prise et opposition (pousser d'un côté, tirer de l'autre). Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n1× 30 à 40 min en dévers niveau 4\n3× Bloc projet niveau 5, dont un en dévers\n3× Série de 3 blocs faciles enchaînés (repos 4 min)\n1× Technique du mois : « Changement de pied » et « Opposition »\n> Retour au calme salle"
  },
  {
   "semaine": 16,
   "phase": "C2 · Mois 4, semaine 3 (pic)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "30 min de course continue • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 30 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 16,
   "phase": "C2 · Mois 4, semaine 3 (pic)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Pic : • 2 à 3 essais d'enchaînement sur ton projet du mois (5b en dévers ou 5c verticale), 10 min de repos entre les essais • 1 passage au point sur une 5c • le reste en voies faciles propres. Technique du mois : changement de pied sur une même prise et opposition (pousser d'un côté, tirer de l'autre). Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n3× Essai sur ton projet du mois, 5b en dévers ou 5c verticale (repos 10 min)\n1× Voie en 5c · « Travail au point »\n2× Voie en 4 ou 5a, grimpée proprement\n! Arrête dès que la qualité baisse.\n1× Technique du mois : « Changement de pied » et « Opposition »\n> Retour au calme salle"
  },
  {
   "semaine": 16,
   "phase": "C2 · Mois 4, semaine 3 (pic)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×50 s • hollow body jambes tendues 3×20 s • pompes complètes 3×8 • rowing inversé jambes tendues 3×8 • suspension active pieds libres 3×5 • tractions assistées (pieds sur chaise ou élastique) 3×3 lentes, seulement si la suspension ne gêne pas les coudes ni les épaules • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 50 s\n3× « Hollow body » · 20 s, jambes tendues\n3× « Pompes » · 8 complètes\n3× « Rowing inversé » · 8, jambes tendues\n3× « Suspension active » · 5, pieds libres\n3× « Tractions assistées » · 3 lentes\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Tractions assistées seulement si la suspension active ne gêne ni les coudes ni les épaules.\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 16,
   "phase": "C2 · Mois 4, semaine 3 (pic)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "20 à 25 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 20 à 25 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 16,
   "phase": "C2 · Mois 4, semaine 3 (pic)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Pic : • projets de niveau 5 (dont un en dévers) • 3 à 4 min de repos entre deux essais, 3 essais maximum par mouvement. Technique du mois : changement de pied sur une même prise et opposition (pousser d'un côté, tirer de l'autre). Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n6× Essai sur projet niveau 5, dont un en dévers (repos 4 min)\n! 3 essais maximum par mouvement.\n1× Technique du mois : « Changement de pied » et « Opposition »\n> Retour au calme salle"
  },
  {
   "semaine": 17,
   "phase": "C2 · Mois 4, semaine 4 (allègement)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "Allègement : 20 min de course continue facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 20 min de course continue facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 17,
   "phase": "C2 · Mois 4, semaine 4 (allègement)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Allègement : volume réduit d'un tiers • refais les voies du mois et note le nb de « sec » dans ta voie en dévers suivie. Technique du mois : changement de pied sur une même prise et opposition (pousser d'un côté, tirer de l'autre). Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n! Semaine d'allègement : volume réduit d'un tiers.\n1× Refaire ta voie en dévers suivie · compte les « sec »\n2× Voie du mois, tranquille\n> Retour au calme salle"
  },
  {
   "semaine": 17,
   "phase": "C2 · Mois 4, semaine 4 (allègement)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Allègement : 2 séries au lieu de 3. Planche 3×50 s • hollow body jambes tendues 3×20 s • pompes complètes 3×8 • rowing inversé jambes tendues 3×8 • suspension active pieds libres 3×5 • tractions assistées (pieds sur chaise ou élastique) 3×3 lentes, seulement si la suspension ne gêne pas les coudes ni les épaules • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n! Semaine d'allègement : 2 séries au lieu de 3.\n2× « Planche » · 50 s\n2× « Hollow body » · 20 s, jambes tendues\n2× « Pompes » · 8 complètes\n2× « Rowing inversé » · 8, jambes tendues\n2× « Suspension active » · 5, pieds libres\n2× « Tractions assistées » · 3 lentes\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Tractions assistées seulement si la suspension active ne gêne ni les coudes ni les épaules.\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 17,
   "phase": "C2 · Mois 4, semaine 4 (allègement)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "Facultatif : 30 min de marche rapide • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× Facultatif : 30 min de marche rapide\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 17,
   "phase": "C2 · Mois 4, semaine 4 (allègement)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Allègement : volume réduit d'un tiers • refais les blocs du mois. Technique du mois : changement de pied sur une même prise et opposition (pousser d'un côté, tirer de l'autre). Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n! Semaine d'allègement : volume réduit d'un tiers.\n1× Refaire les blocs du mois\n6× Bloc facile niveau 3-4 (repos 1 min)\n> Retour au calme salle"
  },
  {
   "semaine": 18,
   "phase": "C2 · Mois 5, semaine 1 (reprise)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "35 min de course continue • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 35 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 18,
   "phase": "C2 · Mois 5, semaine 1 (reprise)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Reprise : • volume sur les 4 et 5a avec une consigne technique différente à chaque passage • 2 passages sur des 5b (1 verticale, 1 en dévers), sans chercher l'enchaînement • pas de projet dur. Technique du mois : repos en voie bras tendu en secouant l'autre bras. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n1× Voie en 4 · « Pieds silencieux »\n1× Voie en 5a · « Bras tendus »\n1× Voie en 5b verticale, sans chercher l'enchaînement\n1× Voie en 5b en dévers, sans chercher l'enchaînement\n! Pas de projet dur cette semaine.\n1× Technique du mois : « Repos bras tendu » dans une voie\n> Retour au calme salle"
  },
  {
   "semaine": 18,
   "phase": "C2 · Mois 5, semaine 1 (reprise)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×60 s • hollow body jambes tendues 3×30 s • pompes complètes 3×10 • rowing inversé jambes tendues 3×10 • suspension active pieds libres 3×8 • tractions assistées 3×5 lentes • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 60 s\n3× « Hollow body » · 30 s, jambes tendues\n3× « Pompes » · 10 complètes\n3× « Rowing inversé » · 10, jambes tendues\n3× « Suspension active » · 8, pieds libres\n3× « Tractions assistées » · 5 lentes\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 18,
   "phase": "C2 · Mois 5, semaine 1 (reprise)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "25 à 30 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 25 à 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 18,
   "phase": "C2 · Mois 5, semaine 1 (reprise)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Reprise : • circuit de blocs faciles (niveau 3-4) • 20 min en dévers sur des blocs de niveau 4 • pas de projet dur. Technique du mois : repos en voie bras tendu en secouant l'autre bras. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n8× Bloc facile niveau 3-4 (repos 1 min)\n1× 20 min en dévers niveau 4\n! Pas de projet dur cette semaine.\n1× Technique du mois : « Repos bras tendu » dans une voie\n> Retour au calme salle"
  },
  {
   "semaine": 19,
   "phase": "C2 · Mois 5, semaine 2 (progression)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "35 min de course continue • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 35 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 19,
   "phase": "C2 · Mois 5, semaine 2 (progression)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Progression : • volume sur les 4 et 5a avec une consigne technique • 2 essais d'enchaînement sur des 5b (alterne vertical et dévers) • 1 à 2 passages au point sur une 5c en dévers • endurance : une 5a puis une 5b enchaînées, 2 fois. Option : cours de grimpe en tête si la salle en propose (sinon, moulinette). Technique du mois : repos en voie bras tendu en secouant l'autre bras. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n2× Voie en 4 ou 5a · « Main qui plane »\n2× Essai d'enchaînement sur une 5b, vertical puis dévers\n2× Voie en 5c en dévers · « Travail au point »\n2× Voie en 5a puis 5b enchaînées · endurance (repos 10 min)\n! Option : cours de grimpe en tête si la salle en propose. Sinon, moulinette.\n1× Technique du mois : « Repos bras tendu » dans une voie\n> Retour au calme salle"
  },
  {
   "semaine": 19,
   "phase": "C2 · Mois 5, semaine 2 (progression)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×60 s • hollow body jambes tendues 3×30 s • pompes complètes 3×10 • rowing inversé jambes tendues 3×10 • suspension active pieds libres 3×8 • tractions assistées 3×5 lentes • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 60 s\n3× « Hollow body » · 30 s, jambes tendues\n3× « Pompes » · 10 complètes\n3× « Rowing inversé » · 10, jambes tendues\n3× « Suspension active » · 8, pieds libres\n3× « Tractions assistées » · 5 lentes\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 19,
   "phase": "C2 · Mois 5, semaine 2 (progression)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "25 à 30 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 25 à 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 19,
   "phase": "C2 · Mois 5, semaine 2 (progression)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Progression : • 30 à 40 min en dévers sur des blocs de niveau 4 • 2 à 3 blocs projets de niveau 5, dont un en dévers • circuit : 3 blocs faciles enchaînés, 3 fois. Technique du mois : repos en voie bras tendu en secouant l'autre bras. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n1× 30 à 40 min en dévers niveau 4\n3× Bloc projet niveau 5, dont un en dévers\n3× Série de 3 blocs faciles enchaînés (repos 4 min)\n1× Technique du mois : « Repos bras tendu » dans une voie\n> Retour au calme salle"
  },
  {
   "semaine": 20,
   "phase": "C2 · Mois 5, semaine 3 (pic)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "35 min de course continue • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 35 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 20,
   "phase": "C2 · Mois 5, semaine 3 (pic)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Pic : • 2 à 3 essais d'enchaînement sur ton projet du mois (5b en dévers ou 5c verticale), 10 min de repos entre les essais • 1 passage au point sur une 5c • le reste en voies faciles propres. Technique du mois : repos en voie bras tendu en secouant l'autre bras. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n3× Essai sur ton projet du mois, 5b en dévers ou 5c verticale (repos 10 min)\n1× Voie en 5c · « Travail au point »\n2× Voie en 4 ou 5a, grimpée proprement\n! Arrête dès que la qualité baisse.\n1× Technique du mois : « Repos bras tendu » dans une voie\n> Retour au calme salle"
  },
  {
   "semaine": 20,
   "phase": "C2 · Mois 5, semaine 3 (pic)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×60 s • hollow body jambes tendues 3×30 s • pompes complètes 3×10 • rowing inversé jambes tendues 3×10 • suspension active pieds libres 3×8 • tractions assistées 3×5 lentes • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 60 s\n3× « Hollow body » · 30 s, jambes tendues\n3× « Pompes » · 10 complètes\n3× « Rowing inversé » · 10, jambes tendues\n3× « Suspension active » · 8, pieds libres\n3× « Tractions assistées » · 5 lentes\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 20,
   "phase": "C2 · Mois 5, semaine 3 (pic)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "25 à 30 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 25 à 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 20,
   "phase": "C2 · Mois 5, semaine 3 (pic)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Pic : • projets de niveau 5 (dont un en dévers) • 3 à 4 min de repos entre deux essais, 3 essais maximum par mouvement. Technique du mois : repos en voie bras tendu en secouant l'autre bras. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n6× Essai sur projet niveau 5, dont un en dévers (repos 4 min)\n! 3 essais maximum par mouvement.\n1× Technique du mois : « Repos bras tendu » dans une voie\n> Retour au calme salle"
  },
  {
   "semaine": 21,
   "phase": "C2 · Mois 5, semaine 4 (allègement)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "Allègement : 25 min de course continue facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 25 min de course continue facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 21,
   "phase": "C2 · Mois 5, semaine 4 (allègement)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Allègement : volume réduit d'un tiers • refais les voies du mois et note le nb de « sec » dans ta voie en dévers suivie. Technique du mois : repos en voie bras tendu en secouant l'autre bras. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n! Semaine d'allègement : volume réduit d'un tiers.\n1× Refaire ta voie en dévers suivie · compte les « sec »\n2× Voie du mois, tranquille\n> Retour au calme salle"
  },
  {
   "semaine": 21,
   "phase": "C2 · Mois 5, semaine 4 (allègement)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Allègement : 2 séries au lieu de 3. Planche 3×60 s • hollow body jambes tendues 3×30 s • pompes complètes 3×10 • rowing inversé jambes tendues 3×10 • suspension active pieds libres 3×8 • tractions assistées 3×5 lentes • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n! Semaine d'allègement : 2 séries au lieu de 3.\n2× « Planche » · 60 s\n2× « Hollow body » · 30 s, jambes tendues\n2× « Pompes » · 10 complètes\n2× « Rowing inversé » · 10, jambes tendues\n2× « Suspension active » · 8, pieds libres\n2× « Tractions assistées » · 5 lentes\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 21,
   "phase": "C2 · Mois 5, semaine 4 (allègement)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "Facultatif : 30 min de marche rapide • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× Facultatif : 30 min de marche rapide\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 21,
   "phase": "C2 · Mois 5, semaine 4 (allègement)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Allègement : volume réduit d'un tiers • refais les blocs du mois. Technique du mois : repos en voie bras tendu en secouant l'autre bras. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n! Semaine d'allègement : volume réduit d'un tiers.\n1× Refaire les blocs du mois\n6× Bloc facile niveau 3-4 (repos 1 min)\n> Retour au calme salle"
  },
  {
   "semaine": 22,
   "phase": "Repos actif entre cycles",
   "jour": "Mardi",
   "activite": "Repos actif",
-  "contenu": "Semaine sans escalade ni renforcement : 30 à 45 min de marche, de vélo tranquille ou d'étirements doux. Les tendons se consolident."
+  "contenu": "1× 30 à 45 min de marche, vélo tranquille ou étirements doux\n! Semaine sans escalade ni renforcement : les tendons se consolident."
  },
  {
   "semaine": 22,
   "phase": "Repos actif entre cycles",
   "jour": "Samedi",
   "activite": "Repos actif",
-  "contenu": "Semaine sans escalade ni renforcement : 30 à 45 min de marche, de vélo tranquille ou d'étirements doux. Les tendons se consolident."
+  "contenu": "1× 30 à 45 min de marche, vélo tranquille ou étirements doux\n! Semaine sans escalade ni renforcement : les tendons se consolident."
  },
  {
   "semaine": 23,
   "phase": "C3 · Mois 6, semaine 1 (reprise)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "35 min de course continue (ou vélo / natation si les articulations le demandent) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 35 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 23,
   "phase": "C3 · Mois 6, semaine 1 (reprise)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Reprise : • 5b en volume (elles deviennent ton échauffement avancé) • 1 passage sur une 5c en dévers, sans pression. Technique du mois : crochet de talon en dévers. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n3× Voie en 5b, en volume\n1× Voie en 5c en dévers, sans pression\n1× Technique du mois : « Crochet de talon en dévers »\n> Retour au calme salle"
  },
  {
   "semaine": 23,
   "phase": "C3 · Mois 6, semaine 1 (reprise)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×60 s • hollow body 3×30 s • relevés de genoux suspendu 3×5 (si barre et épaules à l'aise) • tractions assistées 3×5 lentes • pompes 3×10 • rowing 3×10 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 60 s\n3× « Hollow body » · 30 s\n3× « Relevés de genoux suspendu » · 5 (si barre et épaules à l'aise)\n3× « Tractions assistées » · 5 lentes\n3× « Pompes » · 10\n3× « Rowing inversé » · 10\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 23,
   "phase": "C3 · Mois 6, semaine 1 (reprise)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "25 à 30 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 25 à 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 23,
   "phase": "C3 · Mois 6, semaine 1 (reprise)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Reprise : • circuit de blocs de niveau 4 • 25 min en dévers niveau 4. Technique du mois : crochet de talon en dévers. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n8× Bloc niveau 4 (repos 2 min)\n1× 25 min en dévers niveau 4\n1× Technique du mois : « Crochet de talon en dévers »\n> Retour au calme salle"
  },
  {
   "semaine": 24,
   "phase": "C3 · Mois 6, semaine 2 (progression)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "35 min de course continue (ou vélo / natation si les articulations le demandent) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 35 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 24,
   "phase": "C3 · Mois 6, semaine 2 (progression)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Progression : • 5b en volume • 2 à 3 essais d'enchaînement sur une 5c en dévers • 1 à 2 passages au point sur une 6a. • Si cours de tête fait : tête uniquement dans les 4 et 5a avec un assureur expérimenté. Technique du mois : crochet de talon en dévers. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n2× Voie en 5b, en volume\n3× Essai d'enchaînement 5c en dévers (repos 10 min)\n2× Voie en 6a · « Travail au point »\n! Si cours de tête fait : tête uniquement dans les 4 et 5a, avec un assureur expérimenté.\n1× Technique du mois : « Crochet de talon en dévers »\n> Retour au calme salle"
  },
  {
   "semaine": 24,
   "phase": "C3 · Mois 6, semaine 2 (progression)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×60 s • hollow body 3×30 s • relevés de genoux suspendu 3×5 (si barre et épaules à l'aise) • tractions assistées 3×5 lentes • pompes 3×10 • rowing 3×10 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 60 s\n3× « Hollow body » · 30 s\n3× « Relevés de genoux suspendu » · 5 (si barre et épaules à l'aise)\n3× « Tractions assistées » · 5 lentes\n3× « Pompes » · 10\n3× « Rowing inversé » · 10\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 24,
   "phase": "C3 · Mois 6, semaine 2 (progression)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "25 à 30 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 25 à 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 24,
   "phase": "C3 · Mois 6, semaine 2 (progression)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Progression : • 40 min en dévers sur des blocs de niveau 4 et 5 • projets de niveau 5 en dévers • petits déplacements dynamiques contrôlés, pieds toujours sur le mur (jamais de jeté). Technique du mois : crochet de talon en dévers. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n1× 40 min en dévers niveau 4-5\n4× Essai sur projet niveau 5 en dévers (repos 4 min)\n1× « Déplacement dynamique contrôlé » sur blocs faciles\n! Pieds toujours au mur, jamais de jeté.\n1× Technique du mois : « Crochet de talon en dévers »\n> Retour au calme salle"
  },
  {
   "semaine": 25,
   "phase": "C3 · Mois 6, semaine 3 (pic)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "35 min de course continue (ou vélo / natation si les articulations le demandent) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 35 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 25,
   "phase": "C3 · Mois 6, semaine 3 (pic)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Pic : • essais d'enchaînement sur ton projet (5c en dévers), 10 min de repos entre les essais • 1 passage au point sur une 6a. Technique du mois : crochet de talon en dévers. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n3× Essai sur ton projet 5c en dévers (repos 10 min)\n1× Voie en 6a · « Travail au point »\n1× Technique du mois : « Crochet de talon en dévers »\n> Retour au calme salle"
  },
  {
   "semaine": 25,
   "phase": "C3 · Mois 6, semaine 3 (pic)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×60 s • hollow body 3×30 s • relevés de genoux suspendu 3×5 (si barre et épaules à l'aise) • tractions assistées 3×5 lentes • pompes 3×10 • rowing 3×10 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 60 s\n3× « Hollow body » · 30 s\n3× « Relevés de genoux suspendu » · 5 (si barre et épaules à l'aise)\n3× « Tractions assistées » · 5 lentes\n3× « Pompes » · 10\n3× « Rowing inversé » · 10\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 25,
   "phase": "C3 · Mois 6, semaine 3 (pic)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "25 à 30 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 25 à 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 25,
   "phase": "C3 · Mois 6, semaine 3 (pic)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Pic : • projets de niveau 5 en dévers, 3 à 4 min de repos entre les essais. Technique du mois : crochet de talon en dévers. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n6× Essai sur projet niveau 5 en dévers (repos 4 min)\n1× Technique du mois : « Crochet de talon en dévers »\n> Retour au calme salle"
  },
  {
   "semaine": 26,
   "phase": "C3 · Mois 6, semaine 4 (allègement)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "Allègement : 25 min de course continue facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 25 min de course continue facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 26,
   "phase": "C3 · Mois 6, semaine 4 (allègement)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Allègement : volume réduit d'un tiers • refais les voies du mois, note le nb de « sec » dans ta 5c en dévers. Technique du mois : crochet de talon en dévers. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n! Semaine d'allègement : volume réduit d'un tiers.\n1× Refaire ta 5c en dévers · compte les « sec »\n2× Voie en 5b, tranquille\n> Retour au calme salle"
  },
  {
   "semaine": 26,
   "phase": "C3 · Mois 6, semaine 4 (allègement)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Allègement : 2 séries au lieu de 3. Planche 3×60 s • hollow body 3×30 s • relevés de genoux suspendu 3×5 (si barre et épaules à l'aise) • tractions assistées 3×5 lentes • pompes 3×10 • rowing 3×10 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n! Semaine d'allègement : 2 séries au lieu de 3.\n2× « Planche » · 60 s\n2× « Hollow body » · 30 s\n2× « Relevés de genoux suspendu » · 5 (si barre et épaules à l'aise)\n2× « Tractions assistées » · 5 lentes\n2× « Pompes » · 10\n2× « Rowing inversé » · 10\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 26,
   "phase": "C3 · Mois 6, semaine 4 (allègement)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "Facultatif : 30 min de marche rapide • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× Facultatif : 30 min de marche rapide\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 26,
   "phase": "C3 · Mois 6, semaine 4 (allègement)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Allègement : volume réduit d'un tiers • refais les blocs du mois. Technique du mois : crochet de talon en dévers. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n! Semaine d'allègement : volume réduit d'un tiers.\n1× Refaire les blocs du mois\n6× Bloc facile (repos 1 min)\n> Retour au calme salle"
  },
  {
   "semaine": 27,
   "phase": "C3 · Mois 7, semaine 1 (reprise)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "40 min de course continue (ou vélo / natation si les articulations le demandent) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 40 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 27,
   "phase": "C3 · Mois 7, semaine 1 (reprise)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Reprise : • 5b en volume (elles deviennent ton échauffement avancé) • 1 passage sur une 5c en dévers, sans pression. Technique du mois : enchaîner plusieurs mouvements en gardant le gainage. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n3× Voie en 5b, en volume\n1× Voie en 5c en dévers, sans pression\n1× Technique du mois : enchaîner plusieurs mouvements en gardant le gainage\n> Retour au calme salle"
  },
  {
   "semaine": 27,
   "phase": "C3 · Mois 7, semaine 1 (reprise)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×60 s • hollow body 3×30 s • relevés de genoux 3×5 • tractions complètes lentes 3×2, UNIQUEMENT si 3×5 assistées sont faciles et sans douleur (sinon reste en assistées) • pompes 3×10 • rowing 3×10 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 60 s\n3× « Hollow body » · 30 s\n3× « Relevés de genoux suspendu » · 5\n3× « Tractions complètes lentes » · 2\n3× « Pompes » · 10\n3× « Rowing inversé » · 10\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Tractions complètes seulement si 3×5 assistées sont faciles et sans douleur. Sinon, reste en assistées 3×5.\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 27,
   "phase": "C3 · Mois 7, semaine 1 (reprise)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "30 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 27,
   "phase": "C3 · Mois 7, semaine 1 (reprise)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Reprise : • circuit de blocs de niveau 4 • 25 min en dévers niveau 4. Technique du mois : enchaîner plusieurs mouvements en gardant le gainage. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n8× Bloc niveau 4 (repos 2 min)\n1× 25 min en dévers niveau 4\n1× Technique du mois : enchaîner plusieurs mouvements en gardant le gainage\n> Retour au calme salle"
  },
  {
   "semaine": 28,
   "phase": "C3 · Mois 7, semaine 2 (progression)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "40 min de course continue (ou vélo / natation si les articulations le demandent) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 40 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 28,
   "phase": "C3 · Mois 7, semaine 2 (progression)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Progression : • 5b en volume • 2 à 3 essais d'enchaînement sur une 5c en dévers • 1 à 2 passages au point sur une 6a. • Si cours de tête fait : tête uniquement dans les 4 et 5a avec un assureur expérimenté. Technique du mois : enchaîner plusieurs mouvements en gardant le gainage. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n2× Voie en 5b, en volume\n3× Essai d'enchaînement 5c en dévers (repos 10 min)\n2× Voie en 6a · « Travail au point »\n! Si cours de tête fait : tête uniquement dans les 4 et 5a, avec un assureur expérimenté.\n1× Technique du mois : enchaîner plusieurs mouvements en gardant le gainage\n> Retour au calme salle"
  },
  {
   "semaine": 28,
   "phase": "C3 · Mois 7, semaine 2 (progression)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×60 s • hollow body 3×30 s • relevés de genoux 3×5 • tractions complètes lentes 3×2, UNIQUEMENT si 3×5 assistées sont faciles et sans douleur (sinon reste en assistées) • pompes 3×10 • rowing 3×10 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 60 s\n3× « Hollow body » · 30 s\n3× « Relevés de genoux suspendu » · 5\n3× « Tractions complètes lentes » · 2\n3× « Pompes » · 10\n3× « Rowing inversé » · 10\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Tractions complètes seulement si 3×5 assistées sont faciles et sans douleur. Sinon, reste en assistées 3×5.\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 28,
   "phase": "C3 · Mois 7, semaine 2 (progression)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "30 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 28,
   "phase": "C3 · Mois 7, semaine 2 (progression)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Progression : • 40 min en dévers sur des blocs de niveau 4 et 5 • projets de niveau 5 en dévers • petits déplacements dynamiques contrôlés, pieds toujours sur le mur (jamais de jeté). Technique du mois : enchaîner plusieurs mouvements en gardant le gainage. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n1× 40 min en dévers niveau 4-5\n4× Essai sur projet niveau 5 en dévers (repos 4 min)\n1× « Déplacement dynamique contrôlé » sur blocs faciles\n! Pieds toujours au mur, jamais de jeté.\n1× Technique du mois : enchaîner plusieurs mouvements en gardant le gainage\n> Retour au calme salle"
  },
  {
   "semaine": 29,
   "phase": "C3 · Mois 7, semaine 3 (pic)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "40 min de course continue (ou vélo / natation si les articulations le demandent) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 40 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 29,
   "phase": "C3 · Mois 7, semaine 3 (pic)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Pic : • essais d'enchaînement sur ton projet (5c en dévers), 10 min de repos entre les essais • 1 passage au point sur une 6a. Technique du mois : enchaîner plusieurs mouvements en gardant le gainage. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n3× Essai sur ton projet 5c en dévers (repos 10 min)\n1× Voie en 6a · « Travail au point »\n1× Technique du mois : enchaîner plusieurs mouvements en gardant le gainage\n> Retour au calme salle"
  },
  {
   "semaine": 29,
   "phase": "C3 · Mois 7, semaine 3 (pic)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×60 s • hollow body 3×30 s • relevés de genoux 3×5 • tractions complètes lentes 3×2, UNIQUEMENT si 3×5 assistées sont faciles et sans douleur (sinon reste en assistées) • pompes 3×10 • rowing 3×10 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 60 s\n3× « Hollow body » · 30 s\n3× « Relevés de genoux suspendu » · 5\n3× « Tractions complètes lentes » · 2\n3× « Pompes » · 10\n3× « Rowing inversé » · 10\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Tractions complètes seulement si 3×5 assistées sont faciles et sans douleur. Sinon, reste en assistées 3×5.\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 29,
   "phase": "C3 · Mois 7, semaine 3 (pic)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "30 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 29,
   "phase": "C3 · Mois 7, semaine 3 (pic)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Pic : • projets de niveau 5 en dévers, 3 à 4 min de repos entre les essais. Technique du mois : enchaîner plusieurs mouvements en gardant le gainage. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n6× Essai sur projet niveau 5 en dévers (repos 4 min)\n1× Technique du mois : enchaîner plusieurs mouvements en gardant le gainage\n> Retour au calme salle"
  },
  {
   "semaine": 30,
   "phase": "C3 · Mois 7, semaine 4 (allègement)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "Allègement : 25 min de course continue facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 25 min de course continue facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 30,
   "phase": "C3 · Mois 7, semaine 4 (allègement)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Allègement : volume réduit d'un tiers • refais les voies du mois, note le nb de « sec » dans ta 5c en dévers. Technique du mois : enchaîner plusieurs mouvements en gardant le gainage. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n! Semaine d'allègement : volume réduit d'un tiers.\n1× Refaire ta 5c en dévers · compte les « sec »\n2× Voie en 5b, tranquille\n> Retour au calme salle"
  },
  {
   "semaine": 30,
   "phase": "C3 · Mois 7, semaine 4 (allègement)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Allègement : 2 séries au lieu de 3. Planche 3×60 s • hollow body 3×30 s • relevés de genoux 3×5 • tractions complètes lentes 3×2, UNIQUEMENT si 3×5 assistées sont faciles et sans douleur (sinon reste en assistées) • pompes 3×10 • rowing 3×10 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n! Semaine d'allègement : 2 séries au lieu de 3.\n2× « Planche » · 60 s\n2× « Hollow body » · 30 s\n2× « Relevés de genoux suspendu » · 5\n2× « Tractions complètes lentes » · 2\n2× « Pompes » · 10\n2× « Rowing inversé » · 10\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Tractions complètes seulement si 3×5 assistées sont faciles et sans douleur. Sinon, reste en assistées 3×5.\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 30,
   "phase": "C3 · Mois 7, semaine 4 (allègement)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "Facultatif : 30 min de marche rapide • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× Facultatif : 30 min de marche rapide\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 30,
   "phase": "C3 · Mois 7, semaine 4 (allègement)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Allègement : volume réduit d'un tiers • refais les blocs du mois. Technique du mois : enchaîner plusieurs mouvements en gardant le gainage. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n! Semaine d'allègement : volume réduit d'un tiers.\n1× Refaire les blocs du mois\n6× Bloc facile (repos 1 min)\n> Retour au calme salle"
  },
  {
   "semaine": 31,
   "phase": "C3 · Mois 8, semaine 1 (reprise)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "40 min de course continue (ou vélo / natation si les articulations le demandent) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 40 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 31,
   "phase": "C3 · Mois 8, semaine 1 (reprise)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Reprise : • 5b en volume (elles deviennent ton échauffement avancé) • 1 passage sur une 5c en dévers, sans pression. Technique du mois : lire la voie entière avant de grimper, repos prévus compris. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n3× Voie en 5b, en volume\n1× Voie en 5c en dévers, sans pression\n1× Technique du mois : « Lecture avant de grimper » de toute la voie, repos compris\n> Retour au calme salle"
  },
  {
   "semaine": 31,
   "phase": "C3 · Mois 8, semaine 1 (reprise)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×60 s • hollow body 3×30 s • relevés de genoux 3×5 • tractions complètes lentes 3×3 (ou assistées 3×5) • pompes 3×10 • rowing 3×10 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 60 s\n3× « Hollow body » · 30 s\n3× « Relevés de genoux suspendu » · 5\n3× « Tractions complètes lentes » · 3\n3× « Pompes » · 10\n3× « Rowing inversé » · 10\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Si les tractions complètes ne passent pas sans douleur, garde les assistées 3×5.\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 31,
   "phase": "C3 · Mois 8, semaine 1 (reprise)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "30 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 31,
   "phase": "C3 · Mois 8, semaine 1 (reprise)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Reprise : • circuit de blocs de niveau 4 • 25 min en dévers niveau 4. Technique du mois : lire la voie entière avant de grimper, repos prévus compris. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n8× Bloc niveau 4 (repos 2 min)\n1× 25 min en dévers niveau 4\n1× Technique du mois : « Lecture avant de grimper » de toute la voie, repos compris\n> Retour au calme salle"
  },
  {
   "semaine": 32,
   "phase": "C3 · Mois 8, semaine 2 (progression)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "40 min de course continue (ou vélo / natation si les articulations le demandent) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 40 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 32,
   "phase": "C3 · Mois 8, semaine 2 (progression)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Progression : • 5b en volume • 2 à 3 essais d'enchaînement sur une 5c en dévers • 1 à 2 passages au point sur une 6a. • Si cours de tête fait : tête uniquement dans les 4 et 5a avec un assureur expérimenté. Technique du mois : lire la voie entière avant de grimper, repos prévus compris. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n2× Voie en 5b, en volume\n3× Essai d'enchaînement 5c en dévers (repos 10 min)\n2× Voie en 6a · « Travail au point »\n! Si cours de tête fait : tête uniquement dans les 4 et 5a, avec un assureur expérimenté.\n1× Technique du mois : « Lecture avant de grimper » de toute la voie, repos compris\n> Retour au calme salle"
  },
  {
   "semaine": 32,
   "phase": "C3 · Mois 8, semaine 2 (progression)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×60 s • hollow body 3×30 s • relevés de genoux 3×5 • tractions complètes lentes 3×3 (ou assistées 3×5) • pompes 3×10 • rowing 3×10 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 60 s\n3× « Hollow body » · 30 s\n3× « Relevés de genoux suspendu » · 5\n3× « Tractions complètes lentes » · 3\n3× « Pompes » · 10\n3× « Rowing inversé » · 10\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Si les tractions complètes ne passent pas sans douleur, garde les assistées 3×5.\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 32,
   "phase": "C3 · Mois 8, semaine 2 (progression)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "30 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 32,
   "phase": "C3 · Mois 8, semaine 2 (progression)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Progression : • 40 min en dévers sur des blocs de niveau 4 et 5 • projets de niveau 5 en dévers • petits déplacements dynamiques contrôlés, pieds toujours sur le mur (jamais de jeté). Technique du mois : lire la voie entière avant de grimper, repos prévus compris. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n1× 40 min en dévers niveau 4-5\n4× Essai sur projet niveau 5 en dévers (repos 4 min)\n1× « Déplacement dynamique contrôlé » sur blocs faciles\n! Pieds toujours au mur, jamais de jeté.\n1× Technique du mois : « Lecture avant de grimper » de toute la voie, repos compris\n> Retour au calme salle"
  },
  {
   "semaine": 33,
   "phase": "C3 · Mois 8, semaine 3 (pic)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "40 min de course continue (ou vélo / natation si les articulations le demandent) • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 40 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 33,
   "phase": "C3 · Mois 8, semaine 3 (pic)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Pic : • essais d'enchaînement sur ton projet (5c en dévers), 10 min de repos entre les essais • 1 passage au point sur une 6a. Technique du mois : lire la voie entière avant de grimper, repos prévus compris. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n3× Essai sur ton projet 5c en dévers (repos 10 min)\n1× Voie en 6a · « Travail au point »\n1× Technique du mois : « Lecture avant de grimper » de toute la voie, repos compris\n> Retour au calme salle"
  },
  {
   "semaine": 33,
   "phase": "C3 · Mois 8, semaine 3 (pic)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Planche 3×60 s • hollow body 3×30 s • relevés de genoux 3×5 • tractions complètes lentes 3×3 (ou assistées 3×5) • pompes 3×10 • rowing 3×10 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n3× « Planche » · 60 s\n3× « Hollow body » · 30 s\n3× « Relevés de genoux suspendu » · 5\n3× « Tractions complètes lentes » · 3\n3× « Pompes » · 10\n3× « Rowing inversé » · 10\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Si les tractions complètes ne passent pas sans douleur, garde les assistées 3×5.\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 33,
   "phase": "C3 · Mois 8, semaine 3 (pic)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "30 min de course continue, très facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 33,
   "phase": "C3 · Mois 8, semaine 3 (pic)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Pic : • projets de niveau 5 en dévers, 3 à 4 min de repos entre les essais. Technique du mois : lire la voie entière avant de grimper, repos prévus compris. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n6× Essai sur projet niveau 5 en dévers (repos 4 min)\n1× Technique du mois : « Lecture avant de grimper » de toute la voie, repos compris\n> Retour au calme salle"
  },
  {
   "semaine": 34,
   "phase": "C3 · Mois 8, semaine 4 (allègement)",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "Allègement : 25 min de course continue facile • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× 25 min de course continue facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 34,
   "phase": "C3 · Mois 8, semaine 4 (allègement)",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "Échauffement salle 20 min (onglet Routines), voies faciles : la 3 et une 4. Allègement : volume réduit d'un tiers • refais les voies du mois, note le nb de « sec » dans ta 5c en dévers. Technique du mois : lire la voie entière avant de grimper, repos prévus compris. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n! Semaine d'allègement : volume réduit d'un tiers.\n1× Refaire ta 5c en dévers · compte les « sec »\n2× Voie en 5b, tranquille\n> Retour au calme salle"
  },
  {
   "semaine": 34,
   "phase": "C3 · Mois 8, semaine 4 (allègement)",
   "jour": "Vendredi",
   "activite": "Maison",
-  "contenu": "25 min. Échauffement 4 min (cercles poignets/épaules/bassin, 20 « Y »). Allègement : 2 séries au lieu de 3. Planche 3×60 s • hollow body 3×30 s • relevés de genoux 3×5 • tractions complètes lentes 3×3 (ou assistées 3×5) • pompes 3×10 • rowing 3×10 • rotations externes 2×15/bras Repos 60-90 s entre séries, mouvements lents (2 s aller, 2 s retour). Mobilité 3 min (grenouille, fente basse, pectoraux). Détails : onglet Exercices."
+  "contenu": "> Échauffement maison\n! Semaine d'allègement : 2 séries au lieu de 3.\n2× « Planche » · 60 s\n2× « Hollow body » · 30 s\n2× « Relevés de genoux suspendu » · 5\n2× « Tractions complètes lentes » · 3\n2× « Pompes » · 10\n2× « Rowing inversé » · 10\n2× « Rotations externes à l'élastique » · 15 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Si les tractions complètes ne passent pas sans douleur, garde les assistées 3×5.\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité"
  },
  {
   "semaine": 34,
   "phase": "C3 · Mois 8, semaine 4 (allègement)",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "Facultatif : 30 min de marche rapide • Avant : 5 min de marche rapide. Après : 5 min de marche + étirements doux (mollets, quadriceps, ischios). Allure conversation : si tu ne peux pas parler, ralentis ou marche. Douleur au talon ou au tibia = palier précédent."
+  "contenu": "> Course · avant\n1× Facultatif : 30 min de marche rapide\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
  },
  {
   "semaine": 34,
   "phase": "C3 · Mois 8, semaine 4 (allègement)",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "Échauffement salle 20 min (onglet Routines). Allègement : volume réduit d'un tiers • refais les blocs du mois. Technique du mois : lire la voie entière avant de grimper, repos prévus compris. Retour au calme 10 min (onglet Routines)."
+  "contenu": "> Échauffement salle\n! Semaine d'allègement : volume réduit d'un tiers.\n1× Refaire les blocs du mois\n6× Bloc facile (repos 1 min)\n> Retour au calme salle"
  }
 ];
 
@@ -1204,44 +1204,32 @@ const ROUTINES = [
   "quoi": "30 s chacun, sans forcer : avant-bras (paume vers l'avant puis vers l'arrière), pectoraux contre un mur, dos (position de l'enfant), hanches (fente basse), ischio-jambiers."
  },
  {
-  "routine": "Séance maison",
-  "etape": "1. Échauffement",
+  "routine": "Échauffement maison",
+  "etape": "Échauffement",
   "duree": "4 min",
-  "quoi": "Cercles de poignets, d'épaules et de bassin, 20 « Y » bras levés en serrant les omoplates."
+  "quoi": "Cercles de poignets, d'épaules et de bassin, puis 20 « Y » bras levés en serrant les omoplates."
  },
  {
-  "routine": "Séance maison",
-  "etape": "2. Gainage",
-  "duree": "8 min",
-  "quoi": "Exercices de gainage du jour (voir Journal), 60-90 s de repos entre séries."
- },
- {
-  "routine": "Séance maison",
-  "etape": "3. Haut du corps",
-  "duree": "10 min",
-  "quoi": "Exercices du jour, chaque répétition lente : 2 s aller, 2 s retour. Aucun à-coup."
- },
- {
-  "routine": "Séance maison",
-  "etape": "4. Mobilité",
+  "routine": "Mobilité",
+  "etape": "Étirements de fin",
   "duree": "3 min",
-  "quoi": "Grenouille, fente basse, étirement des pectoraux contre un mur."
+  "quoi": "Grenouille, fente basse, étirement des pectoraux contre un mur. Sans forcer."
  },
  {
-  "routine": "Course",
-  "etape": "Avant",
+  "routine": "Course · avant",
+  "etape": "Marche",
   "duree": "5 min",
-  "quoi": "Marche rapide."
+  "quoi": "Marche rapide pour monter en température."
  },
  {
-  "routine": "Course",
-  "etape": "Pendant",
+  "routine": "Course · pendant",
+  "etape": "Allure",
   "duree": "—",
   "quoi": "Allure conversation : tu dois pouvoir parler en phrases complètes. Sinon, ralentis ou marche. Terrain plat et souple de préférence."
  },
  {
-  "routine": "Course",
-  "etape": "Après",
+  "routine": "Course · après",
+  "etape": "Retour au calme",
   "duree": "5 min + étirements",
   "quoi": "Marche, puis étirements doux des mollets, quadriceps et ischio-jambiers."
  }
@@ -1306,7 +1294,7 @@ const EXERCICES = [
  },
  {
   "categorie": "Voie",
-  "nom": "Travail « au point »",
+  "nom": "Travail au point",
   "comment": "Quand tu bloques, dis « sec » à ton assureur, repose-toi assis dans la corde, puis réessaie le mouvement.",
   "cle": "Le but est de comprendre chaque passage, pas d'enchaîner. Compte tes « sec » : c'est ta mesure de progrès.",
   "depuis": "Semaine 1"
@@ -1464,6 +1452,13 @@ const EXERCICES = [
   "comment": "Suspendu, monter lentement les genoux vers la poitrine sans balancer.",
   "cle": "Si la barre et les épaules le permettent.",
   "depuis": "Mois 6"
+ },
+ {
+  "categorie": "Renforcement",
+  "nom": "Extensions des doigts",
+  "comment": "Un élastique léger autour des doigts tendus (au niveau des bouts). Ouvre lentement la main contre la résistance, puis referme.",
+  "cle": "Équilibre les muscles qui ferment la main, très sollicités en escalade. Prévention classique des douleurs de coude.",
+  "depuis": "Semaine 1"
  },
  {
   "categorie": "Renforcement",

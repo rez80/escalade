@@ -8,59 +8,83 @@
 <meta name="apple-mobile-web-app-title" content="Escalade">
 <title>Escalade</title>
 <style>
-/* ---------- Couleurs (modifiables ici) ---------- */
+/* ================= Couleurs (modifiables ici) ================= */
 :root {
-  --fond: #EEF1F2;      /* gris magnésie */
-  --carte: #FFFFFF;
-  --texte: #1C2A33;
-  --doux: #5E6E78;
-  --marque: #1F4E5A;    /* même bleu-vert que l'Excel */
-  --prise: #F2C200;     /* jaune « prise » pour ce qui est coché */
-  --alerte: #C0392B;
-  --bord: #D5DCE0;
+  --fond:#EEF1F2; --carte:#FFFFFF; --texte:#1C2A33; --doux:#5E6E78;
+  --marque:#1F4E5A;   /* bleu-vert de l'Excel */
+  --prise:#F2C200;    /* jaune « prise » : ce qui est fait */
+  --alerte:#C0392B; --orange:#D9822B; --bord:#D5DCE0; --info:#E4E9EC;
 }
 @media (prefers-color-scheme: dark) {
   :root { --fond:#141B20; --carte:#1E282F; --texte:#E6ECEF; --doux:#9AAAB3;
-          --marque:#6FB3C2; --bord:#33424B; }
+          --marque:#6FB3C2; --bord:#33424B; --info:#26323A; }
 }
-* { box-sizing: border-box; }
-body { margin:0; font-family:-apple-system, system-ui, sans-serif; font-size:17px;
-       line-height:1.45; background:var(--fond); color:var(--texte);
-       padding:env(safe-area-inset-top) 0 calc(80px + env(safe-area-inset-bottom)); }
-header { position:sticky; top:0; z-index:5; background:var(--fond);
-         display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid var(--bord); }
-header button { font-size:24px; width:48px; height:48px; }
-#titre-date { flex:1; text-align:center; background:none; border:none; color:var(--texte); font-size:16px; }
+* { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body { margin:0; font-family:-apple-system, system-ui, sans-serif; font-size:17px; line-height:1.4;
+       background:var(--fond); color:var(--texte);
+       padding:env(safe-area-inset-top) 0 calc(150px + env(safe-area-inset-bottom)); }
+button { font:inherit; color:var(--texte); background:var(--carte); border:1px solid var(--bord); border-radius:10px; }
+header { position:sticky; top:0; z-index:5; background:var(--fond); display:flex; align-items:center; gap:8px;
+         padding:8px 12px; border-bottom:1px solid var(--bord); }
+header button { font-size:22px; width:48px; height:46px; }
+#titre-date { flex:1; border:none; background:none; font-size:16px; }
 main { padding:12px; max-width:640px; margin:auto; }
-h1 { font-size:34px; line-height:1.1; margin:6px 0 2px; color:var(--marque); }
-.phase { color:var(--doux); margin:0 0 14px; }
-.carte { background:var(--carte); border:1px solid var(--bord); border-radius:14px; padding:14px; margin-bottom:14px; }
-.etape { display:flex; gap:12px; align-items:flex-start; padding:8px 0; border-bottom:1px solid var(--bord); }
-.etape:last-child { border-bottom:none; }
-.etape input { width:26px; height:26px; flex:none; accent-color:var(--prise); margin-top:2px; }
-.etape.fait span { color:var(--doux); text-decoration:line-through; }
-label.champ { display:block; font-weight:600; margin:14px 0 6px; }
-label.champ:first-child { margin-top:0; }
-input[type=text], input[type=number], select, textarea {
-  width:100%; font:inherit; padding:10px; border-radius:10px; border:1px solid var(--bord);
-  background:var(--fond); color:var(--texte); }
-textarea { min-height:80px; }
-.boutons { display:flex; flex-wrap:wrap; gap:6px; }
-.boutons button { min-width:44px; height:44px; flex:1 0 44px; }
-button { font:inherit; border-radius:10px; border:1px solid var(--bord);
-         background:var(--carte); color:var(--texte); }
-button.choisi { background:var(--prise); color:#1C2A33; border-color:var(--prise); font-weight:700; }
+h1 { font-size:32px; line-height:1.1; margin:4px 0 2px; color:var(--marque); }
+h2 { font-size:18px; margin:0 0 8px; }
+.phase, .petit { color:var(--doux); font-size:15px; }
+.carte { background:var(--carte); border:1px solid var(--bord); border-radius:14px; padding:12px 14px; margin-bottom:12px; }
+.gros { width:100%; height:52px; font-weight:700; font-size:18px; }
+.gros.go { background:var(--marque); color:#fff; border-color:var(--marque); }
+
+/* ---- Lignes de la séance ---- */
+.ligne { display:flex; gap:12px; align-items:center; padding:12px 0; border-bottom:1px solid var(--bord); }
+.ligne:last-child { border-bottom:none; }
+.ligne .txt { flex:1; }
+.ligne.finie .txt { color:var(--doux); }
+.ligne.info { display:block; background:var(--info); border:none; border-radius:10px; padding:8px 10px; margin:6px 0; font-size:15px; color:var(--doux); }
+.case { width:40px; height:40px; flex:none; font-size:22px; font-weight:700; color:transparent; }
+.case.ok, .rond.ok { background:var(--prise); border-color:var(--prise); color:#1C2A33; }
+.ronds { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; max-width:50%; }
+.rond { width:38px; height:38px; border-radius:50%; flex:none; }
+.lien { border:none; background:none; padding:0; text-align:left; font-weight:600; color:var(--texte); }
+.exo { border:none; background:none; padding:0; color:var(--marque); font-weight:600; text-decoration:underline; text-underline-offset:3px; }
+.explic, .detail { background:var(--info); border-radius:10px; padding:8px 10px; margin-top:8px; font-size:15px; }
 .compteur { display:flex; gap:8px; align-items:center; }
-.compteur button { width:52px; height:44px; font-size:22px; }
-.compteur input { text-align:center; }
-#alerte { display:none; color:#fff; background:var(--alerte); border-radius:10px; padding:10px; margin-top:10px; }
-nav { position:fixed; bottom:0; left:0; right:0; display:flex; gap:10px; padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-      background:var(--fond); border-top:1px solid var(--bord); }
-nav button { flex:1; height:50px; font-weight:600; }
+.compteur button { width:48px; height:44px; font-size:22px; }
+.compteur input, .compteur span { text-align:center; width:70px; }
+
+/* ---- Champs ---- */
+label.champ { display:block; font-weight:600; margin:14px 0 6px; }
+input[type=text], input[type=number], select, textarea {
+  width:100%; font:inherit; padding:10px; border-radius:10px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); }
+textarea { min-height:70px; }
+.choix { display:flex; flex-wrap:wrap; gap:6px; }
+.choix button { min-width:44px; height:44px; flex:1 0 44px; padding:0 8px; }
+button.choisi { background:var(--prise); border-color:var(--prise); color:#1C2A33; font-weight:700; }
+.alerte { color:#fff; background:var(--alerte); border-radius:10px; padding:10px; margin-top:10px; }
+.voie { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--bord); }
+.voie button { width:40px; height:36px; }
+
+/* ---- Minuteur et barre du bas ---- */
+#minuteur { position:fixed; left:12px; right:12px; bottom:calc(76px + env(safe-area-inset-bottom)); z-index:6;
+            display:none; align-items:center; gap:8px; padding:8px 10px; border-radius:14px;
+            background:var(--marque); color:#fff; font-weight:700; }
+#minuteur span { flex:1; font-size:24px; font-variant-numeric:tabular-nums; }
+#minuteur button { height:42px; padding:0 12px; }
+#minuteur.fini { background:var(--prise); color:#1C2A33; }
+nav { position:fixed; bottom:0; left:0; right:0; z-index:6; display:flex; gap:8px;
+      padding:10px 12px calc(10px + env(safe-area-inset-bottom)); background:var(--fond); border-top:1px solid var(--bord); }
+nav button { flex:1; height:54px; font-weight:600; line-height:1.1; }
+nav small { display:block; font-weight:400; font-size:12px; color:var(--doux); }
+nav small.retard { color:var(--orange); font-weight:700; }
+#btn-douleur { flex:0 0 64px; font-size:22px; }
+
+/* ---- Fenêtre douleur ---- */
+#fond-modal { position:fixed; inset:0; z-index:10; background:rgba(0,0,0,.45); display:none; align-items:flex-end; }
+#fond-modal .carte { width:100%; margin:0; border-radius:16px 16px 0 0; padding-bottom:calc(16px + env(safe-area-inset-bottom)); max-height:85vh; overflow:auto; }
+.cat { color:var(--marque); font-size:20px; margin:18px 0 4px; }
 details { border-bottom:1px solid var(--bord); padding:10px 0; }
 summary { font-weight:600; }
-.cat { color:var(--marque); font-size:20px; margin:18px 0 4px; }
-.petit { color:var(--doux); font-size:15px; }
 </style>
 </head>
 <body>
@@ -73,178 +97,470 @@ summary { font-weight:600; }
 
 <main id="ecran"></main>
 
+<div id="minuteur"><span id="minuteur-temps"></span>
+  <button id="minuteur-plus">+30 s</button><button id="minuteur-stop">Stop</button></div>
+
 <nav>
   <button id="btn-vue">Exercices</button>
-  <button id="btn-export">Exporter</button>
+  <button id="btn-douleur" aria-label="Signaler une douleur">⚠</button>
+  <button id="btn-export">Exporter<small id="info-export"></small></button>
 </nav>
+
+<div id="fond-modal"><div class="carte" id="modal"></div></div>
 
 <script src="data.js"></script>
 <script>
-// ===================== Outils =====================
+// =====================================================================
+// RÉGLAGES (modifiables)
+// =====================================================================
+const REPOS_DEFAUT = { Voie: 300, Bloc: 180, Maison: 90 };          // secondes, si la ligne n'indique rien
+const COTATIONS = { Voie: ["3","4","4c","5a","5b","5c","6a","6b","6c"],
+                    Bloc: ["2","3","4","5","6","7"] };
 const JOURS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+
+// =====================================================================
+// OUTILS
+// =====================================================================
 const $ = id => document.getElementById(id);
 const esc = t => String(t ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+const vide = v => v === undefined || v === null || v === "";
 
-// Date d'une séance = date de début + (semaine - 1) × 7 jours + jour de la semaine
-function dateSeance(s) {
+function dateSeance(s) {   // date de début + (semaine - 1) × 7 jours + jour
   const d = new Date(DATE_DEBUT + "T12:00:00");
   d.setDate(d.getDate() + (s.semaine - 1) * 7 + JOURS.indexOf(s.jour));
   return d;
 }
-const cle = s => `seance-${s.semaine}-${s.jour}-${s.activite}`;           // identifiant de la séance
-const lire = s => JSON.parse(localStorage.getItem(cle(s)) || "{}");          // saisies enregistrées
-const ecrire = (s, donnees) => localStorage.setItem(cle(s), JSON.stringify(donnees));
+const cle = s => `seance-${s.semaine}-${s.jour}-${s.activite}`;
+const lire = s => JSON.parse(localStorage.getItem(cle(s)) || "{}");
+const ecrire = (s, d) => localStorage.setItem(cle(s), JSON.stringify(d));
+const lireMesures = sem => JSON.parse(localStorage.getItem("mesures-" + sem) || "{}");
+const ecrireMesures = (sem, m) => localStorage.setItem("mesures-" + sem, JSON.stringify(m));
 
-// Séance à afficher au démarrage : celle du jour, sinon la prochaine
-function indexAujourdhui() {
-  const aujourdhui = new Date(); aujourdhui.setHours(0,0,0,0);
-  const i = SEANCES.findIndex(s => dateSeance(s) >= aujourdhui);
+function indexAujourdhui() {   // séance du jour, sinon la prochaine
+  const auj = new Date(); auj.setHours(0,0,0,0);
+  const i = SEANCES.findIndex(s => dateSeance(s) >= auj);
   return i === -1 ? SEANCES.length - 1 : i;
 }
+
+// Découpe le contenu : une ligne = un élément (voir l'onglet Mode d'emploi de l'Excel)
+function analyser(contenu) {
+  return contenu.split("\n").map(l => l.trim()).filter(Boolean).map(l => {
+    if (l.startsWith(">")) return { type: "routine", nom: l.slice(1).trim() };
+    if (l.startsWith("!")) return { type: "info", texte: l.slice(1).trim() };
+    let n = 1, repos = null;
+    const m = l.match(/^(\d+)\s*[×x]\s*/);
+    if (m) { n = Number(m[1]); l = l.slice(m[0].length); }
+    const r = l.match(/\(repos\s+(\d+)\s*(min|s)\)/);
+    if (r) { repos = Number(r[1]) * (r[2] === "min" ? 60 : 1); l = l.replace(r[0], "").trim(); }
+    return { type: "action", texte: l, n, repos };
+  });
+}
+
+// Remplace « Nom d'exercice » par un lien vers son explication
+function lier(texte, i) {
+  return esc(texte).replace(/«\s*(.+?)\s*»/g, (tout, nom) => {
+    const k = EXERCICES.findIndex(x => x.nom.toLowerCase() === nom.toLowerCase());
+    return k === -1 ? tout : `<button class="exo" data-exo="${k}" data-ligne="${i}">${esc(EXERCICES[k].nom)} ⓘ</button>`;
+  });
+}
+
+// =====================================================================
+// RELEVÉ VOIE PAR VOIE : valeurs calculées automatiquement
+// =====================================================================
+const rang = (act, cot) => COTATIONS[act].indexOf(cot);
+function autoPerf(d, act) {           // voie ou bloc le plus dur réussi
+  const ok = (d.voies || []).filter(v => v.res === "Enchaînée" || v.res === "Réussi");
+  if (!ok.length) return "";
+  ok.sort((a, b) => rang(act, b.cot) - rang(act, a.cot) || (b.profil === "Dévers") - (a.profil === "Dévers"));
+  return ok[0].cot + (ok[0].profil === "Dévers" ? " dévers" : "");
+}
+function autoSec(d) {                 // nb de « sec » sur la voie en dévers la plus dure
+  const dev = (d.voies || []).filter(v => v.profil === "Dévers" && v.res !== "Pas finie");
+  if (!dev.length) return "";
+  const max = Math.max(...dev.map(v => rang("Voie", v.cot)));
+  return Math.min(...dev.filter(v => rang("Voie", v.cot) === max).map(v => v.res === "Enchaînée" ? 0 : v.sec));
+}
+const perfFinale = (d, act) => vide(d.perf) ? (COTATIONS[act] ? autoPerf(d, act) : "") : d.perf;
+const secFinal = d => vide(d.sec) ? autoSec(d) : d.sec;
+
+// =====================================================================
+// ÉTAT DE L'ÉCRAN
+// =====================================================================
 let index = indexAujourdhui();
-let vue = "seance";   // "seance" ou "exercices"
+let vue = "seance";
+let ouverts = new Set();      // explications et détails dépliés
+let formVoie = null;          // formulaire « + Voie » en cours
+let formDouleur = null;       // fenêtre douleur en cours
 
-// ===================== Écran séance =====================
+// =====================================================================
+// ÉCRAN SÉANCE
+// =====================================================================
 function afficherSeance() {
-  const s = SEANCES[index];
-  const d = lire(s);
-  const date = dateSeance(s);
-  $("titre-date").textContent = `${s.jour} ${date.toLocaleDateString("fr-BE", {day:"2-digit", month:"2-digit"})} · sem. ${s.semaine}`;
+  const s = SEANCES[index], d = lire(s), act = s.activite;
+  $("titre-date").textContent =
+    `${s.jour} ${dateSeance(s).toLocaleDateString("fr-BE", {day:"2-digit", month:"2-digit"})} · sem. ${s.semaine}`;
+  const elements = analyser(s.contenu);
+  let h = `<h1>${esc(act)}</h1><p class="phase">${esc(s.phase)}</p>`;
 
-  // Le contenu est découpé en étapes à chaque « • »
-  const parties = s.contenu.split("•").map(t => t.trim()).filter(Boolean);
-  const intro = s.contenu.trim().startsWith("•") ? "" : parties.shift() || "";
-  const coches = d.coches || [];
+  // --- Démarrer / Terminer ---
+  if (!d.debut) h += `<button class="gros go" data-action="demarrer">▶ Démarrer la séance</button><p></p>`;
+  else if (!d.fin) h += `<div class="carte"><b>En cours</b> · <span id="chrono">${minutes(d.debut)} min</span>
+                         <p></p><button class="gros go" data-action="terminer">■ Terminer la séance</button></div>`;
+  else h += `<p class="petit">Terminée · ${d.duree} min · <button class="lien" data-action="reprendre">reprendre</button></p>`;
 
-  $("ecran").innerHTML = `
-    <h1>${s.activite}</h1>
-    <p class="phase">${s.phase}</p>
-    <div class="carte">
-      ${intro ? `<p>${intro}</p>` : ""}
-      ${parties.map((t, i) => `
-        <label class="etape ${coches[i] ? "fait" : ""}">
-          <input type="checkbox" data-etape="${i}" ${coches[i] ? "checked" : ""}><span>${t}</span>
-        </label>`).join("")}
-    </div>
-    <div class="carte">
-      <label class="champ">Fait ?</label>
-      <div class="boutons" data-champ="fait">${["Oui","Non","Sautée"].map(v => bouton(v, d.fait)).join("")}</div>
-      <label class="champ">Durée (min)</label>
-      <input type="number" inputmode="numeric" data-champ="duree" value="${d.duree ?? ""}">
-      <label class="champ">Effort (1 à 10)</label>
-      <div class="boutons" data-champ="effort">${serie(1,10).map(v => bouton(v, d.effort)).join("")}</div>
-      <label class="champ">Douleur max (0 à 10)</label>
-      <div class="boutons" data-champ="douleur">${serie(0,10).map(v => bouton(v, d.douleur)).join("")}</div>
-      <div id="alerte">Douleur à 5 ou plus : arrête l'exercice. Repos, glace, et consulte si ça dure.</div>
-      <label class="champ">Zone de douleur</label>
-      <select data-champ="zone"><option value=""></option>
-        ${ZONES.map(z => `<option ${d.zone === z ? "selected" : ""}>${z}</option>`).join("")}</select>
-      <label class="champ">Meilleure perf</label>
-      <input type="text" data-champ="perf" value="${esc(d.perf)}">
-      <label class="champ">Nb de « sec »</label>
-      <div class="compteur">
-        <button data-sec="-1">−</button>
-        <input type="number" inputmode="numeric" data-champ="sec" value="${d.sec ?? ""}">
-        <button data-sec="1">+</button>
-      </div>
-      <label class="champ">Notes</label>
-      <textarea data-champ="notes">${esc(d.notes)}</textarea>
-    </div>`;
-  $("alerte").style.display = Number(d.douleur) >= 5 ? "block" : "none";
-}
-const serie = (a, b) => Array.from({length: b - a + 1}, (_, i) => a + i);
-const bouton = (v, actuel) => `<button data-valeur="${v}" class="${String(actuel) === String(v) ? "choisi" : ""}">${v}</button>`;
+  // --- Programme ---
+  h += `<div class="carte">`;
+  elements.forEach((e, i) => {
+    if (e.type === "info") h += `<div class="ligne info">${lier(e.texte, i)}${explication(i)}</div>`;
+    if (e.type === "routine") {
+      const ok = (d.routines || {})[i];
+      const etapes = ROUTINES.filter(r => r.routine === e.nom);
+      const durees = etapes.map(r => r.duree).filter(x => x && x !== "—");
+      const total = durees.every(x => /^\d+ min$/.test(x)) ? durees.reduce((t, x) => t + parseInt(x), 0) + " min" : durees.join(" + ");
+      const duree = durees.length ? total : "";
+      h += `<div class="ligne ${ok ? "finie" : ""}">
+              <button class="case ${ok ? "ok" : ""}" data-routine="${i}">✓</button>
+              <div class="txt"><button class="lien" data-detail="${i}">${esc(e.nom)}${duree ? " · " + esc(duree) : ""} ▸</button>
+              ${ouverts.has("d" + i) ? `<div class="detail">${etapes.map(r =>
+                  `<p><b>${esc(r.etape)}</b>${r.duree && r.duree !== "—" ? " (" + esc(r.duree) + ")" : ""} : ${esc(r.quoi)}</p>`).join("")}</div>` : ""}
+              </div></div>`;
+    }
+    if (e.type === "action") {
+      const c = (d.compteurs || {})[i] || 0;
+      const repos = e.repos ?? REPOS_DEFAUT[act] ?? 0;
+      const marques = e.n <= 10
+        ? Array.from({length: e.n}, (_, k) => `<button class="rond ${k < c ? "ok" : ""}" data-rond="${i}" data-k="${k}">${k < c ? "✓" : ""}</button>`).join("")
+        : `<div class="compteur"><button data-cpt="${i}" data-pas="-1">−</button><span>${c}/${e.n}</span><button data-cpt="${i}" data-pas="1">+</button></div>`;
+      h += `<div class="ligne ${c >= e.n ? "finie" : ""}" data-action-ligne="${i}">
+              <div class="txt">${lier(e.texte, i)}${repos ? `<div class="petit">repos ${duree(repos)}</div>` : ""}${explication(i)}</div>
+              <div class="ronds">${marques}</div></div>`;
+    }
+  });
+  h += `</div>`;
 
-// Enregistre une valeur et rafraîchit l'écran si besoin
-function enregistrer(champ, valeur, rafraichir) {
-  const s = SEANCES[index];
-  const d = lire(s);
-  d[champ] = valeur;
-  ecrire(s, d);
-  if (rafraichir) afficherSeance();
+  // --- Relevé voie par voie (voie et bloc) ---
+  if (COTATIONS[act]) h += carteVoies(d, act);
+
+  // --- Fin de séance ---
+  h += carteBilan(d, act);
+
+  // --- Mesures de la semaine (sur la dernière séance de la semaine) ---
+  const derniere = SEANCES.map(x => x.semaine).lastIndexOf(s.semaine);
+  if (derniere === index) h += carteMesures(s.semaine);
+
+  $("ecran").innerHTML = h;
 }
 
-// Un seul écouteur pour tous les clics et toutes les saisies
+const minutes = debut => Math.round((Date.now() - debut) / 60000);
+const duree = sec => sec >= 60 ? `${Math.round(sec / 6) / 10} min`.replace(".", ",") : `${sec} s`;
+function explication(i) {
+  const k = [...ouverts].find(o => o.startsWith(`e${i}-`));
+  if (!k) return "";
+  const x = EXERCICES[Number(k.split("-")[1])];
+  return `<div class="explic"><b>${esc(x.nom)}</b> : ${esc(x.comment)}<br><span class="petit">${esc(x.cle)}</span></div>`;
+}
+
+function carteVoies(d, act) {
+  const mot = act === "Voie" ? "voie" : "bloc";
+  let h = `<div class="carte"><h2>${act === "Voie" ? "Voies" : "Blocs"} grimpé${act === "Voie" ? "e" : ""}s</h2>`;
+  (d.voies || []).forEach((v, k) => {
+    const res = v.res === "Avec sec" ? `${v.sec} « sec »` : v.res;
+    h += `<div class="voie"><span><b>${esc(v.cot)}</b> · ${v.profil} · ${res}</span><button data-suppr="${k}">✕</button></div>`;
+  });
+  if (!formVoie) return h + `<p></p><button class="gros" data-form="ouvrir">+ ${mot[0].toUpperCase() + mot.slice(1)}</button></div>`;
+  const f = formVoie;
+  const choix = (champ, liste) => `<div class="choix">${liste.map(v =>
+      `<button data-form="${champ}" data-valeur="${v}" class="${f[champ] === v ? "choisi" : ""}">${v}</button>`).join("")}</div>`;
+  h += `<label class="champ">Cotation</label>${choix("cot", COTATIONS[act])}
+        <label class="champ">Profil</label>${choix("profil", ["Vertical", "Dévers"])}
+        <label class="champ">Résultat</label>${choix("res", act === "Voie" ? ["Enchaînée", "Avec sec", "Pas finie"] : ["Réussi", "Pas réussi"])}
+        ${f.res === "Avec sec" ? `<label class="champ">Nombre de « sec »</label><div class="compteur">
+           <button data-form="sec" data-pas="-1">−</button><span>${f.sec}</span><button data-form="sec" data-pas="1">+</button></div>` : ""}
+        <p></p><div class="choix"><button data-form="annuler">Annuler</button>
+        <button data-form="ajouter" class="choisi" ${f.cot && f.res ? "" : "disabled"}>Ajouter</button></div></div>`;
+  return h;
+}
+
+function carteBilan(d, act) {
+  const bouton = (champ, v) => `<button data-valeur="${v}" class="${String(d[champ]) === String(v) ? "choisi" : ""}">${v}</button>`;
+  const serie = (a, b) => Array.from({length: b - a + 1}, (_, k) => a + k);
+  const ap = COTATIONS[act] ? autoPerf(d, act) : "", as = autoSec(d);
+  return `<div class="carte" id="bilan"><h2>Fin de séance</h2>
+    <label class="champ">Fait ?</label>
+    <div class="choix" data-champ="fait">${["Oui","Non","Sautée"].map(v => bouton("fait", v)).join("")}</div>
+    <label class="champ">Durée (min)</label>
+    <input type="number" inputmode="numeric" data-champ="duree" value="${esc(d.duree)}">
+    <label class="champ">Effort (1 à 10)</label>
+    <div class="choix" data-champ="effort">${serie(1,10).map(v => bouton("effort", v)).join("")}</div>
+    <label class="champ">Douleur max (0 à 10)</label>
+    ${(d.douleurs || []).length ? `<p class="petit">Signalé : ${d.douleurs.map(x => `${esc(x.zone)} ${x.niv} (${x.heure})`).join(", ")}</p>` : ""}
+    <div class="choix" data-champ="douleur">${serie(0,10).map(v => bouton("douleur", v)).join("")}</div>
+    ${Number(d.douleur) >= 5 ? `<div class="alerte">Douleur à 5 ou plus : arrête l'exercice. Repos, glace, et consulte si ça dure.</div>` : ""}
+    <label class="champ">Zone de douleur</label>
+    <select data-champ="zone"><option value=""></option>${ZONES.map(z => `<option ${d.zone === z ? "selected" : ""}>${esc(z)}</option>`).join("")}</select>
+    <label class="champ">Meilleure perf</label>
+    <input type="text" data-champ="perf" value="${esc(d.perf)}" placeholder="${ap ? "Auto : " + esc(ap) : ""}">
+    <label class="champ">Nb de « sec »</label>
+    <input type="number" inputmode="numeric" data-champ="sec" value="${esc(d.sec)}" placeholder="${as !== "" ? "Auto : " + as : ""}">
+    <label class="champ">Notes</label>
+    <textarea data-champ="notes" placeholder="Astuce : le micro du clavier permet de dicter">${esc(d.notes)}</textarea></div>`;
+}
+
+// Valeurs automatiques de la semaine, à partir des relevés voie par voie
+function autoSemaine(sem) {
+  const voies = [], blocs = [];
+  SEANCES.forEach(s => { if (s.semaine !== sem) return;
+    const d = lire(s); if (s.activite === "Voie") voies.push(d); if (s.activite === "Bloc") blocs.push(d); });
+  const meilleur = (liste, act, filtre) => {
+    const ok = liste.flatMap(d => d.voies || []).filter(filtre);
+    if (!ok.length) return "";
+    ok.sort((a, b) => rang(act, b.cot) - rang(act, a.cot)); return ok[0].cot + (ok[0].profil === "Dévers" ? " dévers" : "");
+  };
+  const secs = voies.map(autoSec).filter(x => x !== "");
+  return { sec: secs.length ? Math.min(...secs) : "",
+           voie: meilleur(voies, "Voie", v => v.res === "Enchaînée"),
+           bloc: meilleur(blocs, "Bloc", v => v.res === "Réussi") };
+}
+const CHAMPS_MESURES = [["planche","Planche (s)","number"],["course","Course continue la plus longue (min)","number"],
+  ["sec","Nb de « sec » dans la voie en dévers suivie","number"],["voie","Voie la plus dure réussie sans « sec »","text"],
+  ["bloc","Bloc le plus dur réussi","text"],["tractions","Tractions (nb, assistées ou non)","text"],["notes","Notes de la semaine","text"]];
+function carteMesures(sem) {
+  const m = lireMesures(sem), a = autoSemaine(sem);
+  return `<div class="carte"><h2>Mesures de la semaine ${sem}</h2>` + CHAMPS_MESURES.map(([c, lab, type]) =>
+    `<label class="champ">${lab}</label><input type="${type}" ${type === "number" ? 'inputmode="numeric"' : ""}
+      data-mesure="${c}" value="${esc(m[c])}" placeholder="${!vide(a[c]) ? "Auto : " + esc(a[c]) : ""}">`).join("") + `</div>`;
+}
+
+// =====================================================================
+// ACTIONS SUR L'ÉCRAN SÉANCE (un seul écouteur pour tous les boutons)
+// =====================================================================
+function modifier(fn) { const s = SEANCES[index], d = lire(s); fn(d); ecrire(s, d); afficher(false); }
+
 $("ecran").addEventListener("click", e => {
-  const b = e.target.closest("button");
-  if (!b) return;
-  if (b.dataset.valeur !== undefined) {                       // boutons Fait / Effort / Douleur
-    const champ = b.parentElement.dataset.champ;
-    const v = isNaN(b.dataset.valeur) ? b.dataset.valeur : Number(b.dataset.valeur);
-    enregistrer(champ, lire(SEANCES[index])[champ] === v ? null : v, true);  // 2e appui = effacer
+  const b = e.target.closest("button"), t = b ? b.dataset : {};
+  if (b && t.exo !== undefined) {                                   // explication : 1 appui ouvre, 2e ferme
+    const k = `e${t.ligne}-${t.exo}`, etaitOuvert = ouverts.has(k);
+    [...ouverts].filter(o => o.startsWith(`e${t.ligne}-`)).forEach(o => ouverts.delete(o));
+    if (!etaitOuvert) ouverts.add(k);
+    return afficher(false);
   }
-  if (b.dataset.sec) {                                          // boutons − et +
-    const n = Math.max(0, (Number(lire(SEANCES[index]).sec) || 0) + Number(b.dataset.sec));
-    enregistrer("sec", n, true);
+  if (b && t.detail !== undefined) { ouverts.has("d" + t.detail) ? ouverts.delete("d" + t.detail) : ouverts.add("d" + t.detail); return afficher(false); }
+  if (b && t.routine !== undefined) return modifier(d => { d.routines = d.routines || {}; d.routines[t.routine] = !d.routines[t.routine]; });
+  if (b && t.rond !== undefined) return compter(Number(t.rond), Number(t.k) < ((lire(SEANCES[index]).compteurs || {})[t.rond] || 0) ? Number(t.k) : Number(t.k) + 1);
+  if (b && t.cpt !== undefined) return compter(Number(t.cpt), ((lire(SEANCES[index]).compteurs || {})[t.cpt] || 0) + Number(t.pas));
+  if (b && t.action === "demarrer") { modifier(d => { d.debut = Date.now(); delete d.fin; }); return garderEcran(); }
+  if (b && t.action === "terminer") {
+    modifier(d => { d.fin = Date.now(); d.duree = Math.max(1, Math.round((d.fin - d.debut) / 60000)); d.fait = "Oui"; });
+    libererEcran(); return $("bilan").scrollIntoView({behavior: "smooth"});
   }
+  if (b && t.action === "reprendre") { modifier(d => { delete d.fin; }); return garderEcran(); }
+  if (b && t.form) return actionFormVoie(t);
+  if (b && t.suppr !== undefined) { if (confirm("Supprimer cette ligne ?")) modifier(d => d.voies.splice(Number(t.suppr), 1)); return; }
+  if (b && t.valeur !== undefined && b.parentElement.dataset.champ) {             // Fait / Effort / Douleur
+    const champ = b.parentElement.dataset.champ, v = isNaN(t.valeur) ? t.valeur : Number(t.valeur);
+    return modifier(d => { d[champ] = d[champ] === v ? null : v; });             // 2e appui = effacer
+  }
+  // Appui n'importe où sur une ligne d'action = un passage de plus
+  const ligne = e.target.closest("[data-action-ligne]");
+  if (ligne && !b) { const i = Number(ligne.dataset.actionLigne); compter(i, ((lire(SEANCES[index]).compteurs || {})[i] || 0) + 1); }
 });
-function surSaisie(e) {
-  const t = e.target;
-  if (t.dataset.etape !== undefined) {                          // cases à cocher des étapes
-    const d = lire(SEANCES[index]);
-    d.coches = d.coches || [];
-    d.coches[t.dataset.etape] = t.checked;
-    ecrire(SEANCES[index], d);
-    t.parentElement.classList.toggle("fait", t.checked);
-  } else if (t.dataset.champ) {                                 // champs texte, nombre, liste
-    enregistrer(t.dataset.champ, t.type === "number" && t.value !== "" ? Number(t.value) : t.value, false);
-  }
-}
-$("ecran").addEventListener("change", surSaisie);
-$("ecran").addEventListener("input", surSaisie);   // enregistre pendant la frappe
 
-// ===================== Écran exercices =====================
+function compter(i, nouveau) {
+  const s = SEANCES[index], e = analyser(s.contenu)[i];
+  const avant = (lire(s).compteurs || {})[i] || 0;
+  nouveau = Math.max(0, Math.min(e.n, nouveau));
+  modifier(d => { d.compteurs = d.compteurs || {}; d.compteurs[i] = nouveau; });
+  const repos = e.repos ?? REPOS_DEFAUT[s.activite] ?? 0;
+  if (nouveau > avant && repos > 0) lancerRepos(repos);                         // minuteur automatique
+}
+
+function actionFormVoie(t) {
+  const act = SEANCES[index].activite;
+  if (t.form === "ouvrir") { const der = (lire(SEANCES[index]).voies || []).slice(-1)[0];
+    formVoie = { cot: der ? der.cot : "", profil: der ? der.profil : "Vertical", res: "", sec: 1 }; }
+  else if (t.form === "annuler") formVoie = null;
+  else if (t.form === "sec") formVoie.sec = Math.max(1, formVoie.sec + Number(t.pas));
+  else if (t.form === "ajouter") {
+    const v = { ...formVoie }; if (v.res !== "Avec sec") delete v.sec;
+    formVoie = null; return modifier(d => { d.voies = d.voies || []; d.voies.push(v); });
+  } else formVoie[t.form] = t.valeur;
+  afficher(false);
+}
+
+// Champs texte et nombres : enregistrés pendant la frappe
+function surSaisie(e) {
+  const t = e.target, val = t.type === "number" && t.value !== "" ? Number(t.value) : t.value;
+  if (t.dataset.champ) { const s = SEANCES[index], d = lire(s); d[t.dataset.champ] = val; ecrire(s, d); }
+  if (t.dataset.mesure) { const sem = SEANCES[index].semaine, m = lireMesures(sem); m[t.dataset.mesure] = val; ecrireMesures(sem, m); }
+}
+$("ecran").addEventListener("input", surSaisie);
+$("ecran").addEventListener("change", surSaisie);
+
+// =====================================================================
+// MINUTEUR DE REPOS
+// =====================================================================
+let finRepos = 0, tic = null, audio = null;
+document.addEventListener("pointerdown", () => {           // l'iPhone n'autorise le son qu'après un appui
+  if (!audio) { try { audio = new AudioContext(); } catch {} }
+  if (audio && audio.state === "suspended") audio.resume();
+}, true);
+function bip() {
+  if (!audio) return;
+  [0, .3, .6].forEach(t => { const o = audio.createOscillator(), g = audio.createGain();
+    o.frequency.value = 880; o.connect(g); g.connect(audio.destination);
+    g.gain.setValueAtTime(.3, audio.currentTime + t); o.start(audio.currentTime + t); o.stop(audio.currentTime + t + .18); });
+}
+function lancerRepos(sec) { finRepos = Date.now() + sec * 1000; clearInterval(tic); tic = setInterval(majRepos, 250); majRepos(); }
+function majRepos() {
+  const m = $("minuteur"), reste = Math.ceil((finRepos - Date.now()) / 1000);
+  m.style.display = "flex";
+  if (reste > 0) { m.classList.remove("fini");
+    $("minuteur-temps").textContent = `Repos ${Math.floor(reste / 60)}:${String(reste % 60).padStart(2, "0")}`; return; }
+  clearInterval(tic); bip(); m.classList.add("fini"); $("minuteur-temps").textContent = "Repos terminé ✓";
+  setTimeout(() => { if (Date.now() >= finRepos) m.style.display = "none"; }, 5000);
+}
+$("minuteur-plus").onclick = () => { finRepos = Math.max(finRepos, Date.now()) + 30000; clearInterval(tic); tic = setInterval(majRepos, 250); majRepos(); };
+$("minuteur-stop").onclick = () => { clearInterval(tic); finRepos = 0; $("minuteur").style.display = "none"; };
+
+// Écran allumé pendant une séance démarrée (si l'iPhone le permet)
+let verrou = null;
+async function garderEcran() { try { verrou = await navigator.wakeLock.request("screen"); } catch {} }
+function libererEcran() { if (verrou) verrou.release(); verrou = null; }
+document.addEventListener("visibilitychange", () => {
+  const d = lire(SEANCES[index]);
+  if (document.visibilityState === "visible" && d.debut && !d.fin) garderEcran();
+});
+setInterval(() => { const c = $("chrono"), d = lire(SEANCES[index]); if (c && d.debut) c.textContent = minutes(d.debut) + " min"; }, 20000);
+
+// =====================================================================
+// SIGNALER UNE DOULEUR (bouton ⚠)
+// =====================================================================
+function afficherDouleur() {
+  const f = formDouleur;
+  const choix = (champ, liste) => `<div class="choix">${liste.map(v =>
+      `<button data-d="${champ}" data-valeur="${v}" class="${String(f[champ]) === String(v) ? "choisi" : ""}">${v}</button>`).join("")}</div>`;
+  $("modal").innerHTML = `<h2>Signaler une douleur</h2><p class="petit">Séance : ${esc(SEANCES[index].jour)} ${esc(SEANCES[index].activite)}</p>
+    <label class="champ">Zone</label>${choix("zone", ZONES.filter(z => z !== "Aucune"))}
+    <label class="champ">Niveau</label>${choix("niv", Array.from({length: 10}, (_, k) => k + 1))}
+    ${f.niv >= 5 ? `<div class="alerte">5 ou plus : arrête l'exercice maintenant.</div>` : ""}
+    <p></p><div class="choix"><button data-d="annuler">Annuler</button>
+    <button data-d="ok" class="choisi" ${f.zone && f.niv ? "" : "disabled"}>Enregistrer</button></div>`;
+  $("fond-modal").style.display = "flex";
+}
+$("btn-douleur").onclick = () => { formDouleur = {}; afficherDouleur(); };
+$("modal").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const t = b.dataset;
+  if (t.d === "annuler") { $("fond-modal").style.display = "none"; return; }
+  if (t.d === "ok") {
+    const { zone, niv } = formDouleur;
+    $("fond-modal").style.display = "none";
+    return modifier(d => {
+      d.douleurs = d.douleurs || [];
+      d.douleurs.push({ zone, niv, heure: new Date().toLocaleTimeString("fr-BE", {hour: "2-digit", minute: "2-digit"}) });
+      if (niv >= (Number(d.douleur) || 0)) { d.douleur = niv; d.zone = zone; }      // garde la plus forte
+    });
+  }
+  formDouleur[t.d] = isNaN(t.valeur) ? t.valeur : Number(t.valeur);
+  afficherDouleur();
+});
+
+// =====================================================================
+// ÉCRAN EXERCICES (+ sauvegarde)
+// =====================================================================
 function afficherExercices() {
-  $("titre-date").textContent = "Exercices";
-  // Routines d'abord (échauffement, retour au calme…), puis les exercices
-  let html = "", categorie = "";
+  $("titre-date").textContent = "Exercices et routines";
+  let h = "", cat = "";
   for (const r of ROUTINES) {
-    if (r.routine !== categorie) { categorie = r.routine; html += `<h2 class="cat">${categorie}</h2>`; }
-    html += `<details><summary>${r.etape}${r.duree ? " · " + r.duree : ""}</summary><p>${r.quoi}</p></details>`;
+    if (r.routine !== cat) { cat = r.routine; h += `<h2 class="cat">${esc(cat)}</h2>`; }
+    h += `<details><summary>${esc(r.etape)}${r.duree ? " · " + esc(r.duree) : ""}</summary><p>${esc(r.quoi)}</p></details>`;
   }
   for (const x of EXERCICES) {
-    if (x.categorie !== categorie) { categorie = x.categorie; html += `<h2 class="cat">${categorie}</h2>`; }
-    html += `<details><summary>${x.nom}</summary>
-      <p>${x.comment}</p><p class="petit">${x.cle}${x.depuis ? " · à partir de : " + x.depuis : ""}</p></details>`;
+    if (x.categorie !== cat) { cat = x.categorie; h += `<h2 class="cat">${esc(cat)}</h2>`; }
+    h += `<details><summary>${esc(x.nom)}</summary><p>${esc(x.comment)}</p>
+          <p class="petit">${esc(x.cle)}${x.depuis ? " · à partir de : " + esc(x.depuis) : ""}</p></details>`;
   }
-  $("ecran").innerHTML = `<div class="carte">${html}</div>`;
+  $("ecran").innerHTML = `<div class="carte">${h}</div>
+    <div class="carte"><h2>Sauvegarde</h2>
+    <p class="petit">Pour récupérer tes saisies (nouveau téléphone, app réinstallée) : choisis un fichier
+    <b>sauvegarde-escalade-….json</b> créé par Exporter.</p>
+    <button class="gros" onclick="$('fichier').click()">Restaurer une sauvegarde</button>
+    <input type="file" id="fichier" accept=".json,application/json" hidden></div>`;
+  $("fichier").onchange = restaurer;
 }
 
-// ===================== Export CSV =====================
-// Une ligne par séance, dans l'ordre du Journal.
-// Colonnes D à K du CSV = colonnes H à O du Journal.
+// =====================================================================
+// EXPORT : journal (Excel H à O), mesures (Excel C à I) et sauvegarde complète
+// =====================================================================
 function exporter() {
-  const entete = ["Semaine","Jour","Activité","Fait ?","Durée (min)","Effort (1-10)","Douleur max (0-10)",
-                  "Zone de douleur","Meilleure perf","Nb de « sec »","Notes"];
-  const champ = v => typeof v === "number" ? v : `"${String(v ?? "").replace(/"/g, '""')}"`;  // nombres sans guillemets
-  const lignes = SEANCES.map(s => {
+  const champ = v => typeof v === "number" ? v : `"${String(v ?? "").replace(/"/g, '""')}"`;
+  const csv = lignes => "\uFEFF" + lignes.map(l => l.map(champ).join(";")).join("\r\n");
+  const journal = [["Semaine","Jour","Activité","Fait ?","Durée (min)","Effort (1-10)","Douleur max (0-10)",
+                    "Zone de douleur","Meilleure perf","Nb de « sec »","Notes"]];
+  SEANCES.forEach(s => {
     const d = lire(s);
-    return [s.semaine, s.jour, s.activite, d.fait, d.duree, d.effort, d.douleur, d.zone, d.perf, d.sec, d.notes]
-      .map(champ).join(";");
+    const notes = [d.notes,
+      (d.voies || []).length ? "Relevé : " + d.voies.map(v => `${v.cot} ${v.profil === "Dévers" ? "D" : "V"} ${v.res === "Avec sec" ? v.sec + " sec" : v.res}`).join(", ") : "",
+      (d.douleurs || []).length ? "Douleurs : " + d.douleurs.map(x => `${x.zone} ${x.niv} (${x.heure})`).join(", ") : ""
+    ].filter(Boolean).join(" | ");
+    journal.push([s.semaine, s.jour, s.activite, d.fait, d.duree, d.effort, d.douleur, d.zone, perfFinale(d, s.activite), secFinal(d), notes]);
   });
-  const csv = "\uFEFF" + [entete.map(champ).join(";"), ...lignes].join("\r\n");
-  const nom = `journal-escalade-${new Date().toISOString().slice(0,10)}.csv`;
-  const fichier = new File([csv], nom, {type: "text/csv"});
-  if (navigator.canShare && navigator.canShare({files: [fichier]})) {
-    navigator.share({files: [fichier], title: nom}).catch(() => {});   // menu Partager de l'iPhone
-  } else {
-    const a = document.createElement("a");                              // ordinateur : téléchargement
-    a.href = URL.createObjectURL(fichier); a.download = nom; a.click();
+  const derniere = Math.max(...SEANCES.map(s => s.semaine));
+  const mesures = [["Semaine", ...CHAMPS_MESURES.map(c => c[1])]];
+  for (let sem = 1; sem <= derniere; sem++) {
+    const m = lireMesures(sem), a = autoSemaine(sem);
+    mesures.push([sem, ...CHAMPS_MESURES.map(([c]) => vide(m[c]) ? (a[c] ?? "") : m[c])]);
   }
+  const sauvegarde = {};
+  Object.keys(localStorage).filter(k => /^(seance|mesures)-/.test(k)).forEach(k => sauvegarde[k] = localStorage.getItem(k));
+
+  const jour = new Date().toISOString().slice(0, 10);
+  const fichiers = [new File([csv(journal)], `journal-escalade-${jour}.csv`, {type: "text/csv"}),
+                    new File([csv(mesures)], `mesures-escalade-${jour}.csv`, {type: "text/csv"}),
+                    new File([JSON.stringify(sauvegarde)], `sauvegarde-escalade-${jour}.json`, {type: "application/json"})];
+  localStorage.setItem("dernier-export", Date.now());
+  infoExport();
+  if (navigator.canShare && navigator.canShare({files: fichiers})) navigator.share({files: fichiers}).catch(() => {});
+  else fichiers.forEach(f => { const a = document.createElement("a"); a.href = URL.createObjectURL(f); a.download = f.name; a.click(); });
 }
 
-// ===================== Navigation =====================
-function afficher() { vue === "seance" ? afficherSeance() : afficherExercices();
-                      $("btn-vue").textContent = vue === "seance" ? "Exercices" : "Séance"; window.scrollTo(0, 0); }
-$("prec").onclick = () => { vue = "seance"; index = Math.max(0, index - 1); afficher(); };
-$("suiv").onclick = () => { vue = "seance"; index = Math.min(SEANCES.length - 1, index + 1); afficher(); };
-$("titre-date").onclick = () => { vue = "seance"; index = indexAujourdhui(); afficher(); };
+function restaurer(e) {
+  const f = e.target.files[0]; if (!f) return;
+  f.text().then(t => {
+    const donnees = JSON.parse(t);
+    if (!confirm(`Restaurer ${Object.keys(donnees).length} éléments ? Les saisies actuelles de ces séances seront remplacées.`)) return;
+    Object.entries(donnees).forEach(([k, v]) => localStorage.setItem(k, v));
+    alert("Sauvegarde restaurée."); vue = "seance"; afficher();
+  }).catch(() => alert("Ce fichier n'est pas une sauvegarde valide."));
+}
+
+// Rappel : depuis quand le dernier export ?
+function infoExport() {
+  const t = Number(localStorage.getItem("dernier-export")), el = $("info-export");
+  const saisies = Object.keys(localStorage).some(k => k.startsWith("seance-"));
+  const jours = t ? Math.floor((Date.now() - t) / 86400000) : null;
+  el.textContent = t ? (jours === 0 ? "aujourd'hui" : `il y a ${jours} j`) : (saisies ? "jamais" : "");
+  el.className = saisies && (!t || jours > 7) ? "retard" : "";
+}
+
+// =====================================================================
+// NAVIGATION
+// =====================================================================
+function afficher(enHaut = true) {
+  vue === "seance" ? afficherSeance() : afficherExercices();
+  $("btn-vue").textContent = vue === "seance" ? "Exercices" : "Séance";
+  infoExport();
+  if (enHaut) window.scrollTo(0, 0);
+}
+const changer = i => { vue = "seance"; index = i; ouverts = new Set(); formVoie = null; afficher(); };
+$("prec").onclick = () => changer(Math.max(0, index - 1));
+$("suiv").onclick = () => changer(Math.min(SEANCES.length - 1, index + 1));
+$("titre-date").onclick = () => changer(indexAujourdhui());
 $("btn-vue").onclick = () => { vue = vue === "seance" ? "exercices" : "seance"; afficher(); };
 $("btn-export").onclick = exporter;
 afficher();
 
-// Fonctionnement hors connexion
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");   // hors connexion
 </script>
 </body>
 </html>

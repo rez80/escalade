@@ -1,6 +1,6 @@
 // sw.js — permet à l'app de fonctionner sans connexion.
 // La version est mise à jour automatiquement par generer_app.py.
-const VERSION = "20261028-135121";
+const VERSION = "20261029-170951";
 const FICHIERS = ["./", "./index.html", "./data.js"];
 
 // Installation : on garde une copie des fichiers sur le téléphone
