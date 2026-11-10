@@ -9,7 +9,7 @@
 // =====================================================================
 // 1. RÉGLAGES DU PROGRAMME (modifiables dans le code)
 // =====================================================================
-const APP_VERSION = "3.2";
+const APP_VERSION = "3.3";
 const REPOS_DEFAUT = { Voie: 300, Bloc: 180, Maison: 90 };   // secondes, si la ligne n'indique rien
 const COTATIONS = { Voie: ["3","4","4c","5a","5b","5c","6a","6b","6c"], Bloc: ["2","3","4","5","6","7"] };
 COTATIONS["Escalade extérieur"] = COTATIONS.Voie;               // se note comme une voie
@@ -947,7 +947,8 @@ function formulaireCreation() {
        <button data-reg="${r.cle}" data-pas="1">+</button></div>`)).join("");
   let cat = "";
   const options = EXERCICES.map(x => { let o = "";
-    if (x.categorie !== cat) { o += (cat ? "</optgroup>" : "") + `<optgroup label="${esc(x.categorie)}">`; cat = x.categorie; }
+    const g = `${x.discipline} · ${x.categorie}`;                     // rangé par discipline, comme l'écran Exercices
+    if (g !== cat) { o += (cat ? "</optgroup>" : "") + `<optgroup label="${esc(g)}">`; cat = g; }
     return o + `<option ${F.exo === x.nom ? "selected" : ""}>${esc(x.nom)}</option>`; }).join("") + "</optgroup>";
   const apercu = lignesCreees().map(l => l.startsWith(">") ? "▸ <b>" + esc(l.slice(1).trim()) + "</b>"
       : l.startsWith("!") ? "<i>" + esc(sansGuillemets(l.slice(1).trim())) + "</i>" : "• " + esc(sansGuillemets(l))).join("<br>")
@@ -1024,42 +1025,127 @@ $("ecran").addEventListener("change", e => {
 // =====================================================================
 // 14. ÉCRANS EXERCICES (menus déroulants) ET RÉGLAGES (panneaux)
 // =====================================================================
+// --- Écran Exercices : une rangée de disciplines, des sous-menus, des fiches complètes ---
+const DISCIPLINES = ["Voie et bloc", "Voie", "Bloc", "Muscu", "Course", "Mobilité"];
+let filtreEx = null;            // bouton choisi dans la rangée (null = choix automatique)
+let toutAfficher = false;       // false : les exercices prévus plus tard sont grisés
+const lireFavoris = () => JSON.parse(localStorage.getItem("favoris") || "[]");
+const estFavori = nom => lireFavoris().includes(nom);
+const nomsCites = contenu => [...contenu.matchAll(/«\s*(.+?)\s*»/g)].map(m => m[1].toLowerCase());
+const semaineActuelle = () => Math.max(1, semaineDe(new Date()));
+
+// Exercices cités dans la séance du jour (toutes ses versions)
+function exercicesDuJour() {
+  const auj = isoDate(new Date());
+  const noms = new Set(LISTE.filter(s => isoDate(dateSeance(s)) === auj).flatMap(s => nomsCites(s.contenu)));
+  return EXERCICES.filter(x => noms.has(x.nom.toLowerCase()));
+}
+// Où l'exercice apparaît dans le programme (pour la fiche)
+let usageCache = null;
+function usage(nom) {
+  if (!usageCache) {
+    usageCache = {};
+    SEANCES.forEach(s => new Set(nomsCites(s.contenu)).forEach(n => (usageCache[n] = usageCache[n] || []).push(s)));
+  }
+  return usageCache[nom.toLowerCase()] || [];
+}
+// Dernière fois que l'exercice a été fait (jusqu'à aujourd'hui)
+function derniereFoisExo(nom) {
+  const auj = new Date(); auj.setHours(23, 59, 0, 0);
+  for (let k = LISTE.length - 1; k >= 0; k--) {
+    const p = LISTE[k]; if (dateSeance(p) > auj) continue;
+    const d = lire(p), lignes = elementsDe(p, d);
+    for (let i = 0; i < lignes.length; i++) {
+      const x = lignes[i], c = compte(d, i);
+      if (x.type === "action" && c > 0 && x.texte.includes("« " + nom + " »"))
+        return `${p.jour} ${jourMois(dateSeance(p))} (sem. ${p.semaine}) : ${c}/${x.n} ${c > 1 ? "passages" : "passage"}`;
+    }
+  }
+  return "";
+}
+const ABREG = { Lundi: "lun.", Mardi: "mar.", Mercredi: "mer.", Jeudi: "jeu.", Vendredi: "ven.", Samedi: "sam.", Dimanche: "dim." };
+function ficheExercice(x) {
+  const k = EXERCICES.indexOf(x), plusTard = !toutAfficher && x.semaine > semaineActuelle();
+  const u = usage(x.nom), df = derniereFoisExo(x.nom);
+  const prevu = x.depuis ? (x.semaine >= 999 ? x.depuis.toLowerCase() : "à partir de : " + x.depuis.toLowerCase()) : "";
+  const utilise = u.length ? u.slice(0, 6).map(s => `sem. ${s.semaine} (${ABREG[s.jour] || s.jour})`).join(", ") + (u.length > 6 ? ` et ${u.length - 6} autres` : "") : "";
+  return `<details class="item ${plusTard ? "verrou" : ""}" data-nom="${esc(x.nom)}" data-t="${esc(sansAccents(x.discipline + " " + x.categorie + " " + x.nom + " " + x.comment + " " + x.cle))}">
+    <summary>${estFavori(x.nom) ? "★ " : ""}${esc(x.nom)}${plusTard ? ` <span class="petit">· ${esc(prevu)}</span>` : ""}</summary>
+    <p><span class="badge">${esc(x.niveau || "—")}</span> <span class="petit">${esc(x.discipline)} · ${esc(x.categorie)}${prevu && !plusTard ? " · " + esc(prevu) : ""}</span></p>
+    ${plusTard ? `<div class="avert">Prévu plus tard dans ta progression. Attends ce stade, ou demande conseil à un moniteur avant de l'essayer.</div>` : ""}
+    <p>${esc(x.comment)}</p><p class="petit">${esc(x.cle)}</p>
+    ${utilise ? `<p class="petit"><b>Dans ton programme :</b> ${esc(utilise)}</p>` : ""}
+    <p class="petit"><b>Dernière fois :</b> ${df ? esc(df) : "pas encore fait"}</p>
+    <div class="choix"><button data-favori="${k}">${estFavori(x.nom) ? "★ Retirer des favoris" : "☆ Ajouter aux favoris"}</button>
+      <button data-ajouter-exo="${k}">+ Ajouter à une séance</button></div></details>`;
+}
+const groupeRoutine = nom => /^Échauffement/.test(nom) ? "Échauffements" : /^Vérifications/.test(nom) ? "Sécurité"
+  : /^Course/.test(nom) ? "Course" : /^Gainage/.test(nom) ? "Gainage" : "Retour au calme";
+
 function afficherExercices() {
   $("titre-date").textContent = "Exercices";
-  const groupes = [];                       // [{titre, items:[{titre, corps, texte}]}]
-  const ajouter = (titre, item) => {
-    let g = groupes.find(x => x.titre === titre);
-    if (!g) groupes.push(g = { titre, items: [] });
-    g.items.push(item);
+  const jour = exercicesDuJour();
+  if (filtreEx === null) filtreEx = jour.length ? "jour" : "Voie et bloc";
+  const boutons = [["favoris", "★ Favoris"], ["jour", "Séance du jour"], ...DISCIPLINES.map(d => [d, d]), ["routines", "Routines"]];
+  const q = $("recherche") ? $("recherche").value : "";
+  let h = `<input type="search" id="recherche" placeholder="Rechercher dans tous les exercices…" value="${esc(q)}">
+    <div class="rangee">${boutons.map(([v, t]) => `<button data-filtre="${esc(v)}" class="${filtreEx === v ? "choisi" : ""}">${esc(t)}</button>`).join("")}</div>
+    <label class="interrupteur"><input type="checkbox" id="tout-afficher" ${toutAfficher ? "checked" : ""}> Afficher aussi les exercices prévus plus tard</label>
+    <div id="liste-exos">`;
+  // Regroupe une liste d'exercices en sous-menus (discipline · sous-catégorie)
+  const enGroupes = (liste, avecDiscipline) => {
+    const g = [];
+    liste.forEach(x => { const t = avecDiscipline ? `${x.discipline} · ${x.categorie}` : x.categorie;
+      let e = g.find(y => y.t === t); if (!e) g.push(e = { t, items: [] }); e.items.push(x); });
+    return g.map((e, n) => `<details class="groupe" data-g="${esc(e.t)}" ${g.length === 1 || q || filtreEx === "jour" || filtreEx === "favoris" ? "open" : ""}><summary>${esc(e.t)} <span class="petit">(${e.items.length})</span></summary>
+      ${e.items.map(ficheExercice).join("")}</details>`).join("");
   };
-  // Un seul menu « Routines », avec une entrée par routine et toutes ses étapes
-  [...new Set(ROUTINES.map(r => r.routine))].forEach(nom => {
-    const etapes = etapesRoutine(nom);
-    ajouter("Routines", { titre: esc(nom),
-      corps: etapes.map(r => `<p><b>${esc(r.etape)}</b>${r.duree && r.duree !== "—" ? " (" + esc(r.duree) + ")" : ""} : ${esc(r.quoi)}</p>`).join(""),
-      texte: `${nom} ${etapes.map(r => r.etape + " " + r.quoi).join(" ")}` });
+  if (q.trim()) {
+    const m = sansAccents(q.trim());
+    const trouves = EXERCICES.filter(x => sansAccents(`${x.discipline} ${x.categorie} ${x.nom} ${x.comment} ${x.cle}`).includes(m));
+    h += trouves.length ? enGroupes(trouves, true) : `<p class="petit">Aucun exercice ne contient « ${esc(q)} ».</p>`;
+  } else if (filtreEx === "routines") {
+    const g = {};
+    [...new Set(ROUTINES.map(r => r.routine))].forEach(nom => (g[groupeRoutine(nom)] = g[groupeRoutine(nom)] || []).push(nom));
+    h += Object.entries(g).map(([t, noms]) => `<details class="groupe"><summary>${esc(t)} <span class="petit">(${noms.length})</span></summary>
+      ${noms.map(nom => `<details class="item"><summary>${esc(nom)}</summary>${etapesRoutine(nom).map(r =>
+        `<p><b>${esc(r.etape)}</b>${r.duree && r.duree !== "—" ? " (" + esc(r.duree) + ")" : ""} : ${esc(r.quoi)}</p>`).join("")}</details>`).join("")}</details>`).join("");
+  } else if (filtreEx === "jour") {
+    h += jour.length ? `<p class="petit">Les exercices cités dans ta séance du jour :</p>` + enGroupes(jour, true)
+      : `<p class="petit">Aucun exercice cité dans une séance aujourd'hui.</p>`;
+  } else if (filtreEx === "favoris") {
+    const fav = EXERCICES.filter(x => estFavori(x.nom));
+    h += fav.length ? enGroupes(fav, true) : `<p class="petit">Aucun favori. Ouvre un exercice et touche « ☆ Ajouter aux favoris ».</p>`;
+  } else h += enGroupes(EXERCICES.filter(x => x.discipline === filtreEx), false);
+  $("ecran").innerHTML = h + `</div>`;
+  $("recherche").addEventListener("input", () => {           // recherche : réaffiche sans perdre le clavier
+    const champ = $("recherche"), pos = champ.selectionStart;
+    afficherExercices(); const c = $("recherche"); c.focus(); c.setSelectionRange(pos, pos);
   });
-  for (const x of EXERCICES) ajouter(x.categorie, { titre: esc(x.nom),
-    corps: `<p>${esc(x.comment)}</p><p class="petit">${esc(x.cle)}${x.depuis ? " · à partir de : " + esc(x.depuis) : ""}</p>`,
-    texte: `${x.categorie} ${x.nom} ${x.comment} ${x.cle}` });
-  $("ecran").innerHTML = `<input type="search" id="recherche" placeholder="Rechercher un exercice…"><p></p>` +
-    groupes.map(g => `<details class="groupe"><summary>${esc(g.titre)} <span class="petit">(${g.items.length})</span></summary>
-      ${g.items.map(it => `<details class="item" data-t="${esc(sansAccents(it.texte))}"><summary>${it.titre}</summary>${it.corps}</details>`).join("")}
-      </details>`).join("");
-  $("recherche").addEventListener("input", filtrerExercices);
+  $("tout-afficher").onchange = e => { toutAfficher = e.target.checked; afficherExercices(); };
 }
-// Recherche : n'affiche que les groupes et exercices qui contiennent le mot, et les ouvre
-function filtrerExercices() {
-  const q = sansAccents($("recherche").value.trim());
-  document.querySelectorAll("#ecran details.groupe").forEach(g => {
-    let n = 0;
-    g.querySelectorAll("details.item").forEach(it => {
-      const ok = !q || it.dataset.t.includes(q);
-      it.style.display = ok ? "" : "none"; it.open = !!q && ok; if (ok) n++;
-    });
-    g.style.display = n ? "" : "none"; g.open = !!q && n > 0;
-  });
-}
+$("ecran").addEventListener("click", e => {
+  if (vue !== "exercices") return;
+  const b = e.target.closest("button"); if (!b) return;
+  const t = b.dataset, y = window.scrollY;
+  const ouverts_ = [...document.querySelectorAll("#liste-exos details[open]")].map(d => d.dataset.nom || d.dataset.g);
+  if (t.filtre) { filtreEx = t.filtre; $("recherche").value = ""; afficherExercices(); return; }
+  if (t.favori !== undefined) {
+    const nom = EXERCICES[Number(t.favori)].nom, f = lireFavoris();
+    localStorage.setItem("favoris", JSON.stringify(f.includes(nom) ? f.filter(n => n !== nom) : [...f, nom]));
+    afficherExercices();
+    document.querySelectorAll("#liste-exos details").forEach(d => { if (ouverts_.includes(d.dataset.nom || d.dataset.g)) d.open = true; });
+    window.scrollTo(0, y); return;
+  }
+  if (t.ajouterExo !== undefined) {                          // ouvre la création de séance avec cet exercice
+    const x = EXERCICES[Number(t.ajouterExo)];
+    vue = "semaine"; semaineVue = semaineActuelle();
+    F = null; F = nouveauFormulaire();
+    F.ajouts = [{ exo: x.nom, series: 3, detail: "", repos: 0 }];
+    afficher();
+    const f = document.querySelector("[data-cree='suivant']"); if (f) f.scrollIntoView({ block: "center" });
+  }
+});
 
 let panneau = null;   // panneau de réglages ouvert
 function afficherReglages() {
@@ -1158,7 +1244,7 @@ function exporter() {
   }
   const csv = "\uFEFF" + lignes.map(l => l.map(champ).join(";")).join("\r\n");
   const sauvegarde = {};
-  Object.keys(localStorage).filter(k => /^(seance-|mesures-|libre-|libres$|reglages$)/.test(k)).forEach(k => sauvegarde[k] = localStorage.getItem(k));
+  Object.keys(localStorage).filter(k => /^(seance-|mesures-|libre-|libres$|reglages$|favoris$)/.test(k)).forEach(k => sauvegarde[k] = localStorage.getItem(k));
   const jour = isoDate(new Date());
   partager([new File([csv], `export-escalade-${jour}.csv`, { type: "text/csv" }),
             new File([JSON.stringify(sauvegarde)], `sauvegarde-escalade-${jour}.json`, { type: "application/json" })]);

@@ -1,6 +1,6 @@
 // Fichier généré par generer_app.py — tu peux aussi le modifier à la main.
 
-const VERSION_PROGRAMME = "10/11/2026 21:56";
+const VERSION_PROGRAMME = "10/11/2026 23:04";
 
 const DATE_DEBUT = "2026-10-26";
 
@@ -1335,473 +1335,724 @@ const ROUTINES = [
 
 const EXERCICES = [
  {
-  "categorie": "Technique",
+  "categorie": "Pieds",
   "nom": "Pieds silencieux",
   "comment": "Chaque pied se pose sans aucun bruit sur la prise.",
   "cle": "Oblige à regarder la prise et à viser précisément.",
-  "depuis": "Semaine 1"
+  "depuis": "Semaine 1",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 1
  },
  {
-  "categorie": "Technique",
+  "categorie": "Pieds",
   "nom": "Regarder le pied jusqu'à la pose",
   "comment": "Tes yeux suivent le pied jusqu'à ce qu'il soit posé ; seulement ensuite tu cherches la prise de main suivante.",
   "cle": "Base de la précision.",
-  "depuis": "Semaine 1"
+  "depuis": "Semaine 1",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 1
  },
  {
-  "categorie": "Technique",
+  "categorie": "Pieds",
   "nom": "Pieds collés",
   "comment": "Une fois un pied posé, interdiction de le réajuster.",
   "cle": "Apprend à placer le pied du premier coup.",
-  "depuis": "Semaine 1"
+  "depuis": "Semaine 1",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 1
  },
  {
-  "categorie": "Technique",
+  "categorie": "Pieds",
+  "nom": "Pied qui plane",
+  "comment": "Avant de poser un pied, il reste 2 s au-dessus de la prise, puis se pose sans bruit.",
+  "cle": "Précision et équilibre ; si tu n'y arrives pas, tes hanches sont mal placées.",
+  "depuis": "Semaine 3",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 3
+ },
+ {
+  "categorie": "Pieds",
+  "nom": "Pieds imposés",
+  "comment": "N'utiliser que les prises de pied de la voie (même couleur).",
+  "cle": "Oblige à chercher et viser les pieds, comme dans les voies plus dures.",
+  "depuis": "Semaine 3",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 3
+ },
+ {
+  "categorie": "Pieds",
+  "nom": "Adhérence (pied à plat)",
+  "comment": "Pose le pied à plat sur le mur ou sur une grosse prise ronde, talon bas, et charge-le franchement. Commence sur une dalle facile.",
+  "cle": "La confiance vient en chargeant le pied : un pied timide glisse. Talon bas pour plus de surface de gomme.",
+  "depuis": "Mois 9",
+  "discipline": "Voie et bloc",
+  "niveau": "Avancé",
+  "semaine": 35
+ },
+ {
+  "categorie": "Pieds",
+  "nom": "Carre intérieure / extérieure",
+  "comment": "Sur une prise, choisis volontairement la carre intérieure (gros orteil) ou extérieure (petit orteil) selon la position du corps.",
+  "cle": "Carre extérieure = profil, carre intérieure = face au mur. Annonce-toi la carre avant de poser le pied.",
+  "depuis": "Mois 9",
+  "discipline": "Voie et bloc",
+  "niveau": "Avancé",
+  "semaine": 35
+ },
+ {
+  "categorie": "Pieds",
+  "nom": "Pied haut / pied-main",
+  "comment": "Monter le pied très haut, parfois à hauteur de la main, puis transférer le poids dessus en poussant sur la jambe.",
+  "cle": "Demande de la souplesse de hanche : travaille la grenouille. Monte sans à-coup.",
+  "depuis": "Mois 9",
+  "discipline": "Voie et bloc",
+  "niveau": "Avancé",
+  "semaine": 35
+ },
+ {
+  "categorie": "Corps et équilibre",
   "nom": "Bras tendus",
   "comment": "Grimper en gardant les bras le plus tendus possible et monter en poussant sur les jambes.",
   "cle": "Le poids repose sur le squelette, pas sur les biceps : tu tiens plus longtemps.",
-  "depuis": "Semaine 1"
+  "depuis": "Semaine 1",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 1
  },
  {
-  "categorie": "Technique",
+  "categorie": "Corps et équilibre",
   "nom": "Main qui plane",
   "comment": "Avant de saisir une prise, la main reste 2 s au-dessus d'elle.",
   "cle": "Si impossible : améliore la position des pieds et des hanches.",
-  "depuis": "Semaine 3"
+  "depuis": "Semaine 3",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 3
  },
  {
-  "categorie": "Technique",
+  "categorie": "Corps et équilibre",
   "nom": "Grimpe au ralenti",
   "comment": "Grimper une voie facile deux fois plus lentement que d'habitude.",
   "cle": "Trouver l'équilibre à chaque position.",
-  "depuis": "Semaine 3"
+  "depuis": "Semaine 3",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 3
  },
  {
-  "categorie": "Technique",
-  "nom": "Désescalade",
-  "comment": "En bloc, redescendre en grimpant au lieu de sauter.",
-  "cle": "Lecture, contrôle des pieds, et protège les genoux.",
-  "depuis": "Semaine 1"
+  "categorie": "Corps et équilibre",
+  "nom": "Silence total",
+  "comment": "Grimper sans aucun bruit : les pieds ET les mains se posent en douceur, sans claquer les prises.",
+  "cle": "Oblige à contrôler chaque mouvement jusqu'au bout.",
+  "depuis": "Semaine 3",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 3
  },
  {
-  "categorie": "Technique",
-  "nom": "Lecture avant de grimper",
-  "comment": "Depuis le sol, mimer la séquence mains et pieds ; après, comparer avec ce que tu as fait.",
-  "cle": "Habitude à garder toute ta vie de grimpeur.",
-  "depuis": "Semaine 1"
+  "categorie": "Corps et équilibre",
+  "nom": "Trois points d'appui",
+  "comment": "Un seul membre bouge à la fois ; les trois autres restent en appui.",
+  "cle": "Grimpe calme et stable, base de l'économie d'effort.",
+  "depuis": "Semaine 3",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 3
  },
  {
-  "categorie": "Voie",
-  "nom": "Travail au point",
-  "comment": "Quand tu bloques, dis « sec » à ton assureur, repose-toi assis dans la corde, puis réessaie le mouvement.",
-  "cle": "Le but est de comprendre chaque passage, pas d'enchaîner. Compte tes « sec » : c'est ta mesure de progrès.",
-  "depuis": "Semaine 1"
+  "categorie": "Corps et équilibre",
+  "nom": "Arrêt sur image",
+  "comment": "Au milieu d'un mouvement, s'arrêter 3 s, puis repartir.",
+  "cle": "Révèle les positions instables : là où c'est dur de tenir, la position est à corriger.",
+  "depuis": "Semaine 3",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 3
+ },
+ {
+  "categorie": "Corps et équilibre",
+  "nom": "Mains ouvertes uniquement",
+  "comment": "Grimpe une voie facile en tenant toutes les prises main ouverte ou semi-arquée.",
+  "cle": "Protège les poulies et habitue les doigts à la position la plus sûre.",
+  "depuis": "Semaine 3",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 3
+ },
+ {
+  "categorie": "Corps et équilibre",
+  "nom": "Respiration",
+  "comment": "Expire pendant les mouvements difficiles, respire lentement sur les repos.",
+  "cle": "Retenir sa respiration crispe les bras.",
+  "depuis": "Mois 9",
+  "discipline": "Voie et bloc",
+  "niveau": "Avancé",
+  "semaine": 35
+ },
+ {
+  "categorie": "Corps et équilibre",
+  "nom": "Grimpe en dalle",
+  "comment": "Voies ou blocs légèrement couchés : poids au-dessus des pieds, bassin éloigné du mur, petits pas.",
+  "cle": "Excellent pour l'équilibre et la confiance dans les pieds. Désescalade plutôt que sauter.",
+  "depuis": "Mois 9",
+  "discipline": "Voie et bloc",
+  "niveau": "Avancé",
+  "semaine": 35
  },
  {
   "categorie": "Dévers",
   "nom": "Hanches collées",
   "comment": "À chaque mouvement, vérifie que ta hanche est contre le mur.",
   "cle": "Poitrine face au mur et fesses en arrière = mauvaise position.",
-  "depuis": "Semaine 1"
+  "depuis": "Semaine 1",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 1
  },
  {
   "categorie": "Dévers",
   "nom": "Profil alterné",
   "comment": "Pour attraper une prise main droite, tourne la hanche droite contre le mur sur la carre extérieure du pied droit, et inversement.",
   "cle": "Mouvement de base du dévers.",
-  "depuis": "Semaine 3"
+  "depuis": "Semaine 3",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 3
  },
  {
   "categorie": "Dévers",
   "nom": "Drop knee",
   "comment": "Version plus marquée du profil, genou tourné vers le bas.",
   "cle": "Entre lentement dans la position ; ressors-en à la moindre torsion du genou.",
-  "depuis": "Semaine 3"
+  "depuis": "Semaine 3",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 3
  },
  {
   "categorie": "Dévers",
   "nom": "Pieds qui tirent",
   "comment": "Les pieds poussent vers le bas ET tirent la prise vers toi avec les orteils.",
   "cle": "Garde le bassin près du mur.",
-  "depuis": "Semaine 5"
+  "depuis": "Semaine 5",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 5
  },
  {
   "categorie": "Dévers",
   "nom": "Ne jamais lâcher les pieds",
   "comment": "Sur un bloc facile en dévers, les pieds ne quittent jamais le mur sans que tu le décides.",
   "cle": "S'ils partent, ton gainage a lâché.",
-  "depuis": "Semaine 5"
+  "depuis": "Semaine 5",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 5
  },
  {
   "categorie": "Dévers",
   "nom": "Crochet de pointe",
   "comment": "Le dessus du chausson accroché sous une prise, pour empêcher le corps de pivoter.",
   "cle": "Toujours en douceur, jamais en force.",
-  "depuis": "Semaine 5"
+  "depuis": "Semaine 5",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 5
  },
  {
-  "categorie": "Technique avancée",
+  "categorie": "Dévers",
   "nom": "Crochet de talon",
   "comment": "Le talon posé sur une prise, la jambe tire pour rapprocher le corps.",
   "cle": "En douceur, sans forcer sur le genou ni sur l'arrière de la cuisse.",
-  "depuis": "Mois 3"
+  "depuis": "Mois 3",
+  "discipline": "Voie et bloc",
+  "niveau": "Intermédiaire",
+  "semaine": 10
  },
  {
-  "categorie": "Technique avancée",
-  "nom": "Changement de pied",
-  "comment": "Remplacer un pied par l'autre sur la même prise : libère la place en glissant ou en sautillant très légèrement.",
-  "cle": "Mouvement contrôlé, mains bien tenues.",
-  "depuis": "Mois 4"
- },
- {
-  "categorie": "Technique avancée",
-  "nom": "Opposition",
-  "comment": "Pousser d'un côté et tirer de l'autre (mains ou pieds) pour tenir une position sans bonne prise.",
-  "cle": "Utile dans les dièdres et les fissures.",
-  "depuis": "Mois 4"
- },
- {
-  "categorie": "Technique avancée",
-  "nom": "Repos bras tendu",
-  "comment": "En voie, sur une bonne prise, pendre bras tendu et secouer l'autre bras, puis changer.",
-  "cle": "À prévoir dans la lecture de voie.",
-  "depuis": "Mois 5"
- },
- {
-  "categorie": "Technique avancée",
+  "categorie": "Dévers",
   "nom": "Crochet de talon en dévers",
   "comment": "Même geste que le crochet de talon, mais pour garder le corps collé au mur en dévers.",
   "cle": "Toujours sans à-coup.",
-  "depuis": "Mois 6"
+  "depuis": "Mois 6",
+  "discipline": "Voie et bloc",
+  "niveau": "Intermédiaire",
+  "semaine": 23
  },
  {
-  "categorie": "Technique avancée",
-  "nom": "Déplacement dynamique contrôlé",
-  "comment": "Petite poussée de jambes pour atteindre une prise juste hors de portée, pieds qui restent sur le mur.",
-  "cle": "Jamais de jeté (les deux mains et les pieds qui lâchent).",
-  "depuis": "Mois 6"
+  "categorie": "Prises et positions",
+  "nom": "Changement de pied",
+  "comment": "Remplacer un pied par l'autre sur la même prise : libère la place en glissant ou en sautillant très légèrement.",
+  "cle": "Mouvement contrôlé, mains bien tenues.",
+  "depuis": "Mois 4",
+  "discipline": "Voie et bloc",
+  "niveau": "Intermédiaire",
+  "semaine": 14
  },
  {
-  "categorie": "Renforcement",
-  "nom": "Planche",
-  "comment": "Sur les avant-bras et la pointe des pieds, corps aligné, fesses ni hautes ni basses.",
-  "cle": "Arrête si le bas du dos se creuse.",
-  "depuis": "Semaine 1"
+  "categorie": "Prises et positions",
+  "nom": "Opposition",
+  "comment": "Pousser d'un côté et tirer de l'autre (mains ou pieds) pour tenir une position sans bonne prise.",
+  "cle": "Utile dans les dièdres et les fissures.",
+  "depuis": "Mois 4",
+  "discipline": "Voie et bloc",
+  "niveau": "Intermédiaire",
+  "semaine": 14
  },
  {
-  "categorie": "Renforcement",
-  "nom": "Planche latérale",
-  "comment": "Sur un avant-bras, corps aligné de profil, bassin haut.",
-  "cle": "Version facile : genoux au sol.",
-  "depuis": "Semaine 1"
- },
- {
-  "categorie": "Renforcement",
-  "nom": "Dead bug",
-  "comment": "Sur le dos, bras vers le plafond, genoux à 90°. Tends lentement un bras et la jambe opposée sans décoller le bas du dos.",
-  "cle": "Le bas du dos reste plaqué au sol.",
-  "depuis": "Semaine 1"
- },
- {
-  "categorie": "Renforcement",
-  "nom": "Hollow body",
-  "comment": "Sur le dos, bas du dos plaqué, épaules et jambes décollées (genoux pliés au début).",
-  "cle": "Jambes tendues seulement au mois 4.",
-  "depuis": "Semaine 3"
- },
- {
-  "categorie": "Renforcement",
-  "nom": "Pompes",
-  "comment": "Mains sur une table, puis au sol sur les genoux, puis complètes. Corps gainé.",
-  "cle": "Pour équilibrer les épaules (antagonistes).",
-  "depuis": "Semaine 1"
- },
- {
-  "categorie": "Renforcement",
-  "nom": "Rowing inversé",
-  "comment": "Sous une table lourde et stable, mains au bord, tirer la poitrine vers la table. Genoux pliés au début.",
-  "cle": "Vérifie la stabilité de la table. Alternative : élastique à une poignée de porte fermée.",
-  "depuis": "Semaine 1"
- },
- {
-  "categorie": "Renforcement",
-  "nom": "Suspension active",
-  "comment": "Suspendu à la barre bras tendus, abaisser et rapprocher les omoplates sans plier les bras.",
-  "cle": "Pieds sur une chaise au début. Teste la barre de porte avant.",
-  "depuis": "Semaine 1"
- },
- {
-  "categorie": "Renforcement",
-  "nom": "Tractions assistées",
-  "comment": "Traction lente avec les pieds sur une chaise ou un élastique pour soulager.",
-  "cle": "Seulement si la suspension active ne gêne ni coudes ni épaules.",
-  "depuis": "Mois 4"
- },
- {
-  "categorie": "Renforcement",
-  "nom": "Tractions complètes lentes",
-  "comment": "Traction sans aide, 2 s montée, 2 s descente.",
-  "cle": "Seulement si 3×5 assistées sont faciles et sans douleur.",
-  "depuis": "Mois 7"
- },
- {
-  "categorie": "Renforcement",
-  "nom": "Relevés de genoux suspendu",
-  "comment": "Suspendu, monter lentement les genoux vers la poitrine sans balancer.",
-  "cle": "Si la barre et les épaules le permettent.",
-  "depuis": "Mois 6"
- },
- {
-  "categorie": "Renforcement",
-  "nom": "Extensions des doigts",
-  "comment": "Un élastique léger autour des doigts tendus (au niveau des bouts). Ouvre lentement la main contre la résistance, puis referme.",
-  "cle": "Équilibre les muscles qui ferment la main, très sollicités en escalade. Prévention classique des douleurs de coude.",
-  "depuis": "Semaine 1"
- },
- {
-  "categorie": "Renforcement",
-  "nom": "Rotations externes à l'élastique",
-  "comment": "Coude au corps à 90°, écarter l'avant-bras vers l'extérieur contre l'élastique.",
-  "cle": "Protège les épaules. Élastique léger.",
-  "depuis": "Semaine 1"
- },
- {
-  "categorie": "Mobilité",
-  "nom": "Grenouille",
-  "comment": "À quatre pattes, genoux écartés, reculer doucement le bassin.",
-  "cle": "Améliore l'ouverture de hanches utile en escalade.",
-  "depuis": "Semaine 1"
- },
- {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "Adhérence (pied à plat)",
-  "comment": "Pose le pied à plat sur le mur ou sur une grosse prise ronde, talon bas, et charge-le franchement. Commence sur une dalle facile.",
-  "cle": "La confiance vient en chargeant le pied : un pied timide glisse. Talon bas pour plus de surface de gomme.",
-  "depuis": "Mois 9"
- },
- {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "Grimpe en dalle",
-  "comment": "Voies ou blocs légèrement couchés : poids au-dessus des pieds, bassin éloigné du mur, petits pas.",
-  "cle": "Excellent pour l'équilibre et la confiance dans les pieds. Désescalade plutôt que sauter.",
-  "depuis": "Mois 9"
- },
- {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "Carre intérieure / extérieure",
-  "comment": "Sur une prise, choisis volontairement la carre intérieure (gros orteil) ou extérieure (petit orteil) selon la position du corps.",
-  "cle": "Carre extérieure = profil, carre intérieure = face au mur. Annonce-toi la carre avant de poser le pied.",
-  "depuis": "Mois 9"
- },
- {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "Pied haut / pied-main",
-  "comment": "Monter le pied très haut, parfois à hauteur de la main, puis transférer le poids dessus en poussant sur la jambe.",
-  "cle": "Demande de la souplesse de hanche : travaille la grenouille. Monte sans à-coup.",
-  "depuis": "Mois 9"
- },
- {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "Rétablissement",
-  "comment": "Arriver au-dessus d'une prise en passant d'une traction à un appui paume, puis monter le pied à côté de la main.",
-  "cle": "Fréquent en sortie de bloc. Coude et poignet alignés, sans à-coup.",
-  "depuis": "Mois 9"
- },
- {
-  "categorie": "Technique (après 8 mois)",
+  "categorie": "Prises et positions",
   "nom": "Inversées",
   "comment": "Prise tenue paume vers le haut : monte les pieds haut et tire vers le haut avec le bas du corps éloigné.",
   "cle": "Plus les pieds sont hauts, plus l'inversée est facile.",
-  "depuis": "Mois 9"
+  "depuis": "Mois 9",
+  "discipline": "Voie et bloc",
+  "niveau": "Avancé",
+  "semaine": 35
  },
  {
-  "categorie": "Technique (après 8 mois)",
+  "categorie": "Prises et positions",
   "nom": "Plats (aplats)",
   "comment": "Main ouverte sur une prise ronde : bras tendu, corps sous la prise, poids bas.",
   "cle": "Main ouverte = moins de stress pour les poulies. On perd un plat quand le corps est trop haut.",
-  "depuis": "Mois 9"
+  "depuis": "Mois 9",
+  "discipline": "Voie et bloc",
+  "niveau": "Avancé",
+  "semaine": 35
  },
  {
-  "categorie": "Technique (après 8 mois)",
+  "categorie": "Prises et positions",
   "nom": "Pinces",
   "comment": "Prise tenue entre le pouce et les doigts : serrer avec toute la main, poignet neutre.",
   "cle": "Commence sur de grosses pinces.",
-  "depuis": "Mois 10"
+  "depuis": "Mois 10",
+  "discipline": "Voie et bloc",
+  "niveau": "Avancé",
+  "semaine": 39
  },
  {
-  "categorie": "Technique (après 8 mois)",
+  "categorie": "Prises et positions",
   "nom": "Dülfer (traction latérale)",
   "comment": "Sur une arête ou une prise verticale, tire latéralement avec les mains et pousse avec les pieds en opposition.",
   "cle": "Variante de l'opposition, très utile sur les dièdres et les arêtes.",
-  "depuis": "Mois 10"
+  "depuis": "Mois 10",
+  "discipline": "Voie et bloc",
+  "niveau": "Avancé",
+  "semaine": 39
  },
  {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "Gaston",
-  "comment": "Prise devant le visage tenue pouce vers le bas : tu pousses vers l'extérieur comme pour ouvrir une porte coulissante.",
-  "cle": "Sollicite l'épaule : sans à-coup, et pas si l'épaule est sensible.",
-  "depuis": "Mois 12"
- },
- {
-  "categorie": "Technique (après 8 mois)",
+  "categorie": "Prises et positions",
   "nom": "Écart en dièdre",
   "comment": "Dans un angle, un pied sur chaque paroi : pousse pour soulager les bras et te reposer.",
   "cle": "Souvent une position de repos cachée.",
-  "depuis": "Mois 10"
+  "depuis": "Mois 10",
+  "discipline": "Voie et bloc",
+  "niveau": "Avancé",
+  "semaine": 39
  },
  {
-  "categorie": "Technique",
-  "nom": "Traversée basse",
-  "comment": "Traverser le mur horizontalement à moins de 1 m du sol, 3 à 5 min sans poser pied à terre.",
-  "cle": "Endurance et précision des pieds à faible risque. Changer de sens chaque passage.",
-  "depuis": "Semaine 3"
+  "categorie": "Prises et positions",
+  "nom": "Gaston",
+  "comment": "Prise devant le visage tenue pouce vers le bas : tu pousses vers l'extérieur comme pour ouvrir une porte coulissante.",
+  "cle": "Sollicite l'épaule : sans à-coup, et pas si l'épaule est sensible.",
+  "depuis": "Mois 12",
+  "discipline": "Voie et bloc",
+  "niveau": "Avancé",
+  "semaine": 47
  },
  {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "Désescalade en voie",
-  "comment": "Arrivé en haut d'une voie facile, redescends-la en grimpant au lieu de te faire descendre.",
-  "cle": "Double le volume et oblige à regarder les pieds. Prévenir ton assureur.",
-  "depuis": "Mois 9"
+  "categorie": "Apprendre",
+  "nom": "Lecture avant de grimper",
+  "comment": "Depuis le sol, mimer la séquence mains et pieds ; après, comparer avec ce que tu as fait.",
+  "cle": "Habitude à garder toute ta vie de grimpeur.",
+  "depuis": "Semaine 1",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 1
  },
  {
-  "categorie": "Technique",
-  "nom": "Mains ouvertes uniquement",
-  "comment": "Grimpe une voie facile en tenant toutes les prises main ouverte ou semi-arquée.",
-  "cle": "Protège les poulies et habitue les doigts à la position la plus sûre.",
-  "depuis": "Semaine 3"
- },
- {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "Trois façons de faire",
-  "comment": "Réussis le même bloc facile de 2 ou 3 façons différentes (autre pied, profil, ordre des mains).",
-  "cle": "Enrichit ton répertoire de mouvements.",
-  "depuis": "Mois 9"
- },
- {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "Grimpe fluide",
-  "comment": "Sur une voie facile, ne t'arrête jamais plus de 3 s, sauf sur les repos que tu as choisis.",
-  "cle": "Améliore le rythme et l'économie d'effort.",
-  "depuis": "Mois 10"
- },
- {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "Respiration",
-  "comment": "Expire pendant les mouvements difficiles, respire lentement sur les repos.",
-  "cle": "Retenir sa respiration crispe les bras.",
-  "depuis": "Mois 9"
- },
- {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "À vue (lecture complète)",
-  "comment": "Choisis une voie inconnue, lis-la entièrement depuis le sol (mouvements, repos), puis tente-la sans « sec ».",
-  "cle": "Mesure ta capacité de lecture. Choisis une voie un niveau sous ton maximum.",
-  "depuis": "Mois 10"
- },
- {
-  "categorie": "Technique (après 8 mois)",
+  "categorie": "Apprendre",
   "nom": "Se filmer",
   "comment": "Fais-toi filmer sur une voie ou un bloc, puis regarde : hanches, pieds, bras pliés inutilement.",
   "cle": "Compare avec la vidéo d'un grimpeur plus fort sur la même voie.",
-  "depuis": "Mois 9"
+  "depuis": "Mois 9",
+  "discipline": "Voie et bloc",
+  "niveau": "Avancé",
+  "semaine": 35
  },
  {
-  "categorie": "Technique (après 8 mois)",
+  "categorie": "Apprendre",
   "nom": "Copier un grimpeur plus fort",
   "comment": "Observe la méthode d'un grimpeur expérimenté sur un bloc, puis essaie de la reproduire.",
   "cle": "Demande conseil : la plupart des grimpeurs aiment expliquer.",
-  "depuis": "Mois 9"
+  "depuis": "Mois 9",
+  "discipline": "Voie et bloc",
+  "niveau": "Avancé",
+  "semaine": 35
  },
  {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "Point mort (deadpoint)",
-  "comment": "Petit mouvement dynamique : tu attrapes la prise au sommet de la trajectoire, quand le corps ne monte plus et ne descend pas encore. Pieds au mur.",
-  "cle": "Seulement après 1 an, sur grosses prises, sans à-coup sur un bras tendu.",
-  "depuis": "Année 2"
+  "categorie": "Méthode",
+  "nom": "Travail au point",
+  "comment": "Quand tu bloques, dis « sec » à ton assureur, repose-toi assis dans la corde, puis réessaie le mouvement.",
+  "cle": "Le but est de comprendre chaque passage, pas d'enchaîner. Compte tes « sec » : c'est ta mesure de progrès.",
+  "depuis": "Semaine 1",
+  "discipline": "Voie",
+  "niveau": "Débutant",
+  "semaine": 1
  },
  {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "Mousquetonnage efficace (tête)",
-  "comment": "Mousquetonne depuis une position stable, bras tendu sur la prise, dégaine à hauteur de taille ou de poitrine.",
-  "cle": "Uniquement après un cours de tête. Ne mousquetonne pas bras au-dessus de la tête si tu peux monter un pied avant.",
-  "depuis": "Après cours de tête"
- },
- {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "Apprentissage de la chute en tête",
-  "comment": "Chutes courtes et progressives, encadrées par un moniteur, avec un assureur expérimenté.",
-  "cle": "Indispensable pour grimper en tête sereinement. Jamais seul, jamais au-dessus d'un relief.",
-  "depuis": "Après cours de tête"
- },
- {
-  "categorie": "Technique (après 8 mois)",
-  "nom": "Falaise école",
-  "comment": "Première sortie en extérieur avec un club ou un guide : lecture du rocher, prises naturelles.",
-  "cle": "Le rocher se lit autrement que la résine. Toujours encadré au début.",
-  "depuis": "Mois 12"
- },
- {
-  "categorie": "Technique",
-  "nom": "Silence total",
-  "comment": "Grimper sans aucun bruit : les pieds ET les mains se posent en douceur, sans claquer les prises.",
-  "cle": "Oblige à contrôler chaque mouvement jusqu'au bout.",
-  "depuis": "Semaine 3"
- },
- {
-  "categorie": "Technique",
-  "nom": "Pied qui plane",
-  "comment": "Avant de poser un pied, il reste 2 s au-dessus de la prise, puis se pose sans bruit.",
-  "cle": "Précision et équilibre ; si tu n'y arrives pas, tes hanches sont mal placées.",
-  "depuis": "Semaine 3"
- },
- {
-  "categorie": "Technique",
-  "nom": "Trois points d'appui",
-  "comment": "Un seul membre bouge à la fois ; les trois autres restent en appui.",
-  "cle": "Grimpe calme et stable, base de l'économie d'effort.",
-  "depuis": "Semaine 3"
- },
- {
-  "categorie": "Technique",
-  "nom": "Arrêt sur image",
-  "comment": "Au milieu d'un mouvement, s'arrêter 3 s, puis repartir.",
-  "cle": "Révèle les positions instables : là où c'est dur de tenir, la position est à corriger.",
-  "depuis": "Semaine 3"
- },
- {
-  "categorie": "Technique",
+  "categorie": "Méthode",
   "nom": "Face puis profil",
   "comment": "Grimper la même voie facile deux fois : d'abord face au mur, puis en profil, hanche contre le mur.",
   "cle": "Fait sentir l'économie du profil, très utile pour le dévers.",
-  "depuis": "Semaine 3"
+  "depuis": "Semaine 3",
+  "discipline": "Voie",
+  "niveau": "Débutant",
+  "semaine": 3
  },
  {
-  "categorie": "Technique",
-  "nom": "Pieds imposés",
-  "comment": "N'utiliser que les prises de pied de la voie (même couleur).",
-  "cle": "Oblige à chercher et viser les pieds, comme dans les voies plus dures.",
-  "depuis": "Semaine 3"
- },
- {
-  "categorie": "Technique",
+  "categorie": "Méthode",
   "nom": "Changement de main",
   "comment": "Sur une bonne prise, libérer de la place pour y placer l'autre main, doigt par doigt si besoin.",
   "cle": "Fréquent en voie ; à faire d'abord sur de grosses prises.",
-  "depuis": "Semaine 3"
+  "depuis": "Semaine 3",
+  "discipline": "Voie",
+  "niveau": "Débutant",
+  "semaine": 3
  },
  {
-  "categorie": "Technique",
+  "categorie": "Méthode",
+  "nom": "Repos bras tendu",
+  "comment": "En voie, sur une bonne prise, pendre bras tendu et secouer l'autre bras, puis changer.",
+  "cle": "À prévoir dans la lecture de voie.",
+  "depuis": "Mois 5",
+  "discipline": "Voie",
+  "niveau": "Intermédiaire",
+  "semaine": 18
+ },
+ {
+  "categorie": "Méthode",
+  "nom": "À vue (lecture complète)",
+  "comment": "Choisis une voie inconnue, lis-la entièrement depuis le sol (mouvements, repos), puis tente-la sans « sec ».",
+  "cle": "Mesure ta capacité de lecture. Choisis une voie un niveau sous ton maximum.",
+  "depuis": "Mois 10",
+  "discipline": "Voie",
+  "niveau": "Avancé",
+  "semaine": 39
+ },
+ {
+  "categorie": "Endurance",
+  "nom": "Désescalade en voie",
+  "comment": "Arrivé en haut d'une voie facile, redescends-la en grimpant au lieu de te faire descendre.",
+  "cle": "Double le volume et oblige à regarder les pieds. Prévenir ton assureur.",
+  "depuis": "Mois 9",
+  "discipline": "Voie",
+  "niveau": "Avancé",
+  "semaine": 35
+ },
+ {
+  "categorie": "Endurance",
+  "nom": "Grimpe fluide",
+  "comment": "Sur une voie facile, ne t'arrête jamais plus de 3 s, sauf sur les repos que tu as choisis.",
+  "cle": "Améliore le rythme et l'économie d'effort.",
+  "depuis": "Mois 10",
+  "discipline": "Voie",
+  "niveau": "Avancé",
+  "semaine": 39
+ },
+ {
+  "categorie": "En tête et falaise",
+  "nom": "Falaise école",
+  "comment": "Première sortie en extérieur avec un club ou un guide : lecture du rocher, prises naturelles.",
+  "cle": "Le rocher se lit autrement que la résine. Toujours encadré au début.",
+  "depuis": "Mois 12",
+  "discipline": "Voie",
+  "niveau": "Avancé",
+  "semaine": 47
+ },
+ {
+  "categorie": "En tête et falaise",
+  "nom": "Mousquetonnage efficace (tête)",
+  "comment": "Mousquetonne depuis une position stable, bras tendu sur la prise, dégaine à hauteur de taille ou de poitrine.",
+  "cle": "Uniquement après un cours de tête. Ne mousquetonne pas bras au-dessus de la tête si tu peux monter un pied avant.",
+  "depuis": "Après cours de tête",
+  "discipline": "Voie",
+  "niveau": "Avancé",
+  "semaine": 999
+ },
+ {
+  "categorie": "En tête et falaise",
+  "nom": "Apprentissage de la chute en tête",
+  "comment": "Chutes courtes et progressives, encadrées par un moniteur, avec un assureur expérimenté.",
+  "cle": "Indispensable pour grimper en tête sereinement. Jamais seul, jamais au-dessus d'un relief.",
+  "depuis": "Après cours de tête",
+  "discipline": "Voie",
+  "niveau": "Avancé",
+  "semaine": 999
+ },
+ {
+  "categorie": "Méthode",
+  "nom": "Désescalade",
+  "comment": "En bloc, redescendre en grimpant au lieu de sauter.",
+  "cle": "Lecture, contrôle des pieds, et protège les genoux.",
+  "depuis": "Semaine 1",
+  "discipline": "Bloc",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Méthode",
+  "nom": "Trois façons de faire",
+  "comment": "Réussis le même bloc facile de 2 ou 3 façons différentes (autre pied, profil, ordre des mains).",
+  "cle": "Enrichit ton répertoire de mouvements.",
+  "depuis": "Mois 9",
+  "discipline": "Bloc",
+  "niveau": "Avancé",
+  "semaine": 35
+ },
+ {
+  "categorie": "Méthode",
+  "nom": "Rétablissement",
+  "comment": "Arriver au-dessus d'une prise en passant d'une traction à un appui paume, puis monter le pied à côté de la main.",
+  "cle": "Fréquent en sortie de bloc. Coude et poignet alignés, sans à-coup.",
+  "depuis": "Mois 9",
+  "discipline": "Bloc",
+  "niveau": "Avancé",
+  "semaine": 35
+ },
+ {
+  "categorie": "Jeux et endurance",
+  "nom": "Traversée basse",
+  "comment": "Traverser le mur horizontalement à moins de 1 m du sol, 3 à 5 min sans poser pied à terre.",
+  "cle": "Endurance et précision des pieds à faible risque. Changer de sens chaque passage.",
+  "depuis": "Semaine 3",
+  "discipline": "Bloc",
+  "niveau": "Débutant",
+  "semaine": 3
+ },
+ {
+  "categorie": "Jeux et endurance",
   "nom": "Jeu des mouvements ajoutés",
   "comment": "À deux, sur une traversée basse : le premier fait 2 mouvements, le suivant les refait et en ajoute un, et ainsi de suite.",
   "cle": "Mémoire, lecture et endurance, en restant près du sol.",
-  "depuis": "Semaine 3"
+  "depuis": "Semaine 3",
+  "discipline": "Bloc",
+  "niveau": "Débutant",
+  "semaine": 3
  },
  {
-  "categorie": "Mobilité",
+  "categorie": "Dynamique",
+  "nom": "Déplacement dynamique contrôlé",
+  "comment": "Petite poussée de jambes pour atteindre une prise juste hors de portée, pieds qui restent sur le mur.",
+  "cle": "Jamais de jeté (les deux mains et les pieds qui lâchent).",
+  "depuis": "Mois 6",
+  "discipline": "Bloc",
+  "niveau": "Intermédiaire",
+  "semaine": 23
+ },
+ {
+  "categorie": "Dynamique",
+  "nom": "Point mort (deadpoint)",
+  "comment": "Petit mouvement dynamique : tu attrapes la prise au sommet de la trajectoire, quand le corps ne monte plus et ne descend pas encore. Pieds au mur.",
+  "cle": "Seulement après 1 an, sur grosses prises, sans à-coup sur un bras tendu.",
+  "depuis": "Année 2",
+  "discipline": "Bloc",
+  "niveau": "Avancé",
+  "semaine": 53
+ },
+ {
+  "categorie": "Gainage",
+  "nom": "Planche",
+  "comment": "Sur les avant-bras et la pointe des pieds, corps aligné, fesses ni hautes ni basses.",
+  "cle": "Arrête si le bas du dos se creuse.",
+  "depuis": "Semaine 1",
+  "discipline": "Muscu",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Gainage",
+  "nom": "Planche latérale",
+  "comment": "Sur un avant-bras, corps aligné de profil, bassin haut.",
+  "cle": "Version facile : genoux au sol.",
+  "depuis": "Semaine 1",
+  "discipline": "Muscu",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Gainage",
+  "nom": "Dead bug",
+  "comment": "Sur le dos, bras vers le plafond, genoux à 90°. Tends lentement un bras et la jambe opposée sans décoller le bas du dos.",
+  "cle": "Le bas du dos reste plaqué au sol.",
+  "depuis": "Semaine 1",
+  "discipline": "Muscu",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Gainage",
+  "nom": "Hollow body",
+  "comment": "Sur le dos, bas du dos plaqué, épaules et jambes décollées (genoux pliés au début).",
+  "cle": "Jambes tendues seulement au mois 4.",
+  "depuis": "Semaine 3",
+  "discipline": "Muscu",
+  "niveau": "Débutant",
+  "semaine": 3
+ },
+ {
+  "categorie": "Gainage",
+  "nom": "Relevés de genoux suspendu",
+  "comment": "Suspendu, monter lentement les genoux vers la poitrine sans balancer.",
+  "cle": "Si la barre et les épaules le permettent.",
+  "depuis": "Mois 6",
+  "discipline": "Muscu",
+  "niveau": "Intermédiaire",
+  "semaine": 23
+ },
+ {
+  "categorie": "Haut du corps",
+  "nom": "Pompes",
+  "comment": "Mains sur une table, puis au sol sur les genoux, puis complètes. Corps gainé.",
+  "cle": "Pour équilibrer les épaules (antagonistes).",
+  "depuis": "Semaine 1",
+  "discipline": "Muscu",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Haut du corps",
+  "nom": "Rowing inversé",
+  "comment": "Sous une table lourde et stable, mains au bord, tirer la poitrine vers la table. Genoux pliés au début.",
+  "cle": "Vérifie la stabilité de la table. Alternative : élastique à une poignée de porte fermée.",
+  "depuis": "Semaine 1",
+  "discipline": "Muscu",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Haut du corps",
+  "nom": "Suspension active",
+  "comment": "Suspendu à la barre bras tendus, abaisser et rapprocher les omoplates sans plier les bras.",
+  "cle": "Pieds sur une chaise au début. Teste la barre de porte avant.",
+  "depuis": "Semaine 1",
+  "discipline": "Muscu",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Haut du corps",
+  "nom": "Tractions assistées",
+  "comment": "Traction lente avec les pieds sur une chaise ou un élastique pour soulager.",
+  "cle": "Seulement si la suspension active ne gêne ni coudes ni épaules.",
+  "depuis": "Mois 4",
+  "discipline": "Muscu",
+  "niveau": "Intermédiaire",
+  "semaine": 14
+ },
+ {
+  "categorie": "Haut du corps",
+  "nom": "Tractions complètes lentes",
+  "comment": "Traction sans aide, 2 s montée, 2 s descente.",
+  "cle": "Seulement si 3×5 assistées sont faciles et sans douleur.",
+  "depuis": "Mois 7",
+  "discipline": "Muscu",
+  "niveau": "Intermédiaire",
+  "semaine": 27
+ },
+ {
+  "categorie": "Prévention",
+  "nom": "Extensions des doigts",
+  "comment": "Un élastique léger autour des doigts tendus (au niveau des bouts). Ouvre lentement la main contre la résistance, puis referme.",
+  "cle": "Équilibre les muscles qui ferment la main, très sollicités en escalade. Prévention classique des douleurs de coude.",
+  "depuis": "Semaine 1",
+  "discipline": "Muscu",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Prévention",
+  "nom": "Rotations externes à l'élastique",
+  "comment": "Coude au corps à 90°, écarter l'avant-bras vers l'extérieur contre l'élastique.",
+  "cle": "Protège les épaules. Élastique léger.",
+  "depuis": "Semaine 1",
+  "discipline": "Muscu",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Allure et technique",
+  "nom": "Allure conversation",
+  "comment": "Courir assez lentement pour pouvoir parler en phrases complètes. Si tu es essoufflé, ralentis ou marche.",
+  "cle": "Construit l'endurance sans fatiguer les tendons : c'est l'allure de toutes les sorties du programme.",
+  "depuis": "Semaine 1",
+  "discipline": "Course",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Allure et technique",
+  "nom": "Foulée courte et légère",
+  "comment": "Petits pas rapides, pied qui se pose sous le bassin, sans attaquer du talon, épaules et bras détendus.",
+  "cle": "Réduit les chocs sur les genoux et les tibias.",
+  "depuis": "Semaine 1",
+  "discipline": "Course",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Allure et technique",
+  "nom": "Marche active",
+  "comment": "Pendant les fractions de marche, marcher vite en balançant les bras, sans s'arrêter.",
+  "cle": "Garde le cœur actif et facilite la reprise de la course.",
+  "depuis": "Semaine 1",
+  "discipline": "Course",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Récupération",
+  "nom": "Étirement des mollets et du tendon d'Achille",
+  "comment": "Mains contre un mur, une jambe tendue derrière, talon au sol : 30 s. Puis genou arrière légèrement plié : 30 s. Chaque côté.",
+  "cle": "Après la course seulement, sans forcer. Une douleur au talon = reviens au palier précédent.",
+  "depuis": "Semaine 1",
+  "discipline": "Course",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Récupération",
+  "nom": "Retour au calme en marchant",
+  "comment": "5 minutes de marche après la course, jusqu'à ce que la respiration redevienne calme.",
+  "cle": "Évite l'arrêt brutal, surtout au début.",
+  "depuis": "Semaine 1",
+  "discipline": "Course",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Hanches",
+  "nom": "Grenouille",
+  "comment": "À quatre pattes, genoux écartés, reculer doucement le bassin.",
+  "cle": "Améliore l'ouverture de hanches utile en escalade.",
+  "depuis": "Semaine 1",
+  "discipline": "Mobilité",
+  "niveau": "Débutant",
+  "semaine": 1
+ },
+ {
+  "categorie": "Hanches",
   "nom": "90/90 des hanches",
   "comment": "Assis, une jambe pliée devant à 90°, l'autre pliée sur le côté à 90°. Basculer lentement les genoux d'un côté à l'autre.",
   "cle": "Ouvre les hanches pour les pieds hauts et le profil. Sans forcer.",
-  "depuis": "Semaine 1"
+  "depuis": "Semaine 1",
+  "discipline": "Mobilité",
+  "niveau": "Débutant",
+  "semaine": 1
  }
 ];
 
