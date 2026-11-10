@@ -146,3 +146,12 @@ details.item { padding:10px 0; }
 /* Vue Semaine : séance du jour */
 .semaine-item.aujourdhui { border:2px solid var(--marque); background:var(--info); }
 .petit-etiquette { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--marque); }
+
+/* ---------- Version 3.3 : exercices par discipline ---------- */
+.rangee { display:flex; flex-wrap:wrap; gap:6px; padding:10px 0 6px; }
+.rangee button { flex:none; height:40px; padding:0 14px; font-weight:600; white-space:nowrap; }
+.interrupteur { display:flex; align-items:center; gap:8px; font-size:14px; color:var(--doux); margin:4px 0 12px; }
+.interrupteur input { width:22px; height:22px; accent-color:var(--marque); }
+.badge { display:inline-block; font-size:12px; font-weight:700; padding:2px 8px; border-radius:20px; background:var(--info); color:var(--marque); }
+details.item.verrou > summary { color:var(--doux); opacity:.7; }
+details.item .choix { margin-top:8px; }
