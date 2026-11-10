@@ -9,7 +9,7 @@
 // =====================================================================
 // 1. RÉGLAGES DU PROGRAMME (modifiables dans le code)
 // =====================================================================
-const APP_VERSION = "3.1";
+const APP_VERSION = "3.2";
 const REPOS_DEFAUT = { Voie: 300, Bloc: 180, Maison: 90 };   // secondes, si la ligne n'indique rien
 const COTATIONS = { Voie: ["3","4","4c","5a","5b","5c","6a","6b","6c"], Bloc: ["2","3","4","5","6","7"] };
 COTATIONS["Escalade extérieur"] = COTATIONS.Voie;               // se note comme une voie
@@ -209,68 +209,110 @@ function avertissements(s) {
 // =====================================================================
 // 7. ÉCRAN SÉANCE
 // =====================================================================
-let vue = "seance";          // "seance", "semaine" ou "exercices"
+let vue = "seance";          // "seance", "semaine", "exercices" ou "reglages"
 let semaineVue = 1;
-let ouverts = new Set();     // explications et détails dépliés
+let ouverts = new Set();     // éléments dépliés : explications, détails, cartes repliées
 let formVoie = null;         // formulaire « + Voie » manuel
+const basculer = k => ouverts.has(k) ? ouverts.delete(k) : ouverts.add(k);
+
+// Prochain élément à faire : routine non cochée ou action pas terminée (-1 = tout est fait)
+function prochain(s, d) {
+  const els = elementsDe(s, d);
+  for (let i = 0; i < els.length; i++) {
+    const e = els[i];
+    if (e.type === "routine" && !routineOk(d, i)) return i;
+    if (e.type === "action" && compte(d, i) < e.n) return i;
+  }
+  return -1;
+}
+const etapesRoutine = nom => ROUTINES.filter(r => r.routine === nom);
+const minutesEtape = r => { const m = String(r.duree || "").match(/^(\d+) min$/); return m ? Number(m[1]) : 0; };
+const routineGuidable = nom => etapesRoutine(nom).some(r => minutesEtape(r) > 0);
+const titreAction = e => sansGuillemets(e.texte);
 
 function afficherSeance() {
   const s = courant(), d = lire(s), act = s.activite;
   $("titre-date").textContent = `${s.jour} ${jourMois(dateSeance(s))} · sem. ${s.semaine}`;
-  const versions = versionsDe(s), elements = elementsDe(s, d);
+  const versions = versionsDe(s), elements = elementsDe(s, d), k = prochain(s, d);
   let h = `<h1>${esc(act)}</h1><p class="phase">${esc(s.phase)}</p>`;
-  h += avertissements(s) + carteDerniereFois(s);
+  h += carteMaintenant(s, d, elements, k);
+  h += avertissements(s) + ligneDerniereFois(s);
 
-  // --- Démarrer / Terminer ---
-  if (!d.debut) h += `<button class="gros go" data-action="demarrer">▶ Démarrer la séance</button><p></p>`;
+  // --- État de la séance ---
+  if (d.fait === "Sautée") h += `<p class="petit">Séance marquée comme sautée · <button class="lien" data-action="desauter">annuler</button></p>`;
+  else if (!d.debut) h += `<button class="gros go" data-action="demarrer">▶ Démarrer la séance</button>
+    <p class="petit centre">Elle démarre aussi toute seule au premier passage · <button class="lien" data-action="sauter">séance sautée</button></p>`;
   else if (!d.fin) h += `<div class="carte"><b>En cours</b> · <span id="chrono">${minutes(d.debut)} min</span>
-                         <p></p><button class="gros go" data-action="terminer">■ Terminer la séance</button></div>`;
-  else h += `<p class="petit">Terminée · ${d.duree} min · <button class="lien" data-action="reprendre">reprendre</button></p>`;
+    <p></p><button class="gros go" data-action="terminer">■ Terminer la séance</button></div>`;
+  else h += `<p class="petit">Terminée · ${d.duree} min${!vide(d.effort) ? " · effort " + d.effort : ""}${Number(d.douleur) > 0 ? " · douleur " + d.douleur : ""}
+    · <button class="lien" data-action="bilan">modifier</button> · <button class="lien" data-action="reprendre">reprendre</button></p>`;
 
-  // --- Choix de la version ---
-  if (versions.length > 1) h += `<div class="carte"><h2>Version</h2><div class="choix">${versions.map((v, k) =>
-    `<button data-version="${k}" class="${(d.version || 0) === k ? "choisi" : ""}">${esc(v.nom)}</button>`).join("")}</div></div>`;
+  // --- Version : repliée une fois la séance commencée ---
+  if (versions.length > 1) {
+    if (d.debut && !ouverts.has("versions"))
+      h += `<p class="petit">Version : <b>${esc(nomVersion(s, d))}</b> · <button class="lien" data-plier="versions">changer</button></p>`;
+    else h += `<div class="carte"><h2>Version</h2><div class="choix">${versions.map((v, n) =>
+      `<button data-version="${n}" class="${(d.version || 0) === n ? "choisi" : ""}">${esc(v.nom)}</button>`).join("")}</div></div>`;
+  }
 
   // --- Programme ---
   h += `<div class="carte">`;
-  if (s.libre) h += `<p class="petit">Séance libre : pas de programme, note simplement ce que tu fais.</p>`;
+  if (s.libre && !elements.length) h += `<p class="petit">Séance libre : pas de programme, note simplement ce que tu fais.</p>`;
   elements.forEach((e, i) => {
     if (e.type === "info") h += `<div class="ligne info">${lier(e.texte, i)}${explication(i)}</div>`;
-    if (e.type === "routine") h += ligneRoutine(e, i, d);
-    if (e.type === "action") h += ligneAction(s, d, e, i);
+    if (e.type === "routine") h += ligneRoutine(e, i, d, i === k);
+    if (e.type === "action") h += ligneAction(s, d, e, i, i === k);
   });
   h += `</div>`;
 
-  if (COTATIONS[actReleve(s, d)]) h += carteVoies(d, actReleve(s, d));
-  h += carteBilan(d, actReleve(s, d));
-  const derniere = LISTE.map(x => x.semaine).lastIndexOf(s.semaine);
-  if (derniere === index) h += carteMesures(s.semaine);
-  if (s.libre) h += `<button class="gros" data-action="supprimer-libre">Supprimer cette séance libre</button>`;
+  if (COTATIONS[actReleve(s, d)]) h += carteReleve(d, actReleve(s, d));
+  if (LISTE.map(x => x.semaine).lastIndexOf(s.semaine) === index)
+    h += `<button class="gros" data-action="mesures">Mesures de la semaine ${s.semaine} ▸</button><p></p>`;
+  if (s.libre) h += `<button class="gros" data-action="supprimer-libre">Supprimer cette séance</button>`;
   $("ecran").innerHTML = h;
 }
 
-function ligneRoutine(e, i, d) {
-  const ok = routineOk(d, i), etapes = ROUTINES.filter(r => r.routine === e.nom);
+// Carte « Maintenant » : l'étape en cours, fixée en haut, avec un gros bouton ✓ Fait
+function carteMaintenant(s, d, els, k) {
+  if (d.fin || d.fait === "Sautée") return "";
+  if (k === -1) return d.debut ? `<div class="maintenant"><b>Tout est fait ✓</b><p></p>
+    <button class="gros go" data-action="terminer">■ Terminer la séance</button></div>` : "";
+  const e = els[k];
+  let titre, sous, boutons = "";
+  if (e.type === "routine") {
+    titre = e.nom; sous = "Routine";
+    if (routineGuidable(e.nom)) boutons += `<button class="gros" data-guide="${k}">▶ Guidé</button>`;
+  } else {
+    titre = titreAction(e); sous = `Passage ${compte(d, k) + 1} sur ${e.n}`;
+    if (e.intervalle || e.travail) boutons += `<button class="gros" data-chrono="${k}">▶ Chrono</button>`;
+  }
+  return `<div class="maintenant"><div class="petit">Maintenant · ${esc(sous)}</div><div class="maintenant-titre">${esc(titre)}</div>
+    <div class="choix">${boutons}<button class="gros go" data-fait="${k}">✓ Fait</button></div></div>`;
+}
+
+function ligneRoutine(e, i, d, actuelle) {
+  const ok = routineOk(d, i), etapes = etapesRoutine(e.nom);
   const durees = etapes.map(r => r.duree).filter(x => x && x !== "—");
   const total = durees.length && durees.every(x => /^\d+ min$/.test(x)) ? durees.reduce((t, x) => t + parseInt(x), 0) + " min" : durees.join(" + ");
-  return `<div class="ligne ${ok ? "finie" : ""}">
+  return `<div class="ligne ${ok ? "finie" : ""} ${actuelle ? "actuelle" : ""}" data-el="${i}">
     <button class="case ${ok ? "ok" : ""}" data-routine="${i}">✓</button>
     <div class="txt"><button class="lien" data-detail="${i}">${esc(e.nom)}${total ? " · " + esc(total) : ""} ▸</button>
+    ${routineGuidable(e.nom) && !ok ? `<div class="outils"><button data-guide="${i}">▶ Guidé</button></div>` : ""}
     ${ouverts.has("d" + i) ? `<div class="detail">${etapes.map(r =>
       `<p><b>${esc(r.etape)}</b>${r.duree && r.duree !== "—" ? " (" + esc(r.duree) + ")" : ""} : ${esc(r.quoi)}</p>`).join("")}</div>` : ""}
     </div></div>`;
 }
 
-function ligneAction(s, d, e, i) {
+function ligneAction(s, d, e, i, actuelle) {
   const c = compte(d, i), repos = reposDe(s, e);
   const marques = e.n <= 10
-    ? Array.from({ length: e.n }, (_, k) => `<button class="rond ${k < c ? "ok" : ""}" data-rond="${i}" data-k="${k}">${k < c ? "✓" : ""}</button>`).join("")
+    ? Array.from({ length: e.n }, (_, n) => `<button class="rond ${n < c ? "ok" : ""}" data-rond="${i}" data-k="${n}">${n < c ? "✓" : ""}</button>`).join("")
     : `<div class="compteur"><button data-cpt="${i}" data-pas="-1">−</button><span>${c}/${e.n}</span><button data-cpt="${i}" data-pas="1">+</button></div>`;
   let outils = "";
   if (e.intervalle) outils += `<button data-chrono="${i}">▶ ${mmss(e.intervalle.course)} / ${mmss(e.intervalle.marche)}</button>`;
   else if (e.travail) outils += `<button data-chrono="${i}">▶ ${duree(e.travail)}${e.cotes ? " × 2 côtés" : ""}</button>`;
   if (repos) outils += `<button data-repos="${i}">⏱ repos ${duree(repos)}</button>`;
-  return `<div class="ligne ${c >= e.n ? "finie" : ""}" data-action-ligne="${i}">
+  return `<div class="ligne ${c >= e.n ? "finie" : ""} ${actuelle ? "actuelle" : ""}" data-action-ligne="${i}" data-el="${i}">
     <div class="txt">${lier(e.texte, i)}${outils ? `<div class="outils">${outils}</div>` : ""}${historique(e)}${explication(i)}</div>
     <div class="ronds">${marques}</div></div>`;
 }
@@ -283,19 +325,19 @@ function explication(i) {
   return `<div class="explic"><b>${esc(x.nom)}</b> : ${esc(x.comment)}<br><span class="petit">${esc(x.cle)}</span></div>`;
 }
 
-// Historique : la dernière séance de la même activité
-function carteDerniereFois(s) {
+// « La dernière fois » : une ligne repliée, le détail au toucher
+function ligneDerniereFois(s) {
   for (let k = index - 1; k >= 0; k--) {
     const p = LISTE[k], d = lire(p);
     if (p.activite !== s.activite || !(d.fait || (d.voies || []).length)) continue;
-    const morceaux = [d.fait === "Oui" ? `faite${d.duree ? " en " + d.duree + " min" : ""}` : esc(d.fait),
-      nomVersion(p, d) ? "version " + esc(nomVersion(p, d)) : "",
-      !vide(d.effort) ? `effort ${d.effort}` : "",
-      !vide(d.douleur) && d.douleur > 0 ? `douleur ${d.douleur}${d.zone ? " (" + esc(d.zone) + ")" : ""}` : ""].filter(Boolean);
-    return `<div class="carte"><b>La dernière fois</b> <span class="petit">(${esc(p.jour)} ${jourMois(dateSeance(p))}, sem. ${p.semaine})</span>
-      <p class="petit">${morceaux.join(" · ")}</p>
+    const court = [d.fait === "Oui" ? (d.duree ? d.duree + " min" : "faite") : esc(d.fait),
+      !vide(d.effort) ? `effort ${d.effort}` : "", Number(d.douleur) > 0 ? `douleur ${d.douleur}` : ""].filter(Boolean).join(" · ");
+    let h = `<button class="ligne-pliee" data-plier="derniere">La dernière fois (${esc(p.jour)} ${jourMois(dateSeance(p))}) : ${court} ${ouverts.has("derniere") ? "▾" : "▸"}</button>`;
+    if (ouverts.has("derniere")) h += `<div class="carte">
+      ${nomVersion(p, d) ? `<p class="petit">Version ${esc(nomVersion(p, d))}${d.zone ? " · zone " + esc(d.zone) : ""}</p>` : ""}
       ${(d.voies || []).length ? `<p class="petit">${d.voies.map(resume).map(esc).join(" · ")}</p>` : ""}
       ${d.notes ? `<p class="petit">« ${esc(d.notes)} »</p>` : ""}</div>`;
+    return h;
   }
   return "";
 }
@@ -314,17 +356,21 @@ function historique(e) {
   return "";
 }
 
-function carteVoies(d, act) {
+// Relevé replié : « 3 voies notées ▸ » + bouton + Voie
+function carteReleve(d, act) {
   const voie = estVoie(act);
   const liste = (d.voies || []).map((v, k) => ({ v, k })).filter(x => (x.v.act || act) === act);
-  let h = `<div class="carte"><h2>${voie ? "Voies grimpées" : "Blocs grimpés"}</h2>`;
-  liste.forEach(({ v, k }) => {
+  const mot = voie ? (liste.length > 1 ? "voies notées" : "voie notée") : (liste.length > 1 ? "blocs notés" : "bloc noté");
+  let h = `<div class="carte"><div class="entete-pliee">
+    <button class="lien" data-plier="releve">${liste.length} ${mot} ${ouverts.has("releve") ? "▾" : "▸"}</button>
+    <button class="petit-bouton" data-form="ouvrir">+ ${voie ? "Voie" : "Bloc"}</button></div>`;
+  if (ouverts.has("releve")) liste.forEach(({ v, k }) => {
     const res = v.res === "Avec sec" ? `${v.sec} « sec »` : v.res;
     h += `<div class="voie"><span><b>${esc(v.cot)}</b> · ${v.profil} · ${res}</span><button data-suppr="${k}">✕</button></div>`;
   });
-  if (!formVoie) return h + `<p></p><button class="gros" data-form="ouvrir">+ ${voie ? "Voie" : "Bloc"}</button></div>`;
-  return h + formulaireResultat(formVoie, act, "form") + `<p></p><div class="choix"><button data-form="annuler">Annuler</button>
-    <button data-form="ajouter" class="choisi" ${formVoie.cot && formVoie.res ? "" : "disabled"}>Ajouter</button></div></div>`;
+  if (formVoie) h += formulaireResultat(formVoie, act, "form") + `<p></p><div class="choix"><button data-form="annuler">Annuler</button>
+    <button data-form="ajouter" class="choisi" ${formVoie.cot && formVoie.res ? "" : "disabled"}>Ajouter</button></div>`;
+  return h + `</div>`;
 }
 // Formulaire commun : cotation, profil, résultat (et nombre de « sec »)
 function formulaireResultat(f, act, attr) {
@@ -337,45 +383,25 @@ function formulaireResultat(f, act, attr) {
       <button data-${attr}="sec" data-pas="-1">−</button><span>${f.sec}</span><button data-${attr}="sec" data-pas="1">+</button></div>` : ""}`;
 }
 
-function carteBilan(d, act) {
-  const bouton = (champ, v) => `<button data-valeur="${v}" class="${String(d[champ]) === String(v) ? "choisi" : ""}">${v}</button>`;
-  const serie = (a, b) => Array.from({ length: b - a + 1 }, (_, k) => a + k);
-  const ap = COTATIONS[act] ? autoPerf(d, act) : "", as = autoSec(d);
-  return `<div class="carte" id="bilan"><h2>Fin de séance</h2>
-    <label class="champ">Fait ?</label>
-    <div class="choix" data-champ="fait">${["Oui","Non","Sautée"].map(v => bouton("fait", v)).join("")}</div>
-    <label class="champ">Durée (min)</label>
-    <input type="number" inputmode="numeric" data-champ="duree" value="${esc(d.duree)}">
-    <label class="champ">Effort (1 à 10)</label>
-    <div class="choix" data-champ="effort">${serie(1,10).map(v => bouton("effort", v)).join("")}</div>
-    <label class="champ">Douleur max (0 à 10)</label>
-    ${(d.douleurs || []).length ? `<p class="petit">Signalé : ${d.douleurs.map(x => `${esc(x.zone)} ${x.niv} (${x.heure})`).join(", ")}</p>` : ""}
-    <div class="choix" data-champ="douleur">${serie(0,10).map(v => bouton("douleur", v)).join("")}</div>
-    ${Number(d.douleur) >= 5 ? `<div class="alerte">Douleur à 5 ou plus : arrête l'exercice. Repos, glace, et consulte si ça dure.</div>` : ""}
-    <label class="champ">Zone de douleur</label>
-    <select data-champ="zone"><option value=""></option>${ZONES.map(z => `<option ${d.zone === z ? "selected" : ""}>${esc(z)}</option>`).join("")}</select>
-    <label class="champ">Meilleure perf</label>
-    <input type="text" data-champ="perf" value="${esc(d.perf)}" placeholder="${ap ? "Auto : " + esc(ap) : ""}">
-    <label class="champ">Nb de « sec »</label>
-    <input type="number" inputmode="numeric" data-champ="sec" value="${esc(d.sec)}" placeholder="${as !== "" ? "Auto : " + as : ""}">
-    <label class="champ">Notes</label>
-    <textarea data-champ="notes" placeholder="Astuce : le micro du clavier permet de dicter">${esc(d.notes)}</textarea></div>`;
-}
-
 const CHAMPS_MESURES = [["planche","Planche (s)","number"],["course","Course continue la plus longue (min)","number"],
   ["sec","Nb de « sec » dans la voie en dévers suivie","number"],["voie","Voie la plus dure réussie sans « sec »","text"],
   ["bloc","Bloc le plus dur réussi","text"],["tractions","Tractions (nb, assistées ou non)","text"],["notes","Notes de la semaine","text"]];
-function carteMesures(sem) {
-  const m = lireMesures(sem), a = autoSemaine(sem);
-  return `<div class="carte"><h2>Mesures de la semaine ${sem}</h2>` + CHAMPS_MESURES.map(([c, lab, type]) =>
-    `<label class="champ">${lab}</label><input type="${type}" ${type === "number" ? 'inputmode="numeric"' : ""}
-      data-mesure="${c}" value="${esc(m[c])}" placeholder="${!vide(a[c]) ? "Auto : " + esc(a[c]) : ""}">`).join("") + `</div>`;
+
+// Défilement automatique vers la prochaine étape
+function allerAuSuivant() {
+  setTimeout(() => {
+    const s = courant(); if (!s || vue !== "seance") return;
+    const el = document.querySelector(`[data-el="${prochain(s, lire(s))}"]`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, 120);
 }
 
 // =====================================================================
 // 8. ACTIONS SUR L'ÉCRAN SÉANCE (un seul écouteur pour tous les boutons)
 // =====================================================================
 function modifier(fn) { const s = courant(), d = lire(s); fn(d); ecrire(s, d); afficher(false); }
+// La séance démarre toute seule au premier passage
+function demarrerSiBesoin(d) { if (!d.debut && !d.fin) { d.debut = Date.now(); if (d.fait === "Sautée") delete d.fait; return true; } return false; }
 
 $("ecran").addEventListener("click", e => {
   if (vue !== "seance") return;
@@ -386,18 +412,25 @@ $("ecran").addEventListener("click", e => {
     if (!etaitOuvert) ouverts.add(k);
     return afficher(false);
   }
-  if (b && t.detail !== undefined) { ouverts.has("d" + t.detail) ? ouverts.delete("d" + t.detail) : ouverts.add("d" + t.detail); return afficher(false); }
-  if (b && t.routine !== undefined) return modifier(d => { d.routines = d.routines || {}; const k = ck(d, t.routine); d.routines[k] = !d.routines[k]; });
+  if (b && t.plier) { basculer(t.plier); return afficher(false); }
+  if (b && t.detail !== undefined) { basculer("d" + t.detail); return afficher(false); }
+  if (b && t.routine !== undefined) return cocherRoutine(Number(t.routine));
+  if (b && t.fait !== undefined) return passageFait(Number(t.fait));
   if (b && t.version !== undefined) { ouverts = new Set(); return modifier(d => { d.version = Number(t.version); }); }
   if (b && t.rond !== undefined) { const c = compte(lire(courant()), t.rond); return compter(Number(t.rond), Number(t.k) < c ? Number(t.k) : Number(t.k) + 1); }
   if (b && t.cpt !== undefined) return compter(Number(t.cpt), compte(lire(courant()), t.cpt) + Number(t.pas));
   if (b && t.chrono !== undefined) return lancerChrono(Number(t.chrono));
+  if (b && t.guide !== undefined) return lancerGuide(Number(t.guide));
   if (b && t.repos !== undefined) return lancerRepos(Number(t.repos));
-  if (b && t.action === "demarrer") { modifier(d => { d.debut = Date.now(); delete d.fin; }); return garderEcran(); }
+  if (b && t.action === "demarrer") { modifier(d => { d.debut = Date.now(); delete d.fin; delete d.fait; }); garderEcran(); return allerAuSuivant(); }
+  if (b && t.action === "sauter") return modifier(d => { d.fait = "Sautée"; });
+  if (b && t.action === "desauter") return modifier(d => { delete d.fait; });
   if (b && t.action === "terminer") return terminer();
+  if (b && t.action === "bilan") return ouvrirBilan("Bilan de la séance");
+  if (b && t.action === "mesures") return ouvrirModal({ type: "mesures", sem: courant().semaine });
   if (b && t.action === "reprendre") { modifier(d => { delete d.fin; }); return garderEcran(); }
   if (b && t.action === "supprimer-libre") {
-    if (!confirm("Supprimer cette séance libre et ses saisies ?")) return;
+    if (!confirm("Supprimer cette séance et ses saisies ?")) return;
     const s = courant();
     localStorage.setItem("libres", JSON.stringify(lireLibres().filter(l => l.id !== s.id)));
     localStorage.removeItem(cle(s));
@@ -405,33 +438,78 @@ $("ecran").addEventListener("click", e => {
   }
   if (b && t.form) return actionFormVoie(t);
   if (b && t.suppr !== undefined) { if (confirm("Supprimer cette ligne ?")) modifier(d => d.voies.splice(Number(t.suppr), 1)); return; }
-  if (b && t.valeur !== undefined && b.parentElement.dataset.champ) {      // Fait / Effort / Douleur
-    const champ = b.parentElement.dataset.champ, v = isNaN(t.valeur) ? t.valeur : Number(t.valeur);
-    return modifier(d => { d[champ] = d[champ] === v ? null : v; });       // 2e appui = effacer
-  }
   // Appui n'importe où sur une ligne d'action = un passage de plus
   const ligne = e.target.closest("[data-action-ligne]");
   if (ligne && !b) { const i = Number(ligne.dataset.actionLigne); compter(i, compte(lire(courant()), i) + 1); }
 });
 
+// ✓ Fait (carte « Maintenant » ou minuteur) : coche la routine ou compte un passage
+function passageFait(i) {
+  const s = courant(), e = elementsDe(s, lire(s))[i];
+  if (!e) return;
+  if (e.type === "routine") return cocherRoutine(i, true);
+  compter(i, compte(lire(s), i) + 1);
+}
+function cocherRoutine(i, forcer = false) {
+  const s = courant(), d = lire(s), k = ck(d, i);
+  d.routines = d.routines || {};
+  d.routines[k] = forcer ? true : !d.routines[k];
+  const demarre = d.routines[k] && demarrerSiBesoin(d);
+  ecrire(s, d); afficher(false);
+  if (demarre) garderEcran();
+  if (d.routines[k]) allerAuSuivant();
+}
+
 // Compte un passage. Si c'est une voie ou un bloc, propose de noter le résultat, puis lance le repos.
+let derniereAction = null, minuterieToast = null;
 function compter(i, nouveau) {
   const s = courant(), d = lire(s), e = elementsDe(s, d)[i], avant = compte(d, i);
   nouveau = Math.max(0, Math.min(e.n, nouveau));
+  const demarre = nouveau > avant && demarrerSiBesoin(d);
   d.compteurs = d.compteurs || {}; d.compteurs[ck(d, i)] = nouveau; ecrire(s, d); afficher(false);
+  if (demarre) garderEcran();
   if (nouveau <= avant) return;
-  if (R.releve && relevable(s, d, e)) return ouvrirResultat(i);
+  derniereAction = { cle: cle(s), ck: ck(d, i), i, avant, voie: false, repos: false };
+  if (R.releve && relevable(s, d, e)) return ouvrirResultat(i);   // le bandeau « Annuler » viendra à la fermeture
+  montrerToast();
   apresPassage(i);
 }
 function apresPassage(i) {
   const s = courant(), e = elementsDe(s, lire(s))[i];
-  if (R.auto && reposDe(s, e) > 0) lancerRepos(i);
+  if (R.auto && reposDe(s, e) > 0) { lancerRepos(i); if (derniereAction && derniereAction.i === i) derniereAction.repos = true; }
+  allerAuSuivant();
 }
+
+// Bandeau « Passage noté · Annuler » pendant 5 secondes
+// Place le bandeau juste au-dessus du minuteur (ou en haut quand le minuteur est en plein écran)
+function placerToast() {
+  const t = $("toast"), m = $("minuteur");
+  if (t.style.display !== "flex") return;
+  if (m.classList.contains("plein")) { t.style.top = "calc(20px + env(safe-area-inset-top))"; t.style.bottom = "auto"; return; }
+  const h = m.style.display === "flex" ? m.offsetHeight + 8 : 0;
+  t.style.top = "auto"; t.style.bottom = `calc(${80 + h}px + env(safe-area-inset-bottom))`;
+}
+function montrerToast() {
+  $("toast").style.display = "flex"; placerToast();
+  clearTimeout(minuterieToast);
+  minuterieToast = setTimeout(() => { $("toast").style.display = "none"; derniereAction = null; }, 5000);
+}
+$("toast-annuler").onclick = () => {
+  const a = derniereAction; if (!a) return;
+  const d = lireCle(a.cle);
+  d.compteurs = d.compteurs || {}; d.compteurs[a.ck] = a.avant;
+  if (a.voie && d.voies) { const k = d.voies.map(v => v.ligne).lastIndexOf(a.i); if (k >= 0) d.voies.splice(k, 1); }
+  localStorage.setItem(a.cle, JSON.stringify(d));
+  if (T && T.cle === a.cle && T.ck === a.ck) { T = null; sauverT(); majMinuteur(); }
+  if (M && M.type === "resultat") fermerModal();
+  $("toast").style.display = "none"; derniereAction = null;
+  afficher(false);
+};
 
 function actionFormVoie(t) {
   const s = courant(), d = lire(s), act = actReleve(s, d);
   if (t.form === "ouvrir") { const der = (d.voies || []).filter(v => (v.act || act) === act).slice(-1)[0];
-    formVoie = { cot: der ? der.cot : "", profil: der ? der.profil : "Vertical", res: "", sec: 1 }; }
+    formVoie = { cot: der ? der.cot : "", profil: der ? der.profil : "Vertical", res: "", sec: 1 }; ouverts.add("releve"); }
   else if (t.form === "annuler") formVoie = null;
   else if (t.form === "sec") formVoie.sec = Math.max(1, formVoie.sec + Number(t.pas));
   else if (t.form === "ajouter") {
@@ -441,75 +519,93 @@ function actionFormVoie(t) {
   afficher(false);
 }
 
-// Champs texte et nombres : enregistrés pendant la frappe
-function surSaisie(e) {
-  if (vue !== "seance") return;
-  const t = e.target, val = t.type === "number" && t.value !== "" ? Number(t.value) : t.value;
-  if (t.dataset.champ) { const s = courant(), d = lire(s); d[t.dataset.champ] = val; ecrire(s, d); }
-  if (t.dataset.mesure) { const sem = courant().semaine, m = lireMesures(sem); m[t.dataset.mesure] = val; ecrireMesures(sem, m); }
-}
-$("ecran").addEventListener("input", surSaisie);
-$("ecran").addEventListener("change", surSaisie);
-
 function terminer() {
   modifier(d => { d.fin = Date.now(); d.duree = Math.min(DUREE_MAX, Math.max(1, Math.round((d.fin - d.debut) / 60000))); d.fait = "Oui"; });
   libererEcran();
+  ouvrirBilan("Séance terminée");
+}
+function ouvrirBilan(titre) {
   const d = lire(courant());
-  ouvrirModal({ type: "fin", effort: d.effort, douleur: d.douleur, zone: d.zone });
+  ouvrirModal({ type: "fin", titre, effort: d.effort, douleur: d.douleur, zone: d.zone, duree: d.duree, notes: d.notes || "" });
 }
 
 // =====================================================================
-// 9. FENÊTRES : fin de séance, résultat d'une voie, douleur
+// 9. FENÊTRES : bilan, résultat d'un passage, douleur, mesures de la semaine
 // =====================================================================
 let M = null;   // fenêtre ouverte
 function ouvrirModal(etat) { M = etat; afficherModal(); $("fond-modal").style.display = "flex"; }
 function fermerModal() { M = null; $("fond-modal").style.display = "none"; }
+
+// Résultat : cotation et profil repris du passage précédent (même ligne, sinon texte de la ligne, sinon dernier noté)
 function ouvrirResultat(i) {
   const s = courant(), d = lire(s), act = actReleve(s, d), e = elementsDe(s, d)[i];
-  ouvrirModal({ type: "resultat", ligne: i, act, cot: cotationDe(e.texte, act),
-                profil: /dévers/i.test(e.texte) ? "Dévers" : "Vertical", res: "", sec: 1 });
+  const notes = (d.voies || []).filter(v => (v.act || act) === act);
+  const memeLigne = notes.filter(v => v.ligne === i).slice(-1)[0], dernier = notes.slice(-1)[0];
+  const cot = memeLigne ? memeLigne.cot : cotationDe(e.texte, act) || (dernier ? dernier.cot : "");
+  const profil = memeLigne ? memeLigne.profil : /dévers/i.test(e.texte) ? "Dévers" : (dernier ? dernier.profil : "Vertical");
+  ouvrirModal({ type: "resultat", ligne: i, act, cot, profil, res: "", sec: 1 });
 }
+function enregistrerResultat() {
+  const etat = M; fermerModal();
+  const v = { cot: etat.cot, profil: etat.profil, res: etat.res, act: etat.act, ligne: etat.ligne };
+  if (etat.res === "Avec sec") v.sec = etat.sec;
+  modifier(d => { d.voies = d.voies || []; d.voies.push(v); });
+  if (derniereAction && derniereAction.i === etat.ligne) { derniereAction.voie = true; montrerToast(); }
+  apresPassage(etat.ligne);
+}
+
 function afficherModal() {
   const choix = (champ, liste) => `<div class="choix">${liste.map(v =>
     `<button data-m="${champ}" data-valeur="${v}" class="${String(M[champ]) === String(v) ? "choisi" : ""}">${v}</button>`).join("")}</div>`;
-  const serie = (a, b) => Array.from({ length: b - a + 1 }, (_, k) => a + k);
+  const serie = (a, b) => Array.from({ length: b - a + 1 }, (_, n) => a + n);
+  const zones = ZONES.filter(z => z !== "Aucune");
   let h = "";
-  if (M.type === "fin") {
-    h = `<h2>Séance terminée · ${lire(courant()).duree} min</h2>
+  if (M.type === "fin") h = `<h2>${esc(M.titre)}</h2>
       <label class="champ">Effort (1 à 10)</label>${choix("effort", serie(1, 10))}
       <label class="champ">Douleur max (0 à 10)</label>${choix("douleur", serie(0, 10))}
-      ${M.douleur > 0 ? `<label class="champ">Zone</label>${choix("zone", ZONES.filter(z => z !== "Aucune"))}` : ""}
-      ${M.douleur >= 5 ? `<div class="alerte">5 ou plus : repos, glace, et consulte si ça dure. Note la zone dans le bilan.</div>` : ""}
+      ${M.douleur > 0 ? `<label class="champ">Zone</label>${choix("zone", zones)}` : ""}
+      ${M.douleur >= 5 ? `<div class="alerte">5 ou plus : repos, glace, et consulte si ça dure.</div>` : ""}
+      <label class="champ">Durée (min)</label><input type="number" inputmode="numeric" id="m-duree" value="${esc(M.duree)}">
+      <label class="champ">Notes (facultatif)</label><textarea id="m-notes" placeholder="Le micro du clavier permet de dicter">${esc(M.notes)}</textarea>
       <p></p><div class="choix"><button data-m="fermer">Plus tard</button><button data-m="ok" class="choisi">Enregistrer</button></div>`;
-  }
-  if (M.type === "resultat") {
-    h = `<h2>Résultat de ce passage</h2>` + formulaireResultat(M, M.act, "m") +
-      `<p></p><div class="choix"><button data-m="fermer">Passer</button>
-       <button data-m="ok" class="choisi" ${M.cot && M.res ? "" : "disabled"}>Enregistrer</button></div>`;
-  }
-  if (M.type === "douleur") {
-    h = `<h2>Signaler une douleur</h2><p class="petit">Séance : ${esc(courant().jour)} ${esc(courant().activite)}</p>
-      <label class="champ">Zone</label>${choix("zone", ZONES.filter(z => z !== "Aucune"))}
+  if (M.type === "resultat") h = `<h2>Résultat de ce passage</h2>` + formulaireResultat(M, M.act, "m") +
+      `<p class="petit">Touche le résultat pour l'enregistrer directement.</p>
+       <div class="choix"><button data-m="fermer">Passer</button>
+       ${M.res === "Avec sec" || !M.cot ? `<button data-m="ok" class="choisi" ${M.cot && M.res ? "" : "disabled"}>Enregistrer</button>` : ""}</div>`;
+  if (M.type === "douleur") h = `<h2>Signaler une douleur</h2><p class="petit">Séance : ${esc(courant().jour)} ${esc(courant().activite)}</p>
+      <label class="champ">Zone</label>${choix("zone", zones)}
       <label class="champ">Niveau</label>${choix("niv", serie(1, 10))}
       ${M.niv >= 5 ? `<div class="alerte">5 ou plus : arrête l'exercice maintenant.</div>` : ""}
       <p></p><div class="choix"><button data-m="fermer">Annuler</button>
       <button data-m="ok" class="choisi" ${M.zone && M.niv ? "" : "disabled"}>Enregistrer</button></div>`;
+  if (M.type === "mesures") {
+    const m = lireMesures(M.sem), a = autoSemaine(M.sem);
+    h = `<h2>Mesures de la semaine ${M.sem}</h2>` + CHAMPS_MESURES.map(([c, lab, type]) =>
+      `<label class="champ">${lab}</label><input type="${type}" ${type === "number" ? 'inputmode="numeric"' : ""}
+        data-mesure="${c}" value="${esc(m[c])}" placeholder="${!vide(a[c]) ? "Auto : " + esc(a[c]) : ""}">`).join("") +
+      `<p class="petit">Les valeurs « Auto » viennent de ton relevé ; ce que tu tapes a la priorité.</p>
+       <div class="choix"><button data-m="fermer" class="choisi">Fermer</button></div>`;
   }
   $("modal").innerHTML = h;
 }
 $("modal").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b || !M) return;
   const t = b.dataset, type = M.type;
-  if (t.m === "fermer") { const i = M.ligne; fermerModal(); if (type === "resultat") apresPassage(i); return; }
+  if (t.m === "fermer") {
+    const i = M.ligne; fermerModal();
+    if (type === "resultat") { if (derniereAction && derniereAction.i === i) montrerToast(); apresPassage(i); }
+    if (type === "mesures") afficher(false);
+    return;
+  }
   if (t.m === "ok") {
+    if (type === "resultat") return enregistrerResultat();
     const etat = M; fermerModal();
-    if (type === "fin") return modifier(d => { d.effort = etat.effort ?? d.effort; d.douleur = etat.douleur ?? d.douleur; if (etat.zone) d.zone = etat.zone; });
-    if (type === "resultat") {
-      const v = { cot: etat.cot, profil: etat.profil, res: etat.res, act: etat.act, ligne: etat.ligne };
-      if (etat.res === "Avec sec") v.sec = etat.sec;
-      modifier(d => { d.voies = d.voies || []; d.voies.push(v); });
-      return apresPassage(etat.ligne);
-    }
+    if (type === "fin") return modifier(d => {
+      d.effort = etat.effort ?? d.effort; d.douleur = etat.douleur ?? d.douleur;
+      if (etat.zone) d.zone = etat.zone;
+      if (!vide(etat.duree)) d.duree = Number(etat.duree);
+      d.notes = etat.notes; d.fait = "Oui";
+    });
     if (type === "douleur") return modifier(d => {
       d.douleurs = d.douleurs || [];
       d.douleurs.push({ zone: etat.zone, niv: etat.niv, heure: new Date().toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" }) });
@@ -519,12 +615,23 @@ $("modal").addEventListener("click", e => {
   }
   if (t.m === "sec") M.sec = Math.max(1, M.sec + Number(t.pas));
   else if (t.m) M[t.m] = ["effort", "douleur", "niv"].includes(t.m) ? Number(t.valeur) : t.valeur;   // les cotations restent du texte
+  // Résultat en deux appuis : toucher un résultat (sauf « Avec sec ») enregistre directement
+  if (type === "resultat" && t.m === "res" && M.res !== "Avec sec" && M.cot) return enregistrerResultat();
   afficherModal();
+});
+$("modal").addEventListener("input", e => {             // champs texte des fenêtres (sans réafficher)
+  if (!M) return;
+  if (e.target.id === "m-duree") M.duree = e.target.value;
+  if (e.target.id === "m-notes") M.notes = e.target.value;
+  if (e.target.dataset.mesure) {
+    const m = lireMesures(M.sem), v = e.target.value;
+    m[e.target.dataset.mesure] = e.target.type === "number" && v !== "" ? Number(v) : v; ecrireMesures(M.sem, m);
+  }
 });
 $("btn-douleur").onclick = () => courant() ? ouvrirModal({ type: "douleur" }) : alert("Ouvre d'abord une séance.");
 
 // =====================================================================
-// 10. MINUTEUR : repos, exercices en durée, fractions de course
+// 10. MINUTEUR : repos, exercices en durée, fractions de course, échauffement guidé
 // État enregistré, pour reprendre si l'app est fermée ou l'iPhone verrouillé.
 // =====================================================================
 let T = JSON.parse(localStorage.getItem("minuteur") || "null");
@@ -543,7 +650,8 @@ function suivantApres(s, d, i) {
 }
 function demarrer(phases, i, suivant) {
   const s = courant(), d = lire(s);
-  T = { cle: cle(s), ck: ck(d, i), n: elementsDe(s, d)[i].n, phases, k: 0,
+  if (demarrerSiBesoin(d)) { ecrire(s, d); garderEcran(); afficher(false); }
+  T = { cle: cle(s), ck: ck(d, i), n: elementsDe(s, d)[i].n || 1, phases, k: 0,
         fin: Date.now() + phases[0].dur * 1000, pause: null, suivant };
   bipsFaits = new Set(); sauverT(); boucle();
 }
@@ -563,20 +671,44 @@ function lancerChrono(i) {
     if (!phases.length) return;
   } else {
     phases = e.cotes
-      ? [{ type: "travail", dur: e.travail, label: `${nom} · côté 1` }, { type: "repos", dur: 5, label: "Change de côté" },
+      ? [{ type: "travail", dur: e.travail, label: `${nom} · côté 1` }, { type: "transition", dur: 5, label: "Change de côté" },
          { type: "travail", dur: e.travail, label: `${nom} · côté 2`, coche: true }]
       : [{ type: "travail", dur: e.travail, label: nom, coche: true }];
     if (reposDe(s, e) > 0 && c + 1 < e.n) phases.push({ type: "repos", dur: reposDe(s, e), label: "Repos" });
   }
   demarrer(phases, i, suivantApres(s, d, i));
 }
+// Échauffement guidé : chaque étape de la routine avec sa durée, puis la routine se coche
+function lancerGuide(i) {
+  const s = courant(), d = lire(s), e = elementsDe(s, d)[i];
+  const etapes = etapesRoutine(e.nom).filter(r => minutesEtape(r) > 0);
+  if (!etapes.length) return;
+  const phases = etapes.map((r, n) => ({ type: "travail", dur: minutesEtape(r) * 60, label: r.etape, detail: r.quoi, routine: n === etapes.length - 1 }));
+  demarrer(phases, i, suivantApres(s, d, i));
+}
 function boucle() { clearInterval(tic); tic = setInterval(majMinuteur, 200); majMinuteur(); }
+
+// Prochaine étape à valider depuis le minuteur (pendant un repos ou à la fin)
+function etapeAValider() {
+  if (!T || vue !== "seance" || !courant() || cle(courant()) !== T.cle) return -1;
+  const ph = T.phases[T.k];
+  if (!T.fini && ph.type !== "repos") return -1;
+  return prochain(courant(), lire(courant()));
+}
 
 function majMinuteur() {
   const m = $("minuteur");
   if (!T) { m.style.display = "none"; m.classList.remove("plein", "fini", "bientot"); clearInterval(tic); return; }
   m.style.display = "flex";
   $("mn-son").textContent = R.son ? "🔊" : "🔇";
+  // Bouton « ✓ Fait : … » (valider le prochain passage sans quitter le minuteur)
+  const k = etapeAValider(), bt = $("mn-fait");
+  if (k >= 0) {
+    const e = elementsDe(courant(), lire(courant()))[k];
+    const txt = "✓ Fait : " + (e.type === "routine" ? e.nom : `${titreAction(e)} (${compte(lire(courant()), k) + 1}/${e.n})`);
+    if (bt.textContent !== txt) bt.textContent = txt;
+    bt.dataset.i = k; bt.style.display = "block";
+  } else bt.style.display = "none";
   if (T.fini) { m.classList.add("fini"); m.classList.remove("bientot");
     $("mn-temps").textContent = "Terminé ✓"; $("mn-label").textContent = ""; $("mn-suivant").textContent = T.suivant || ""; return; }
   const ph = T.phases[T.k], ms = T.pause !== null ? T.pause : T.fin - Date.now();
@@ -589,20 +721,23 @@ function majMinuteur() {
   m.classList.remove("fini"); m.classList.toggle("bientot", sec <= 10);
   $("mn-temps").textContent = mmss(sec) + (T.pause !== null ? " ❚❚" : "");
   $("mn-label").textContent = ph.label + (T.phases.length > 1 ? ` · étape ${T.k + 1}/${T.phases.length}` : "");
-  $("mn-suivant").textContent = T.suivant || "";
+  $("mn-suivant").textContent = ph.detail || T.suivant || "";
   $("mn-pause").textContent = T.pause !== null ? "▶" : "❚❚";
   const circ = 2 * Math.PI * 27, arc = $("mn-arc");
   arc.style.strokeDasharray = circ; arc.style.strokeDashoffset = circ * (1 - Math.max(0, ms) / (ph.dur * 1000));
+  placerToast();
 }
 function bipUnique(id, type) { if (!bipsFaits.has(id)) { bipsFaits.add(id); bip(type); } }
 
 function finPhase(silencieux = false) {
   const ph = T.phases[T.k];
-  if (ph.coche) {                                // la fin de l'exercice coche un passage
-    const d = lireCle(T.cle); d.compteurs = d.compteurs || {};
-    d.compteurs[T.ck] = Math.min(T.n, (d.compteurs[T.ck] || 0) + 1);
+  if (ph.coche || ph.routine) {                  // la fin de l'exercice coche le passage (ou la routine)
+    const d = lireCle(T.cle);
+    if (ph.routine) { d.routines = d.routines || {}; d.routines[T.ck] = true; }
+    else { d.compteurs = d.compteurs || {}; d.compteurs[T.ck] = Math.min(T.n, (d.compteurs[T.ck] || 0) + 1); }
     localStorage.setItem(T.cle, JSON.stringify(d));
   }
+  const etaitRepos = ph.type === "repos";
   if (T.k < T.phases.length - 1) {
     T.k++; T.fin = (silencieux ? T.fin : Date.now()) + T.phases[T.k].dur * 1000;
     bipsFaits = new Set();
@@ -610,10 +745,10 @@ function finPhase(silencieux = false) {
   } else {
     T.fini = true;
     if (!silencieux) { if (R.bipFin) bip("fin"); document.body.classList.add("flash"); setTimeout(() => document.body.classList.remove("flash"), 1600); }
-    setTimeout(() => { if (T && T.fini) { T = null; sauverT(); majMinuteur(); } }, silencieux ? 0 : 6000);
+    setTimeout(() => { if (T && T.fini) { T = null; sauverT(); majMinuteur(); } }, silencieux ? 0 : 8000);
   }
   sauverT();
-  if (vue === "seance" && courant() && cle(courant()) === T?.cle) afficher(false);
+  if (vue === "seance" && courant() && cle(courant()) === T?.cle) { afficher(false); if (etaitRepos || ph.coche || ph.routine) allerAuSuivant(); }
   majMinuteur();
 }
 
@@ -631,9 +766,15 @@ document.querySelector("#mn-ctrl").addEventListener("click", e => {
   sauverT(); majMinuteur();
 });
 $("mn-haut").onclick = () => $("minuteur").classList.toggle("plein");
+// « ✓ Fait » depuis le minuteur : arrête le repos et valide la prochaine étape
+$("mn-fait").onclick = () => {
+  const i = Number($("mn-fait").dataset.i);
+  T = null; sauverT(); $("minuteur").classList.remove("plein"); majMinuteur();
+  passageFait(i);
+};
 
 // =====================================================================
-// 11. SON (réglable dans l'écran Exercices)
+// 11. SON (réglable dans l'écran Réglages)
 // =====================================================================
 let audio = null;
 function initAudio() {
@@ -769,7 +910,7 @@ let F = null;   // formulaire « + Créer une séance »
 function nouveauFormulaire(type = "Escalade", modele) {
   const m = modele ?? MODELES.findIndex(x => x.type === type);
   const p = {}; MODELES[m].reglages.forEach(r => p[r.cle] = r.val);
-  return { date: F ? F.date : isoDate(new Date()), type, modele: m, p, ajouts: F ? F.ajouts : [],
+  return { etape: F ? F.etape : 1, date: F ? F.date : isoDate(new Date()), type, modele: m, p, ajouts: F ? F.ajouts : [],
            exo: "", series: 3, detail: "", repos: 0 };
 }
 function lignesCreees() {      // lignes du modèle + exercices ajoutés (avant la routine de fin)
@@ -788,7 +929,8 @@ function afficherSemaine() {
   if (!items.length) h += `<p class="petit">Aucune séance cette semaine. Crée-en une avec « + Créer une séance ».</p>`;
   items.forEach(({ s, k }) => {
     const d = lire(s), v = nomVersion(s, d), titre = s.libre && s.phase !== "Séance libre" ? s.phase.replace("Séance créée · ", "") : s.activite;
-    h += `<button class="gros semaine-item" data-ouvrir="${k}">${etat(d)} &nbsp;${esc(s.jour)} ${jourMois(dateSeance(s))} · ${esc(titre)}${s.libre ? " (créée)" : ""}${d.fait === "Oui" && v ? `<br><span class="petit">${esc(v)}</span>` : ""}</button>`;
+    const auj = isoDate(dateSeance(s)) === isoDate(new Date());
+    h += `<button class="gros semaine-item ${auj ? "aujourdhui" : ""}" data-ouvrir="${k}">${auj ? `<span class="petit-etiquette">Aujourd'hui</span><br>` : ""}${etat(d)} &nbsp;${esc(s.jour)} ${jourMois(dateSeance(s))} · ${esc(titre)}${s.libre ? " (créée)" : ""}${d.fait === "Oui" && v ? `<br><span class="petit">${esc(v)}</span>` : ""}</button>`;
   });
   h += `<p class="petit">✓ faite · ✗ non faite ou sautée · ● en cours · ○ à faire</p></div>`;
   h += F ? formulaireCreation() : `<button class="gros" data-cree="ouvrir">+ Créer une séance</button><p></p>`;
@@ -807,24 +949,33 @@ function formulaireCreation() {
   const options = EXERCICES.map(x => { let o = "";
     if (x.categorie !== cat) { o += (cat ? "</optgroup>" : "") + `<optgroup label="${esc(x.categorie)}">`; cat = x.categorie; }
     return o + `<option ${F.exo === x.nom ? "selected" : ""}>${esc(x.nom)}</option>`; }).join("") + "</optgroup>";
-  return `<div class="carte"><h2>Créer une séance</h2>
-    <label class="champ">Date</label><input type="date" id="cree-date" value="${F.date}">
-    <label class="champ">Type</label>${puces('data-cree="type"', TYPES.map(t => [t, t]), F.type)}
-    <label class="champ">Modèle</label>${puces('data-cree="modele"', MODELES.map((x, k) => [k, x.nom]).filter(([k]) => MODELES[k].type === F.type), F.modele)}
-    ${reglages}
-    <h2 style="margin-top:18px">Ajouter un exercice</h2>
-    <select id="cree-exo"><option value="">Choisir un exercice…</option>${options}</select>
-    <label class="champ">Séries ou passages</label>
-    <div class="compteur"><button data-cree="series" data-pas="-1">−</button><span>${F.series}</span><button data-cree="series" data-pas="1">+</button></div>
-    <label class="champ">Détail (facultatif)</label><input type="text" id="cree-detail" value="${esc(F.detail)}" placeholder="ex. 30 s · 8 · 15 par côté">
-    <label class="champ">Repos</label>${puces('data-cree="repos"', [[0, "Par défaut"], [30, "30 s"], [60, "1 min"], [90, "1 min 30"], [180, "3 min"], [300, "5 min"]], F.repos)}
-    <p></p><button class="gros" data-cree="ajouter" ${F.exo ? "" : "disabled"}>+ Ajouter cet exercice</button>
-    ${F.ajouts.map((a, k) => `<div class="voie"><span>${a.series}× ${esc(a.exo)}${a.detail ? " · " + esc(a.detail) : ""}</span><button data-cree="retirer" data-valeur="${k}">✕</button></div>`).join("")}
-    <h2 style="margin-top:18px">Aperçu</h2>
-    <div class="explic">${lignesCreees().map(l => l.startsWith(">") ? "▸ <b>" + esc(l.slice(1).trim()) + "</b>"
-        : l.startsWith("!") ? "<i>" + esc(sansGuillemets(l.slice(1).trim())) + "</i>" : "• " + esc(sansGuillemets(l))).join("<br>")
-      || "Séance vide : tu noteras simplement ce que tu fais."}</div>
-    <p></p><div class="choix"><button data-cree="annuler">Annuler</button><button data-cree="creer" class="choisi">Créer la séance</button></div></div>`;
+  const apercu = lignesCreees().map(l => l.startsWith(">") ? "▸ <b>" + esc(l.slice(1).trim()) + "</b>"
+      : l.startsWith("!") ? "<i>" + esc(sansGuillemets(l.slice(1).trim())) + "</i>" : "• " + esc(sansGuillemets(l))).join("<br>")
+    || "Séance vide : tu noteras simplement ce que tu fais.";
+  const titres = ["Type et modèle", "Réglages", "Exercices et aperçu"];
+  let corps = "", boutons = "";
+  if (F.etape === 1) {
+    corps = `<label class="champ">Date</label><input type="date" id="cree-date" value="${F.date}">
+      <label class="champ">Type</label>${puces('data-cree="type"', TYPES.map(t => [t, t]), F.type)}
+      <label class="champ">Modèle</label>${puces('data-cree="modele"', MODELES.map((x, k) => [k, x.nom]).filter(([k]) => MODELES[k].type === F.type), F.modele)}`;
+    boutons = `<button data-cree="annuler">Annuler</button><button data-cree="suivant" class="choisi">Suivant ›</button>`;
+  } else if (F.etape === 2) {
+    corps = reglages || `<p class="petit">Ce modèle n'a pas de réglage.</p>`;
+    boutons = `<button data-cree="retour">‹ Retour</button><button data-cree="suivant" class="choisi">Suivant ›</button>`;
+  } else {
+    corps = `<details ${F.exo || F.ajouts.length ? "open" : ""}><summary>Ajouter un exercice (facultatif)</summary>
+      <select id="cree-exo"><option value="">Choisir un exercice…</option>${options}</select>
+      <label class="champ">Séries ou passages</label>
+      <div class="compteur"><button data-cree="series" data-pas="-1">−</button><span>${F.series}</span><button data-cree="series" data-pas="1">+</button></div>
+      <label class="champ">Détail (facultatif)</label><input type="text" id="cree-detail" value="${esc(F.detail)}" placeholder="ex. 30 s · 8 · 15 par côté">
+      <label class="champ">Repos</label>${puces('data-cree="repos"', [[0, "Par défaut"], [30, "30 s"], [60, "1 min"], [90, "1 min 30"], [180, "3 min"], [300, "5 min"]], F.repos)}
+      <p></p><button class="gros" data-cree="ajouter" ${F.exo ? "" : "disabled"}>+ Ajouter cet exercice</button></details>
+      ${F.ajouts.map((a, k) => `<div class="voie"><span>${a.series}× ${esc(a.exo)}${a.detail ? " · " + esc(a.detail) : ""}</span><button data-cree="retirer" data-valeur="${k}">✕</button></div>`).join("")}
+      <label class="champ">Aperçu</label><div class="explic">${apercu}</div>`;
+    boutons = `<button data-cree="retour">‹ Retour</button><button data-cree="creer" class="choisi">Créer la séance</button>`;
+  }
+  return `<div class="carte"><h2>Créer une séance · étape ${F.etape}/3</h2><p class="petit">${titres[F.etape - 1]} · ${esc(m.nom)}</p>
+    ${corps}<p></p><div class="choix">${boutons}</div></div>`;
 }
 $("ecran").addEventListener("click", e => {
   if (vue !== "semaine") return;
@@ -834,6 +985,8 @@ $("ecran").addEventListener("click", e => {
   if (t.cree === "aujourdhui") return changer(indexAujourdhui());
   if (t.cree === "ouvrir") F = nouveauFormulaire();
   else if (t.cree === "annuler") F = null;
+  else if (t.cree === "suivant") F.etape = Math.min(3, F.etape + 1);
+  else if (t.cree === "retour") F.etape = Math.max(1, F.etape - 1);
   else if (t.cree === "type") { F = nouveauFormulaire(t.valeur); }
   else if (t.cree === "modele") { F = nouveauFormulaire(F.type, Number(t.valeur)); }
   else if (t.cree === "series") F.series = Math.max(1, Math.min(20, F.series + Number(t.pas)));
@@ -869,95 +1022,105 @@ $("ecran").addEventListener("change", e => {
 });
 
 // =====================================================================
-// 14. ÉCRAN EXERCICES ET RÉGLAGES
+// 14. ÉCRANS EXERCICES (menus déroulants) ET RÉGLAGES (panneaux)
 // =====================================================================
 function afficherExercices() {
-  $("titre-date").textContent = "Exercices et réglages";
-  let liste = "", cat = "";
-  const entree = (titre, corps, texte) => `<details data-t="${esc(sansAccents(texte))}"><summary>${titre}</summary>${corps}</details>`;
-  for (const r of ROUTINES) {
-    if (r.routine !== cat) { cat = r.routine; liste += `<h2 class="cat">${esc(cat)}</h2>`; }
-    liste += entree(`${esc(r.etape)}${r.duree && r.duree !== "—" ? " · " + esc(r.duree) : ""}`, `<p>${esc(r.quoi)}</p>`, `${cat} ${r.etape} ${r.quoi}`);
-  }
-  for (const x of EXERCICES) {
-    if (x.categorie !== cat) { cat = x.categorie; liste += `<h2 class="cat">${esc(cat)}</h2>`; }
-    liste += entree(esc(x.nom), `<p>${esc(x.comment)}</p><p class="petit">${esc(x.cle)}${x.depuis ? " · à partir de : " + esc(x.depuis) : ""}</p>`,
-                    `${cat} ${x.nom} ${x.comment} ${x.cle}`);
-  }
+  $("titre-date").textContent = "Exercices";
+  const groupes = [];                       // [{titre, items:[{titre, corps, texte}]}]
+  const ajouter = (titre, item) => {
+    let g = groupes.find(x => x.titre === titre);
+    if (!g) groupes.push(g = { titre, items: [] });
+    g.items.push(item);
+  };
+  // Un seul menu « Routines », avec une entrée par routine et toutes ses étapes
+  [...new Set(ROUTINES.map(r => r.routine))].forEach(nom => {
+    const etapes = etapesRoutine(nom);
+    ajouter("Routines", { titre: esc(nom),
+      corps: etapes.map(r => `<p><b>${esc(r.etape)}</b>${r.duree && r.duree !== "—" ? " (" + esc(r.duree) + ")" : ""} : ${esc(r.quoi)}</p>`).join(""),
+      texte: `${nom} ${etapes.map(r => r.etape + " " + r.quoi).join(" ")}` });
+  });
+  for (const x of EXERCICES) ajouter(x.categorie, { titre: esc(x.nom),
+    corps: `<p>${esc(x.comment)}</p><p class="petit">${esc(x.cle)}${x.depuis ? " · à partir de : " + esc(x.depuis) : ""}</p>`,
+    texte: `${x.categorie} ${x.nom} ${x.comment} ${x.cle}` });
+  $("ecran").innerHTML = `<input type="search" id="recherche" placeholder="Rechercher un exercice…"><p></p>` +
+    groupes.map(g => `<details class="groupe"><summary>${esc(g.titre)} <span class="petit">(${g.items.length})</span></summary>
+      ${g.items.map(it => `<details class="item" data-t="${esc(sansAccents(it.texte))}"><summary>${it.titre}</summary>${it.corps}</details>`).join("")}
+      </details>`).join("");
+  $("recherche").addEventListener("input", filtrerExercices);
+}
+// Recherche : n'affiche que les groupes et exercices qui contiennent le mot, et les ouvre
+function filtrerExercices() {
+  const q = sansAccents($("recherche").value.trim());
+  document.querySelectorAll("#ecran details.groupe").forEach(g => {
+    let n = 0;
+    g.querySelectorAll("details.item").forEach(it => {
+      const ok = !q || it.dataset.t.includes(q);
+      it.style.display = ok ? "" : "none"; it.open = !!q && ok; if (ok) n++;
+    });
+    g.style.display = n ? "" : "none"; g.open = !!q && n > 0;
+  });
+}
+
+let panneau = null;   // panneau de réglages ouvert
+function afficherReglages() {
+  $("titre-date").textContent = "Réglages";
   const bascule = (cle_, texte) => `<button data-bascule="${cle_}" class="${R[cle_] ? "choisi" : ""}">${texte}</button>`;
   const choix = (cle_, valeurs) => `<div class="choix">${valeurs.map(([v, t]) =>
     `<button data-reglage="${cle_}" data-valeur="${v}" class="${String(R[cle_]) === String(v) ? "choisi" : ""}">${t}</button>`).join("")}</div>`;
   const vp = typeof VERSION_PROGRAMME === "undefined" ? "?" : VERSION_PROGRAMME;
-  $("ecran").innerHTML = `
-    <input type="search" id="recherche" placeholder="Rechercher un exercice…">
-    <p></p><div class="carte" id="liste-exos">${liste}</div>
-
-    <div class="carte"><h2>Programme</h2>
-      <div class="reglage"><label class="champ">Séances affichées</label>${choix("mode", [["programme", "Le programme + mes séances"], ["libre", "Uniquement mes séances créées"]])}</div>
+  const panneaux = [
+    ["programme", "📋 Programme", `
+      <label class="champ">Séances affichées</label>${choix("mode", [["programme", "Le programme + mes séances"], ["libre", "Uniquement mes séances créées"]])}
       <label class="champ">Date de début du programme (un lundi)</label>
       <input type="date" id="date-debut" value="${esc(debutProgramme())}">
-      <p class="petit">À régler une seule fois, le jour où tu commences. Ne la change plus ensuite : tes saisies sont rangées par numéro de semaine.</p></div>
-
-    <div class="carte"><h2>Réglages du minuteur</h2>
-      <div class="reglage"><label class="champ">Repos après un passage</label>${choix("auto", [[true, "Automatique"], [false, "Manuel (bouton ⏱)"]])}</div>
-      <div class="reglage"><label class="champ">Noter le résultat en touchant le rond (voie, bloc)</label>${choix("releve", [[true, "Oui"], [false, "Non"]])}</div>
-      <div class="reglage"><label class="champ">Son</label>${choix("son", [[true, "Activé"], [false, "Coupé"]])}</div>
-      <div class="reglage"><label class="champ">Volume</label>${choix("volume", [["faible", "Faible"], ["moyen", "Moyen"], ["fort", "Fort"]])}</div>
-      <div class="reglage"><label class="champ">Bips</label><div class="choix">${bascule("bip10", "10 s avant")}${bascule("bip321", "3-2-1")}${bascule("bipFin", "Fin")}${bascule("bipFractions", "Changements")}</div></div>
-      <div class="reglage"><label class="champ">Sonner même en mode silencieux</label>${choix("silencieux", [[true, "Oui"], [false, "Non"]])}
-        <p class="petit">Fonctionne sur les iPhone récents (iOS 17 ou plus).</p></div>
-      <button class="gros" data-test="son">Tester le son</button></div>
-
-    <div class="carte"><h2>Rappels dans le calendrier</h2>
-      <p class="petit">Crée un fichier avec toutes les séances à venir et un rappel pour chacune. Ouvre-le sur l'iPhone et choisis « Ajouter tout ».
-      Conseil : ajoute-les dans un calendrier « Escalade » dédié, pour pouvoir tout supprimer d'un coup si le programme change.</p>
+      <p class="petit">À régler une seule fois, le jour où tu commences : tes saisies sont rangées par numéro de semaine.</p>`],
+    ["minuteur", "⏱ Minuteur", `
+      <label class="champ">Repos après un passage</label>${choix("auto", [[true, "Automatique"], [false, "Manuel (bouton ⏱)"]])}
+      <label class="champ">Noter le résultat d'une voie ou d'un bloc</label>${choix("releve", [[true, "Oui, à chaque passage"], [false, "Non"]])}`],
+    ["son", "🔊 Son", `
+      <label class="champ">Son</label>${choix("son", [[true, "Activé"], [false, "Coupé"]])}
+      <label class="champ">Volume</label>${choix("volume", [["faible", "Faible"], ["moyen", "Moyen"], ["fort", "Fort"]])}
+      <label class="champ">Bips</label><div class="choix">${bascule("bip10", "10 s avant")}${bascule("bip321", "3-2-1")}${bascule("bipFin", "Fin")}${bascule("bipFractions", "Changements")}</div>
+      <label class="champ">Sonner même en mode silencieux</label>${choix("silencieux", [[true, "Oui"], [false, "Non"]])}
+      <p class="petit">Fonctionne sur les iPhone récents (iOS 17 ou plus).</p>
+      <button class="gros" data-test="son">Tester le son</button>`],
+    ["rappels", "📅 Rappels calendrier", `
+      <p class="petit">Crée un fichier avec toutes les séances à venir et un rappel pour chacune. Ouvre-le et choisis « Ajouter tout », de préférence dans un calendrier « Escalade » dédié.</p>
       ${Object.keys(R.heures).map(a => `<label class="champ">Heure : ${esc(a)}</label><input type="time" data-heure="${esc(a)}" value="${R.heures[a]}">`).join("")}
       <label class="champ">Rappel</label>${choix("avance", [[15, "15 min avant"], [30, "30 min"], [60, "1 h"], [120, "2 h"]])}
-      <p></p><button class="gros" data-test="calendrier">Créer le fichier calendrier</button></div>
-
-    <div class="carte"><h2>Sauvegarde</h2>
+      <p></p><button class="gros" data-test="calendrier">Créer le fichier calendrier</button>`],
+    ["sauvegarde", "💾 Sauvegarde", `
       <p class="petit">Pour récupérer tes saisies (nouveau téléphone, app réinstallée) : choisis un fichier
       <b>sauvegarde-escalade-….json</b> créé par Exporter.</p>
       <button class="gros" data-test="restaurer">Restaurer une sauvegarde</button>
-      <input type="file" id="fichier" accept=".json,application/json" hidden></div>
-
-    <p class="petit" style="text-align:center">App ${APP_VERSION} · programme du ${esc(vp)}</p>`;
-  $("fichier").onchange = restaurer;
-  $("recherche").addEventListener("input", filtrerExercices);
-}
-function filtrerExercices() {
-  const q = sansAccents($("recherche").value.trim());
-  const blocs = [...$("liste-exos").children];
-  let titre = null, visibles = 0;
-  const fermer = () => { if (titre) titre.style.display = visibles ? "" : "none"; };
-  blocs.forEach(el => {
-    if (el.tagName === "H2") { fermer(); titre = el; visibles = 0; return; }
-    const ok = !q || el.dataset.t.includes(q);
-    el.style.display = ok ? "" : "none"; if (ok) visibles++;
-    el.open = !!q && ok;
-  });
-  fermer();
+      <input type="file" id="fichier" accept=".json,application/json" hidden>`]];
+  $("ecran").innerHTML = panneaux.map(([id, titre, corps]) =>
+    `<button class="gros panneau-titre ${panneau === id ? "ouvert" : ""}" data-panneau="${id}">${titre} <span>${panneau === id ? "▾" : "▸"}</span></button>
+     ${panneau === id ? `<div class="carte">${corps}</div>` : `<p></p>`}`).join("") +
+    `<p class="petit centre">App ${APP_VERSION} · programme du ${esc(vp)}</p>`;
+  if ($("fichier")) $("fichier").onchange = restaurer;
 }
 $("ecran").addEventListener("click", e => {
-  if (vue !== "exercices") return;
+  if (vue !== "reglages") return;
   const b = e.target.closest("button"); if (!b) return;
   const t = b.dataset, y = window.scrollY;
+  if (t.panneau) { panneau = panneau === t.panneau ? null : t.panneau; return afficherReglages(); }
   if (t.test === "son") { initAudio(); const s = R.son; R.son = true; bip("fin"); R.son = s; return; }
   if (t.test === "calendrier") return calendrier();
   if (t.test === "restaurer") return $("fichier").click();
   if (t.bascule) R[t.bascule] = !R[t.bascule];
   if (t.reglage) { const v = t.valeur; R[t.reglage] = v === "true" ? true : v === "false" ? false : isNaN(v) ? v : Number(v); }
   if (t.reglage === "mode") { sauverReglages(); reconstruire(); index = indexAujourdhui(); }
-  if (t.bascule || t.reglage) { sauverReglages(); const q = $("recherche").value; afficherExercices(); $("recherche").value = q; filtrerExercices(); window.scrollTo(0, y); }
+  if (t.bascule || t.reglage) { sauverReglages(); afficherReglages(); window.scrollTo(0, y); }
 });
 $("ecran").addEventListener("change", e => {
-  if (vue === "exercices" && e.target.id === "date-debut" && e.target.value) {
+  if (vue !== "reglages") return;
+  if (e.target.id === "date-debut" && e.target.value) {
     const d = new Date(e.target.value + "T12:00:00");
     if (d.getDay() !== 1 && !confirm("Ce n'est pas un lundi. Le programme commence normalement un lundi. Garder cette date ?")) { e.target.value = debutProgramme(); return; }
     R.dateDebut = e.target.value; sauverReglages(); reconstruire(); index = indexAujourdhui(); return;
   }
-  if (vue !== "exercices" || !e.target.dataset.heure) return;
-  R.heures[e.target.dataset.heure] = e.target.value; sauverReglages();
+  if (e.target.dataset.heure) { R.heures[e.target.dataset.heure] = e.target.value; sauverReglages(); }
 });
 
 // =====================================================================
@@ -1067,8 +1230,11 @@ if ("serviceWorker" in navigator) {
 // =====================================================================
 function afficher(enHaut = true) {
   if (vue === "seance" && !courant()) { vue = "semaine"; semaineVue = Math.max(1, semaineDe(new Date())); }
-  vue === "seance" ? afficherSeance() : vue === "semaine" ? afficherSemaine() : afficherExercices();
+  ({ seance: afficherSeance, semaine: afficherSemaine, exercices: afficherExercices, reglages: afficherReglages })[vue]();
   $("btn-vue").textContent = vue === "exercices" ? "Séance" : "Exercices";
+  $("btn-reglages").classList.toggle("choisi", vue === "reglages");
+  const navigation = vue === "seance" || vue === "semaine";       // ◀ ▶ inutiles dans Exercices et Réglages
+  ["prec", "suiv"].forEach(id => $(id).style.visibility = navigation ? "visible" : "hidden");
   infoExport();
   if (enHaut) window.scrollTo(0, 0);
 }
@@ -1079,6 +1245,7 @@ $("titre-date").onclick = $("btn-semaine").onclick = () => vue === "semaine"
   ? (courant() ? changer(index) : null)
   : ouvrirSemaine(courant() ? courant().semaine : semaineDe(new Date()));
 $("btn-vue").onclick = () => { vue = vue === "exercices" ? "seance" : "exercices"; afficher(); };
+$("btn-reglages").onclick = () => { vue = vue === "reglages" ? "seance" : "reglages"; afficher(); };
 $("btn-export").onclick = exporter;
 
 afficher();
