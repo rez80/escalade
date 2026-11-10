@@ -1,4 +1,4 @@
-# App Escalade — mode d'emploi (version 3.2)
+# App Escalade — mode d'emploi (version 3.3)
 
 ## Les fichiers
 
@@ -26,7 +26,7 @@
 | Le minuteur, les chronos, l'échauffement guidé, « ✓ Fait » du minuteur | 10. Minuteur |
 | Les sons | 11. Son |
 | La vue Semaine, la création de séances en 3 étapes et ses **modèles** (`MODELES`) | 13. Vue semaine |
-| L'écran Exercices (menus déroulants, recherche) et l'écran Réglages (panneaux) | 14. Exercices et réglages |
+| L'écran Exercices (disciplines, Séance du jour, favoris, filtre d'avancement, fiches) et l'écran Réglages | 14. Exercices et réglages |
 | L'export, la sauvegarde, le fichier calendrier | 15. Export |
 
 ## Mettre à jour l'app sur GitHub
@@ -67,7 +67,9 @@
 Dans la vue Semaine (📅), **+ Créer une séance**, en trois étapes (**Suivant ›** / **‹ Retour**) :
 1. **Type et modèle** : la date, le type (*Escalade*, *Course*, *Muscu*, *Libre*), puis le modèle (bloc technique léger, bloc projets, bloc endurance, voie volume, voie projets, fractionné, course continue, marche rapide, vélo, muscu complète, courte ou express, gainage express, séance libre).
 2. **Réglages** avec − et + (nombre de blocs, minutes de dévers, cotations, fractions…).
-3. **Exercices et aperçu** : ajoute si tu veux des exercices de la liste (séries, détail, repos), vérifie l'aperçu, puis **Créer la séance**.
+3. **Exercices et aperçu** : ajoute si tu veux des exercices de la liste, rangée par discipline (séries, détail, repos), vérifie l'aperçu, puis **Créer la séance**.
+
+Raccourci : **+ Ajouter à une séance** depuis la fiche d'un exercice ouvre ce formulaire avec l'exercice déjà ajouté.
 
 La séance fonctionne comme une séance du programme et arrive dans l'onglet Séances libres de l'Excel.
 Pour ajouter un modèle à l'app : section 13 de `app.js`, liste `MODELES`, copie un bloc existant et adapte-le.
@@ -90,7 +92,17 @@ Un bouton par panneau :
 - **📅 Rappels calendrier** : l'heure de chaque activité et le délai du rappel, puis **Créer le fichier calendrier**. Ouvre-le sur l'iPhone et choisis « Ajouter tout », de préférence dans un calendrier « Escalade » dédié.
 - **💾 Sauvegarde** : **Restaurer une sauvegarde**.
 
-La version de l'app et la date du programme sont affichées en bas de cet écran. L'écran **Exercices** range les routines et les exercices dans des menus déroulants, avec une recherche en haut.
+La version de l'app et la date du programme sont affichées en bas de cet écran.
+
+## L'écran Exercices
+
+- **Rangée de boutons** en haut : ★ Favoris, Séance du jour, Voie et bloc, Voie, Bloc, Muscu, Course, Mobilité, Routines. Chaque bouton affiche ses exercices en sous-menus déroulants.
+- **Séance du jour** : uniquement les exercices cités dans la séance d'aujourd'hui (choisi par défaut quand il y en a).
+- **Recherche** : cherche dans toutes les disciplines.
+- **Exercices prévus plus tard** : grisés, avec la date à partir de laquelle ils sont prévus. La case « Afficher aussi les exercices prévus plus tard » les rend normaux.
+- **Fiche d'un exercice** : niveau, discipline et sous-catégorie, explication, point de sécurité, séances du programme où il apparaît, dernière fois que tu l'as fait, **☆ Ajouter aux favoris** et **+ Ajouter à une séance** (ouvre la création de séance avec cet exercice).
+
+Les disciplines, sous-catégories et niveaux viennent de l'onglet Exercices de l'Excel (colonnes Discipline et Niveau, en listes déroulantes) : pour reclasser ou ajouter un exercice, modifie l'Excel puis relance `generer_app.py`.
 
 ## Exporter vers l'Excel
 
