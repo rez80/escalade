@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Escalade">
+<title>Escalade</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Bandeau affiché quand une nouvelle version est prête -->
+<div id="bandeau">Nouvelle version disponible · toucher pour mettre à jour</div>
+
+<header>
+  <button id="prec" aria-label="Précédent">◀</button>
+  <button id="titre-date" aria-label="Voir la semaine"></button>
+  <button id="btn-semaine" aria-label="Vue Semaine">📅</button>
+  <button id="suiv" aria-label="Suivant">▶</button>
+</header>
+
+<main id="ecran"></main>
+
+<!-- Minuteur : toucher le temps pour passer en plein écran -->
+<div id="minuteur">
+  <div id="mn-haut">
+    <svg id="mn-anneau" viewBox="0 0 64 64"><circle id="mn-fond" cx="32" cy="32" r="27"/><circle id="mn-arc" cx="32" cy="32" r="27"/></svg>
+    <div id="mn-textes"><div id="mn-temps"></div><div id="mn-label"></div><div id="mn-suivant"></div></div>
+  </div>
+  <div id="mn-ctrl">
+    <button data-mn="moins">−30</button>
+    <button data-mn="pause" id="mn-pause">❚❚</button>
+    <button data-mn="plus">+30</button>
+    <button data-mn="passer">Passer</button>
+    <button data-mn="son" id="mn-son">🔊</button>
+    <button data-mn="stop">✕</button>
+  </div>
+</div>
+
+<nav>
+  <button id="btn-vue">Exercices</button>
+  <button id="btn-douleur" aria-label="Signaler une douleur">⚠</button>
+  <button id="btn-export">Exporter<small id="info-export"></small></button>
+</nav>
+
+<div id="fond-modal"><div class="carte" id="modal"></div></div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
