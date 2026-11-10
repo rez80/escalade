@@ -103,7 +103,7 @@ nav { position:fixed; bottom:0; left:0; right:0; z-index:6; display:flex; gap:8p
 nav button { flex:1; height:54px; font-weight:600; line-height:1.1; }
 nav small { display:block; font-weight:400; font-size:12px; color:var(--doux); }
 nav small.retard { color:var(--orange); font-weight:700; }
-#btn-douleur { flex:0 0 64px; font-size:22px; }
+#btn-douleur, #btn-reglages { flex:0 0 58px; font-size:22px; }
 
 /* ---------- Fenêtres (douleur, fin de séance, résultat) ---------- */
 #fond-modal { position:fixed; inset:0; z-index:10; background:rgba(0,0,0,.45); display:none; align-items:flex-end; }
@@ -115,3 +115,34 @@ details { border-bottom:1px solid var(--bord); padding:10px 0; }
 summary { font-weight:600; }
 .reglage { margin-bottom:12px; }
 #minuteur.plein #mn-anneau circle { stroke-width:4; }
+
+/* ---------- Version 3.2 : séance plus fluide ---------- */
+.centre { text-align:center; }
+/* Carte « Maintenant » : fixée sous l'en-tête pendant la séance */
+.maintenant { position:sticky; top:63px; z-index:4; background:var(--carte); border:2px solid var(--marque);
+              border-radius:14px; padding:10px 14px; margin-bottom:12px; box-shadow:0 4px 14px rgba(0,0,0,.12); }
+.maintenant-titre { font-size:19px; font-weight:700; margin:2px 0 8px; }
+.maintenant .choix button { height:52px; font-size:18px; }
+.ligne.actuelle { border-left:4px solid var(--marque); padding-left:8px; background:var(--info); border-radius:8px; }
+/* Lignes repliées (la dernière fois, relevé) */
+.ligne-pliee { width:100%; text-align:left; padding:10px 14px; margin-bottom:12px; font-size:15px; color:var(--doux); }
+.entete-pliee { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.petit-bouton { height:40px; padding:0 14px; font-weight:700; }
+/* Bandeau « Passage noté · Annuler » */
+#toast { position:fixed; left:12px; right:12px; bottom:calc(80px + env(safe-area-inset-bottom)); z-index:25; display:none;
+         align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; border-radius:12px;
+         background:var(--texte); color:var(--fond); font-weight:600; box-shadow:0 4px 14px rgba(0,0,0,.25); }
+#toast button { height:40px; padding:0 14px; font-weight:700; background:var(--prise); border-color:var(--prise); color:#1C2A33; }
+/* Bouton « ✓ Fait » du minuteur */
+#mn-fait { display:none; width:100%; min-height:48px; padding:6px 10px; font-weight:700; background:#fff; color:#1C2A33; border:none; }
+#minuteur.plein #mn-fait { min-height:72px; font-size:20px; }
+/* Écran Exercices : menus déroulants */
+details.groupe { background:var(--carte); border:1px solid var(--bord); border-radius:14px; padding:0 14px; margin-bottom:10px; }
+details.groupe > summary { font-size:18px; color:var(--marque); padding:14px 0; }
+details.item { padding:10px 0; }
+/* Écran Réglages : un bouton par panneau */
+.panneau-titre { display:flex; justify-content:space-between; align-items:center; padding:0 16px; text-align:left; }
+.panneau-titre.ouvert { border-color:var(--marque); }
+/* Vue Semaine : séance du jour */
+.semaine-item.aujourdhui { border:2px solid var(--marque); background:var(--info); }
+.petit-etiquette { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--marque); }
