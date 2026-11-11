@@ -9,7 +9,7 @@
 // =====================================================================
 // 1. RÉGLAGES DU PROGRAMME (modifiables dans le code)
 // =====================================================================
-const APP_VERSION = "3.3";
+const APP_VERSION = "3.5";
 const REPOS_DEFAUT = { Voie: 300, Bloc: 180, Maison: 90 };   // secondes, si la ligne n'indique rien
 const COTATIONS = { Voie: ["3","4","4c","5a","5b","5c","6a","6b","6c"], Bloc: ["2","3","4","5","6","7"] };
 COTATIONS["Escalade extérieur"] = COTATIONS.Voie;               // se note comme une voie
@@ -26,6 +26,8 @@ const REGLAGES_DEFAUT = {
   bip10: true, bip321: true, bipFin: true, bipFractions: true,
   heures: { Voie: "19:00", Bloc: "10:00", Maison: "19:00", Course: "18:30", "Repos actif": "18:00" },
   avance: 60,            // minutes avant la séance pour le rappel du calendrier
+  tVoie: 4, tBloc: 1.5,  // minutes par voie et par bloc (estimation des durées)
+  ajuster: true,         // remplacer ces valeurs par ta moyenne réelle après quelques séances
   mode: "programme",     // "programme" : suit le programme ; "libre" : uniquement les séances créées
   dateDebut: ""          // vide = date de début du programme (data.js)
 };
@@ -55,7 +57,24 @@ function dateSeance(s) {   // date de début + (semaine - 1) × 7 jours + jour
 const cle = s => s.libre ? `libre-${s.id}` : `seance-${s.semaine}-${s.jour}-${s.activite}`;
 const lireCle = k => JSON.parse(localStorage.getItem(k) || "{}");
 const lire = s => lireCle(cle(s));
-const ecrire = (s, d) => localStorage.setItem(cle(s), JSON.stringify(d));
+// Chaque modification garde l'état précédent de la séance (20 derniers) pour « Annuler le dernier geste »
+function memoriser(k) {
+  const avant = localStorage.getItem(k) || "{}";
+  const p = JSON.parse(localStorage.getItem("annuler-" + k) || '{"etats":[]}');
+  if (p.etats[p.etats.length - 1] !== avant) { p.etats.push(avant); if (p.etats.length > 20) p.etats.shift(); }
+  p.t = Date.now(); localStorage.setItem("annuler-" + k, JSON.stringify(p));
+}
+const ecrireCle = (k, d) => {
+  memoriser(k); d.dernierGeste = Date.now();
+  const s = LISTE.find(x => cle(x) === k);
+  if (s && d.debut) suivreEtape(s, d);                    // temps réel par étape (bilan de temps, moyennes)
+  localStorage.setItem(k, JSON.stringify(d));
+};
+const ecrire = (s, d) => ecrireCle(cle(s), d);
+// Nettoyage : on ne garde l'historique d'annulation que 7 jours
+Object.keys(localStorage).filter(k => k.startsWith("annuler-")).forEach(k => {
+  try { if (Date.now() - JSON.parse(localStorage.getItem(k)).t > 7 * 864e5) localStorage.removeItem(k); } catch { localStorage.removeItem(k); }
+});
 const lireMesures = sem => JSON.parse(localStorage.getItem("mesures-" + sem) || "{}");
 const ecrireMesures = (sem, m) => localStorage.setItem("mesures-" + sem, JSON.stringify(m));
 const estVoie = act => act !== "Bloc";
@@ -101,6 +120,9 @@ function analyser(lignes) {
     let n = 1, repos = null;
     const m = l.match(/^(\d+)\s*[×x]\s*/);
     if (m) { n = Number(m[1]); l = l.slice(m[0].length); }
+    let dureePrevue = null;                                          // « (durée 15 min) » : durée prévue fixée à la main
+    const dp = l.match(/\(durée\s+(\d+)\s*(min|s)\)/);
+    if (dp) { dureePrevue = Number(dp[1]) * (dp[2] === "min" ? 60 : 1); l = l.replace(dp[0], "").trim(); }
     const r = l.match(/\(repos\s+(\d+)\s*(min|s)\)/);
     if (r) { repos = Number(r[1]) * (r[2] === "min" ? 60 : 1); l = l.replace(r[0], "").trim(); }
     // Durée de travail : fractions « 2 min course + 2 min marche », ou la dernière durée citée (« 20 s », « 25 min »)
@@ -111,7 +133,8 @@ function analyser(lignes) {
       const tous = [...l.matchAll(/(\d+)\s*(s|min)\b/g)];
       if (tous.length) { const x = tous[tous.length - 1]; travail = Number(x[1]) * (x[2] === "min" ? 60 : 1); }
     }
-    return { type: "action", texte: l, n, repos, travail, intervalle, cotes: /par côté/.test(l) };
+    const sm = l.match(/(\d+)\s+(blocs|voies)\b/i);                  // « Circuit de 4 blocs » : 4 résultats par série
+    return { type: "action", texte: l, n, repos, travail, intervalle, cotes: /par côté/.test(l), serie: sm && Number(sm[1]) > 1 ? Number(sm[1]) : 0, dureePrevue };
   });
 }
 const versionsDe = s => decouper(s.contenu).versions;
@@ -119,13 +142,77 @@ const nomVersion = (s, d) => (versionsDe(s)[d.version || 0] || {}).nom || "";
 function elementsDe(s, d) {
   const { communes, versions } = decouper(s.contenu);
   const v = versions[d.version || 0];
-  return analyser(v ? [...communes, ...v.lignes] : communes);
+  const els = analyser([...communes, ...(v ? v.lignes : []), ...(d.ajouts || [])]);   // + exercices ajoutés pendant la séance
+  els.forEach((e, i) => {                                                            // + passages faits en plus du programme
+    const x = (d.extra || {})[ck(d, i)];
+    if (e.type === "action" && x) { e.n += x; e.extra = x; }
+  });
+  return els;
 }
 // Clés des compteurs et routines : préfixées par la version (sauf la première)
 const ck = (d, i) => (d.version ? `v${d.version}-` : "") + i;
 const compte = (d, i) => (d.compteurs || {})[ck(d, i)] || 0;
 const routineOk = (d, i) => !!(d.routines || {})[ck(d, i)];
 const reposDe = (s, e) => e.repos ?? REPOS_DEFAUT[s.activite] ?? 0;
+
+// =====================================================================
+// 4 bis. DURÉES : prévues (écrites ou estimées), temps réel par étape, moyennes qui s'ajustent
+// =====================================================================
+const lireMoyennes = () => JSON.parse(localStorage.getItem("moyennes") || '{"Voie":[],"Bloc":[]}');
+function tempsParPassage(type) {                     // minutes par voie ou par bloc
+  const fixe = type === "Voie" ? R.tVoie : R.tBloc, m = lireMoyennes()[type] || [];
+  return R.ajuster && m.length >= 3 ? m.reduce((a, b) => a + b, 0) / m.length : fixe;
+}
+const estEscalade = e => /voie|bloc|essai|projet|circuit/i.test(e.texte);
+// Durée prévue d'un élément de séance, en secondes
+function dureeElement(s, d, e) {
+  if (e.type === "info") return 0;
+  if (e.type === "routine") {
+    const m = etapesRoutine(e.nom).reduce((t, r) => t + minutesEtape(r), 0);
+    return (m || 2) * 60;
+  }
+  if (e.dureePrevue) return e.dureePrevue;
+  const repos = reposDe(s, e), entre = Math.max(0, e.n - 1) * repos;
+  if (e.intervalle) return e.n * (e.intervalle.course + e.intervalle.marche);
+  if (e.travail) return e.n * (e.travail * (e.cotes ? 2 : 1) + (e.cotes ? 5 : 0)) + entre;
+  if (estEscalade(e)) {
+    const type = estVoie(actReleve(s, d)) && !/bloc|circuit/i.test(e.texte) ? "Voie" : "Bloc";
+    return e.n * tempsParPassage(type) * 60 * Math.max(1, e.serie) + entre;
+  }
+  return e.n * 120 + entre;                             // autre action : 2 min par passage
+}
+const etapesDe = els => els.map((e, i) => ({ e, i })).filter(x => x.e.type !== "info");
+const dureeTotale = (s, d) => elementsDe(s, d).reduce((t, e) => t + dureeElement(s, d, e), 0);
+const hm = sec => { const m = Math.round(sec / 60); return m < 60 ? `${m} min` : `${Math.floor(m / 60)} h ${pad(m % 60)}`; };
+
+// Temps réel : à chaque changement d'étape, le temps passé est ajouté à l'étape quittée
+function suivreEtape(s, d) {
+  const maintenant = Date.now(), k = d.fin ? -1 : prochain(s, d);
+  const ec = d.etapeEnCours;
+  if (ec && ec.i === k && !d.fin) return;
+  if (ec && ec.ck !== undefined) {
+    d.temps = d.temps || {};
+    const ecoule = Math.max(0, Math.min(maintenant, d.fin || maintenant) - ec.depuis);
+    d.temps[ec.ck] = (d.temps[ec.ck] || 0) + ecoule;
+    noterMoyenne(s, d, ec.i, d.temps[ec.ck]);
+  }
+  d.etapeEnCours = k >= 0 && !d.fin ? { i: k, ck: ck(d, k), depuis: ec ? maintenant : d.debut } : null;
+}
+// Moyenne réelle par voie ou par bloc (10 dernières étapes d'escalade terminées)
+function noterMoyenne(s, d, i, ms) {
+  const e = elementsDe(s, d)[i];
+  if (!e || e.type !== "action" || !estEscalade(e) || e.travail || e.intervalle || e.dureePrevue || compte(d, i) < e.n) return;
+  const type = estVoie(actReleve(s, d)) && !/bloc|circuit/i.test(e.texte) ? "Voie" : "Bloc";
+  const parPassage = (ms / 1000 - Math.max(0, e.n - 1) * reposDe(s, e)) / 60 / (e.n * Math.max(1, e.serie));
+  if (!(parPassage >= 0.5 && parPassage <= 20)) return;          // valeur aberrante : ignorée
+  const m = lireMoyennes(); m[type] = [...(m[type] || []), Math.round(parPassage * 10) / 10].slice(-10);
+  localStorage.setItem("moyennes", JSON.stringify(m));
+}
+// Temps passé sur l'étape en cours (en secondes)
+function tempsEtapeEnCours(d) {
+  const ec = d.etapeEnCours; if (!ec) return 0;
+  return ((d.temps || {})[ec.ck] || 0) / 1000 + (Date.now() - ec.depuis) / 1000;
+}
 
 // Remplace « Nom d'exercice » par un lien vers son explication
 function lier(texte, i) {
@@ -232,7 +319,7 @@ const titreAction = e => sansGuillemets(e.texte);
 
 function afficherSeance() {
   const s = courant(), d = lire(s), act = s.activite;
-  $("titre-date").textContent = `${s.jour} ${jourMois(dateSeance(s))} · sem. ${s.semaine}`;
+  $("titre-date").textContent = `${s.jour.slice(0, 3)}. ${jourMois(dateSeance(s))} · sem. ${s.semaine}`;
   const versions = versionsDe(s), elements = elementsDe(s, d), k = prochain(s, d);
   let h = `<h1>${esc(act)}</h1><p class="phase">${esc(s.phase)}</p>`;
   h += carteMaintenant(s, d, elements, k);
@@ -258,10 +345,17 @@ function afficherSeance() {
   // --- Programme ---
   h += `<div class="carte">`;
   if (s.libre && !elements.length) h += `<p class="petit">Séance libre : pas de programme, note simplement ce que tu fais.</p>`;
+  const numeros = {}; etapesDe(elements).forEach((x, n) => numeros[x.i] = n + 1);
+  const faite = (e, i) => e.type === "routine" ? routineOk(d, i) : e.type === "action" && compte(d, i) >= e.n;
+  // Étapes faites repliées : toutes les étapes terminées avant l'étape en cours
+  const repliables = d.debut && !d.fin && k > 0 ? elements.map((e, i) => i).filter(i => i < k && elements[i].type !== "info" && faite(elements[i], i)) : [];
+  if (repliables.length) h += `<button class="ligne-pliee" data-plier="faites">${ouverts.has("faites") ? "▾" : "▸"} ${repliables.length} étape${repliables.length > 1 ? "s" : ""} faite${repliables.length > 1 ? "s" : ""}</button>`;
   elements.forEach((e, i) => {
+    if (repliables.includes(i) && !ouverts.has("faites")) return;
+    const num = numeros[i] ? { n: numeros[i], etat: i === k ? "▶" : faite(e, i) ? "✓" : "○", duree: dureeElement(s, d, e) } : null;
     if (e.type === "info") h += `<div class="ligne info">${lier(e.texte, i)}${explication(i)}</div>`;
-    if (e.type === "routine") h += ligneRoutine(e, i, d, i === k);
-    if (e.type === "action") h += ligneAction(s, d, e, i, i === k);
+    if (e.type === "routine") h += ligneRoutine(e, i, d, i === k, num);
+    if (e.type === "action") h += ligneAction(s, d, e, i, i === k, num);
   });
   h += `</div>`;
 
@@ -277,7 +371,14 @@ function carteMaintenant(s, d, els, k) {
   if (d.fin || d.fait === "Sautée") return "";
   if (k === -1) return d.debut ? `<div class="maintenant"><b>Tout est fait ✓</b><p></p>
     <button class="gros go" data-action="terminer">■ Terminer la séance</button></div>` : "";
-  const e = els[k];
+  const e = els[k], etapes = etapesDe(els), rang = etapes.findIndex(x => x.i === k) + 1;
+  const prevu = dureeElement(s, d, e), passe = d.debut ? tempsEtapeEnCours(d) : 0;
+  const barre = `<div class="barre-seance">${etapes.map(x => {
+    const fait = x.e.type === "routine" ? routineOk(d, x.i) : compte(d, x.i) >= x.e.n;
+    return `<span class="${x.i === k ? "encours" : fait ? "fait" : ""}" style="flex-grow:${Math.max(1, dureeElement(s, d, x.e) / 60)}"></span>`;
+  }).join("")}</div>`;
+  const suivante = etapes.find(x => x.i > k && (x.e.type === "routine" ? !routineOk(d, x.i) : compte(d, x.i) < x.e.n));
+  const temps = d.debut ? `<span id="temps-etape" data-prevu="${prevu}" class="${passe > prevu ? "retard" : ""}">${hm(passe)} sur ≈ ${hm(prevu)}</span>` : `≈ ${hm(prevu)}`;
   let titre, sous, boutons = "";
   if (e.type === "routine") {
     titre = e.nom; sous = "Routine";
@@ -286,43 +387,71 @@ function carteMaintenant(s, d, els, k) {
     titre = titreAction(e); sous = `Passage ${compte(d, k) + 1} sur ${e.n}`;
     if (e.intervalle || e.travail) boutons += `<button class="gros" data-chrono="${k}">▶ Chrono</button>`;
   }
-  return `<div class="maintenant"><div class="petit">Maintenant · ${esc(sous)}</div><div class="maintenant-titre">${esc(titre)}</div>
+  return `<div class="maintenant ${animer.etape ? "nouvelle" : ""}"><div class="petit">Étape ${rang} sur ${etapes.length} · ${esc(sous)} · ${temps}</div>${barre}
+    <div class="maintenant-titre">${esc(titre)}</div>
+    ${suivante ? `<div class="petit">Ensuite : ${esc(suivante.e.type === "routine" ? suivante.e.nom : titreAction(suivante.e))}</div>` : ""}
     <div class="choix">${boutons}<button class="gros go" data-fait="${k}">✓ Fait</button></div></div>`;
 }
 
-function ligneRoutine(e, i, d, actuelle) {
+// Numéro, état (✓ ▶ ○) et durée prévue d'une étape
+const entete = num => num ? `<div class="num-etape"><span class="etat">${num.etat}</span> ${num.n}.<span class="duree-prevue">≈ ${hm(num.duree)}</span></div>` : "";
+function ligneRoutine(e, i, d, actuelle, num) {
   const ok = routineOk(d, i), etapes = etapesRoutine(e.nom);
   const durees = etapes.map(r => r.duree).filter(x => x && x !== "—");
   const total = durees.length && durees.every(x => /^\d+ min$/.test(x)) ? durees.reduce((t, x) => t + parseInt(x), 0) + " min" : durees.join(" + ");
   return `<div class="ligne ${ok ? "finie" : ""} ${actuelle ? "actuelle" : ""}" data-el="${i}">
     <button class="case ${ok ? "ok" : ""}" data-routine="${i}">✓</button>
-    <div class="txt"><button class="lien" data-detail="${i}">${esc(e.nom)}${total ? " · " + esc(total) : ""} ▸</button>
+    <div class="txt">${entete(num)}<button class="lien" data-detail="${i}">${esc(e.nom)}${total ? " · " + esc(total) : ""} ▸</button>
     ${routineGuidable(e.nom) && !ok ? `<div class="outils"><button data-guide="${i}">▶ Guidé</button></div>` : ""}
     ${ouverts.has("d" + i) ? `<div class="detail">${etapes.map(r =>
       `<p><b>${esc(r.etape)}</b>${r.duree && r.duree !== "—" ? " (" + esc(r.duree) + ")" : ""} : ${esc(r.quoi)}</p>`).join("")}</div>` : ""}
     </div></div>`;
 }
 
-function ligneAction(s, d, e, i, actuelle) {
+function ligneAction(s, d, e, i, actuelle, num) {
   const c = compte(d, i), repos = reposDe(s, e);
-  const marques = e.n <= 10
-    ? Array.from({ length: e.n }, (_, n) => `<button class="rond ${n < c ? "ok" : ""}" data-rond="${i}" data-k="${n}">${n < c ? "✓" : ""}</button>`).join("")
-    : `<div class="compteur"><button data-cpt="${i}" data-pas="-1">−</button><span>${c}/${e.n}</span><button data-cpt="${i}" data-pas="1">+</button></div>`;
+  const marques = (e.n <= 10
+    ? Array.from({ length: e.n }, (_, n) => `<button class="rond ${n < c ? "ok" : ""} ${animer.rond === `${i}-${n}` ? "nouveau" : ""} ${n >= e.n - (e.extra || 0) ? "en-plus" : ""}" data-rond="${i}" data-k="${n}">${n < c ? "✓" : ""}</button>`).join("")
+    : `<div class="compteur"><button data-cpt="${i}" data-pas="-1">−</button><span>${c}/${e.n}</span><button data-cpt="${i}" data-pas="1">+</button></div>`)
+    + (c >= e.n ? `<button class="rond plus" data-plus="${i}" aria-label="Un passage en plus">+</button>` : "");
+  const note = (d.notesLignes || {})[ck(d, i)], avant = noteDerniereFois(e);
   let outils = "";
   if (e.intervalle) outils += `<button data-chrono="${i}">▶ ${mmss(e.intervalle.course)} / ${mmss(e.intervalle.marche)}</button>`;
   else if (e.travail) outils += `<button data-chrono="${i}">▶ ${duree(e.travail)}${e.cotes ? " × 2 côtés" : ""}</button>`;
   if (repos) outils += `<button data-repos="${i}">⏱ repos ${duree(repos)}</button>`;
   return `<div class="ligne ${c >= e.n ? "finie" : ""} ${actuelle ? "actuelle" : ""}" data-action-ligne="${i}" data-el="${i}">
-    <div class="txt">${lier(e.texte, i)}${outils ? `<div class="outils">${outils}</div>` : ""}${historique(e)}${explication(i)}</div>
+    <div class="txt">${entete(num)}${lier(e.texte, i)}${e.serie ? ` <span class="petit">(série de ${e.serie})</span>` : ""}${outils ? `<div class="outils">${outils}</div>` : ""}${historique(e)}
+    ${note ? `<div class="note">📝 ${esc(note)}</div>` : ""}${avant && !note ? `<div class="note ancienne">📝 La dernière fois : ${esc(avant)}</div>` : ""}${explication(i)}</div>
     <div class="ronds">${marques}</div></div>`;
 }
 
 const minutes = debut => Math.round((Date.now() - debut) / 60000);
+// Contenu d'une fiche : but, étapes numérotées, erreurs fréquentes, version plus facile, sécurité
+function corpsFiche(x, complet = true) {
+  const etapes = String(x.comment || "").split("\n").map(t => t.trim()).filter(Boolean);
+  return `${x.but ? `<p><b>But :</b> ${esc(x.but)}</p>` : ""}
+    ${etapes.length > 1 ? `<ol class="etapes">${etapes.map(t => `<li>${esc(t)}</li>`).join("")}</ol>` : `<p>${esc(x.comment)}</p>`}
+    ${complet && x.erreurs ? `<p><b>Erreurs fréquentes :</b> ${esc(x.erreurs)}</p>` : ""}
+    ${x.facile ? `<p><b>Plus facile :</b> ${esc(x.facile)}</p>` : ""}
+    ${x.cle ? `<p class="petit"><b>Sécurité :</b> ${esc(x.cle)}</p>` : ""}`;
+}
+// Note laissée sur la même ligne lors d'une séance précédente
+function noteDerniereFois(e) {
+  const t = sansGuillemets(e.texte);
+  for (let k = index - 1; k >= 0; k--) {
+    const p = LISTE[k], d = lire(p);
+    if (!d.notesLignes) continue;
+    const lignes = elementsDe(p, d);
+    for (let i = 0; i < lignes.length; i++)
+      if (lignes[i].type === "action" && sansGuillemets(lignes[i].texte) === t && d.notesLignes[ck(d, i)]) return d.notesLignes[ck(d, i)];
+  }
+  return "";
+}
 function explication(i) {
   const k = [...ouverts].find(o => o.startsWith(`e${i}-`));
   if (!k) return "";
   const x = EXERCICES[Number(k.split("-")[1])];
-  return `<div class="explic"><b>${esc(x.nom)}</b> : ${esc(x.comment)}<br><span class="petit">${esc(x.cle)}</span></div>`;
+  return `<div class="explic"><b>${esc(x.nom)}</b>${corpsFiche(x, false)}</div>`;
 }
 
 // « La dernière fois » : une ligne repliée, le détail au toucher
@@ -366,8 +495,9 @@ function carteReleve(d, act) {
     <button class="petit-bouton" data-form="ouvrir">+ ${voie ? "Voie" : "Bloc"}</button></div>`;
   if (ouverts.has("releve")) liste.forEach(({ v, k }) => {
     const res = v.res === "Avec sec" ? `${v.sec} « sec »` : v.res;
-    h += `<div class="voie"><span><b>${esc(v.cot)}</b> · ${v.profil} · ${res}</span><button data-suppr="${k}">✕</button></div>`;
+    h += `<div class="voie"><button class="lien" data-editer="${k}"><b>${esc(v.cot)}</b> · ${v.profil} · ${res} ✎</button><button data-suppr="${k}">✕</button></div>`;
   });
+  if (ouverts.has("releve") && liste.length) h += `<p class="petit">Touche un résultat pour le corriger.</p>`;
   if (formVoie) h += formulaireResultat(formVoie, act, "form") + `<p></p><div class="choix"><button data-form="annuler">Annuler</button>
     <button data-form="ajouter" class="choisi" ${formVoie.cot && formVoie.res ? "" : "disabled"}>Ajouter</button></div>`;
   return h + `</div>`;
@@ -405,7 +535,15 @@ function demarrerSiBesoin(d) { if (!d.debut && !d.fin) { d.debut = Date.now(); i
 
 $("ecran").addEventListener("click", e => {
   if (vue !== "seance") return;
+  if (appuiLong) { appuiLong = false; return; }                  // un appui long ne compte pas comme un passage
   const b = e.target.closest("button"), t = b ? b.dataset : {};
+  if (b && t.action === "menu") return ouvrirModal({ type: "menu" });
+  if (b && t.plus !== undefined) {                                // un passage en plus du programme
+    const i = Number(t.plus), s = courant(), d = lire(s);
+    d.extra = d.extra || {}; d.extra[ck(d, i)] = (d.extra[ck(d, i)] || 0) + 1; ecrire(s, d);
+    return compter(i, compte(lire(s), i) + 1);
+  }
+  if (b && t.editer !== undefined) return ouvrirResultat(null, Number(t.editer));
   if (b && t.exo !== undefined) {                          // explication : 1 appui ouvre, 2e ferme
     const k = `e${t.ligne}-${t.exo}`, etaitOuvert = ouverts.has(k);
     [...ouverts].filter(o => o.startsWith(`e${t.ligne}-`)).forEach(o => ouverts.delete(o));
@@ -462,15 +600,18 @@ function cocherRoutine(i, forcer = false) {
 
 // Compte un passage. Si c'est une voie ou un bloc, propose de noter le résultat, puis lance le repos.
 let derniereAction = null, minuterieToast = null;
+let animer = {};                                   // ce qui vient de changer (pour une petite animation)
 function compter(i, nouveau) {
   const s = courant(), d = lire(s), e = elementsDe(s, d)[i], avant = compte(d, i);
   nouveau = Math.max(0, Math.min(e.n, nouveau));
   const demarre = nouveau > avant && demarrerSiBesoin(d);
-  d.compteurs = d.compteurs || {}; d.compteurs[ck(d, i)] = nouveau; ecrire(s, d); afficher(false);
+  d.compteurs = d.compteurs || {}; d.compteurs[ck(d, i)] = nouveau;
+  animer = nouveau > avant ? { rond: `${i}-${nouveau - 1}`, etape: true } : {};
+  ecrire(s, d); afficher(false); animer = {};
   if (demarre) garderEcran();
   if (nouveau <= avant) return;
   derniereAction = { cle: cle(s), ck: ck(d, i), i, avant, voie: false, repos: false };
-  if (R.releve && relevable(s, d, e)) return ouvrirResultat(i);   // le bandeau « Annuler » viendra à la fermeture
+  if (R.releve && relevable(s, d, e)) return e.serie ? ouvrirCircuit(i) : ouvrirResultat(i);   // « Annuler » viendra à la fermeture
   montrerToast();
   apresPassage(i);
 }
@@ -498,7 +639,7 @@ $("toast-annuler").onclick = () => {
   const a = derniereAction; if (!a) return;
   const d = lireCle(a.cle);
   d.compteurs = d.compteurs || {}; d.compteurs[a.ck] = a.avant;
-  if (a.voie && d.voies) { const k = d.voies.map(v => v.ligne).lastIndexOf(a.i); if (k >= 0) d.voies.splice(k, 1); }
+  for (let n = 0; n < (a.voie || 0) && d.voies; n++) { const k = d.voies.map(v => v.ligne).lastIndexOf(a.i); if (k >= 0) d.voies.splice(k, 1); }
   localStorage.setItem(a.cle, JSON.stringify(d));
   if (T && T.cle === a.cle && T.ck === a.ck) { T = null; sauverT(); majMinuteur(); }
   if (M && M.type === "resultat") fermerModal();
@@ -537,7 +678,11 @@ function ouvrirModal(etat) { M = etat; afficherModal(); $("fond-modal").style.di
 function fermerModal() { M = null; $("fond-modal").style.display = "none"; }
 
 // Résultat : cotation et profil repris du passage précédent (même ligne, sinon texte de la ligne, sinon dernier noté)
-function ouvrirResultat(i) {
+function ouvrirResultat(i, edit) {
+  if (edit !== undefined) {                                      // corriger un résultat déjà noté
+    const v = lire(courant()).voies[edit];
+    return ouvrirModal({ type: "resultat", edit, ligne: v.ligne, act: v.act || actReleve(courant(), lire(courant())), cot: v.cot, profil: v.profil, res: v.res, sec: v.sec || 1 });
+  }
   const s = courant(), d = lire(s), act = actReleve(s, d), e = elementsDe(s, d)[i];
   const notes = (d.voies || []).filter(v => (v.act || act) === act);
   const memeLigne = notes.filter(v => v.ligne === i).slice(-1)[0], dernier = notes.slice(-1)[0];
@@ -549,9 +694,54 @@ function enregistrerResultat() {
   const etat = M; fermerModal();
   const v = { cot: etat.cot, profil: etat.profil, res: etat.res, act: etat.act, ligne: etat.ligne };
   if (etat.res === "Avec sec") v.sec = etat.sec;
+  if (etat.edit !== undefined) return modifier(d => { d.voies[etat.edit] = v; });   // correction : rien d'autre
   modifier(d => { d.voies = d.voies || []; d.voies.push(v); });
-  if (derniereAction && derniereAction.i === etat.ligne) { derniereAction.voie = true; montrerToast(); }
+  if (derniereAction && derniereAction.i === etat.ligne) { derniereAction.voie = 1; montrerToast(); }
   apresPassage(etat.ligne);
+}
+
+// Circuit : un résultat par bloc de la série
+function ouvrirCircuit(i) {
+  const s = courant(), d = lire(s), act = actReleve(s, d), e = elementsDe(s, d)[i];
+  const notes = (d.voies || []).filter(v => (v.act || act) === act), memeLigne = notes.filter(v => v.ligne === i).slice(-1)[0], dernier = notes.slice(-1)[0];
+  const cot = memeLigne ? memeLigne.cot : cotationDe(e.texte, act) || (dernier ? dernier.cot : COTATIONS[act][1]);
+  const profil = memeLigne ? memeLigne.profil : /dévers/i.test(e.texte) ? "Dévers" : "Vertical";
+  ouvrirModal({ type: "circuit", ligne: i, act, profil, serie: compte(d, i), n: e.n,
+                items: Array.from({ length: e.serie }, () => ({ cot, ok: true })) });
+}
+function enregistrerCircuit() {
+  const etat = M; fermerModal();
+  const voie = estVoie(etat.act);
+  modifier(d => { d.voies = d.voies || [];
+    etat.items.forEach(it => d.voies.push({ cot: it.cot, profil: etat.profil, act: etat.act, ligne: etat.ligne,
+      res: it.ok ? (voie ? "Enchaînée" : "Réussi") : (voie ? "Pas finie" : "Pas réussi") })); });
+  if (derniereAction && derniereAction.i === etat.ligne) { derniereAction.voie = etat.items.length; montrerToast(); }
+  apresPassage(etat.ligne);
+}
+// Liste d'exercices rangée par discipline (création de séance et ajout en cours de séance)
+function optionsExercices(choisi) {
+  let cat = "";
+  return EXERCICES.map(x => { let o = ""; const g = `${x.discipline} · ${x.categorie}`;
+    if (g !== cat) { o += (cat ? "</optgroup>" : "") + `<optgroup label="${esc(g)}">`; cat = g; }
+    return o + `<option ${choisi === x.nom ? "selected" : ""}>${esc(x.nom)}</option>`; }).join("") + "</optgroup>";
+}
+// Séance restée ouverte depuis un jour précédent
+function verifierSeanceOuverte() {
+  const auj = new Date(); auj.setHours(0, 0, 0, 0);
+  const k = LISTE.findIndex(s => { const d = lire(s); return d.debut && !d.fin && d.debut < auj.getTime(); });
+  if (k < 0) return;
+  const d = lire(LISTE[k]);
+  const dureeMin = Math.max(1, Math.min(DUREE_MAX, d.dernierGeste && d.dernierGeste > d.debut ? Math.round((d.dernierGeste - d.debut) / 60000) + 10 : 90));
+  ouvrirModal({ type: "hier", k, duree: dureeMin });
+}
+
+// Bilan de temps : durée réelle de la séance et de chaque étape, comparée au prévu
+function bilanTemps() {
+  const s = courant(), d = lire(s); if (!d.debut || !d.fin) return "";
+  const els = elementsDe(s, d), lignes = etapesDe(els).filter(x => (d.temps || {})[ck(d, x.i)]);
+  return `<details class="bilan-temps"><summary>Séance faite en ${hm((d.fin - d.debut) / 1000)} (prévu ≈ ${hm(dureeTotale(s, d))}) ▸</summary>
+    ${lignes.map((x, n) => `<div class="voie"><span>${esc(x.e.type === "routine" ? x.e.nom : titreAction(x.e))}</span>
+      <span class="petit">${hm(d.temps[ck(d, x.i)] / 1000)} / ≈ ${hm(dureeElement(s, d, x.e))}</span></div>`).join("")}</details>`;
 }
 
 function afficherModal() {
@@ -560,7 +750,7 @@ function afficherModal() {
   const serie = (a, b) => Array.from({ length: b - a + 1 }, (_, n) => a + n);
   const zones = ZONES.filter(z => z !== "Aucune");
   let h = "";
-  if (M.type === "fin") h = `<h2>${esc(M.titre)}</h2>
+  if (M.type === "fin") h = `<h2>${esc(M.titre)}</h2>${bilanTemps()}
       <label class="champ">Effort (1 à 10)</label>${choix("effort", serie(1, 10))}
       <label class="champ">Douleur max (0 à 10)</label>${choix("douleur", serie(0, 10))}
       ${M.douleur > 0 ? `<label class="champ">Zone</label>${choix("zone", zones)}` : ""}
@@ -568,7 +758,7 @@ function afficherModal() {
       <label class="champ">Durée (min)</label><input type="number" inputmode="numeric" id="m-duree" value="${esc(M.duree)}">
       <label class="champ">Notes (facultatif)</label><textarea id="m-notes" placeholder="Le micro du clavier permet de dicter">${esc(M.notes)}</textarea>
       <p></p><div class="choix"><button data-m="fermer">Plus tard</button><button data-m="ok" class="choisi">Enregistrer</button></div>`;
-  if (M.type === "resultat") h = `<h2>Résultat de ce passage</h2>` + formulaireResultat(M, M.act, "m") +
+  if (M.type === "resultat") h = `<h2>${M.edit !== undefined ? "Corriger ce résultat" : "Résultat de ce passage"}</h2>` + formulaireResultat(M, M.act, "m") +
       `<p class="petit">Touche le résultat pour l'enregistrer directement.</p>
        <div class="choix"><button data-m="fermer">Passer</button>
        ${M.res === "Avec sec" || !M.cot ? `<button data-m="ok" class="choisi" ${M.cot && M.res ? "" : "disabled"}>Enregistrer</button>` : ""}</div>`;
@@ -578,6 +768,52 @@ function afficherModal() {
       ${M.niv >= 5 ? `<div class="alerte">5 ou plus : arrête l'exercice maintenant.</div>` : ""}
       <p></p><div class="choix"><button data-m="fermer">Annuler</button>
       <button data-m="ok" class="choisi" ${M.zone && M.niv ? "" : "disabled"}>Enregistrer</button></div>`;
+  if (M.type === "menu") {
+    const k = cle(courant()), pile = JSON.parse(localStorage.getItem("annuler-" + k) || '{"etats":[]}').etats;
+    h = `<h2>Séance</h2><div class="menu-liste">
+      <button class="gros" data-m="annuler" ${pile.length ? "" : "disabled"}>↶ Annuler le dernier geste${pile.length ? ` <span class="petit">(${pile.length} possible${pile.length > 1 ? "s" : ""})</span>` : ""}</button>
+      <button class="gros" data-m="ajout">+ Ajouter un exercice à cette séance</button>
+      <button class="gros" data-m="note-etape">📝 Note sur l'étape en cours</button>
+      <button class="gros danger" data-m="reinit">Réinitialiser la séance</button>
+      <button class="gros" data-m="fermer">Fermer</button></div>
+      <p class="petit">Astuce : un appui long sur une ligne permet aussi d'y attacher une note.</p>`;
+  }
+  if (M.type === "circuit") {
+    const res = estVoie(M.act) ? ["Enchaînée", "Pas finie"] : ["Réussi", "Raté"];
+    h = `<h2>Série ${M.serie} sur ${M.n} · ${M.items.length} ${estVoie(M.act) ? "voies" : "blocs"}</h2>
+      <label class="champ">Profil</label>${choix("profil", ["Vertical", "Dévers"])}
+      ${M.items.map((it, j) => `<div class="circuit-ligne"><b>${estVoie(M.act) ? "Voie" : "Bloc"} ${j + 1}</b>
+        <div class="choix compact">${COTATIONS[M.act].map(c => `<button data-m="ccot" data-j="${j}" data-valeur="${c}" class="${String(it.cot) === c ? "choisi" : ""}">${c}</button>`).join("")}</div>
+        <div class="choix compact">${res.map((r, n) => `<button data-m="cok" data-j="${j}" data-valeur="${n === 0}" class="${it.ok === (n === 0) ? "choisi" : ""}">${n === 0 ? "✓ " : "✗ "}${r}</button>`).join("")}</div></div>`).join("")}
+      <p></p><div class="choix"><button data-m="fermer">Passer</button><button data-m="tout">Tout réussi</button><button data-m="ok" class="choisi">Enregistrer</button></div>`;
+  }
+  if (M.type === "ajout") {
+    h = `<h2>Ajouter un exercice à cette séance</h2>
+      <select id="m-exo"><option value="">Choisir un exercice…</option>${optionsExercices(M.exo)}</select>
+      <label class="champ">Séries ou passages</label>
+      <div class="compteur"><button data-m="series" data-pas="-1">−</button><span>${M.series}</span><button data-m="series" data-pas="1">+</button></div>
+      <label class="champ">Détail (facultatif)</label><input type="text" id="m-detail" value="${esc(M.detail)}" placeholder="ex. 30 s · 8 · 3 min">
+      <label class="champ">Repos</label>${choix("repos", [0, 30, 60, 90, 180, 300])}
+      <label class="champ">Durée prévue (min)</label>${choix("dureeAj", [0, 5, 10, 15, 20, 30])}
+      <p class="petit">0 = repos par défaut de la séance, ou durée estimée automatiquement. L'exercice s'ajoute à la fin de la séance du jour.</p>
+      <div class="choix"><button data-m="fermer">Annuler</button><button data-m="ok" class="choisi" ${M.exo ? "" : "disabled"}>Ajouter</button></div>`;
+  }
+  if (M.type === "note") {
+    const e = elementsDe(courant(), lire(courant()))[M.ligne];
+    h = `<h2>Note sur cette ligne</h2><p class="petit">${esc(e ? (e.type === "routine" ? e.nom : sansGuillemets(e.texte)) : "")}</p>
+      <textarea id="m-note" placeholder="ex. prise rouge glissante · méthode : pied gauche haut">${esc(M.texte)}</textarea>
+      <p class="petit">La note réapparaîtra sur la même ligne la prochaine fois. Laisse vide pour l'effacer.</p>
+      <div class="choix"><button data-m="fermer">Annuler</button><button data-m="ok" class="choisi">Enregistrer</button></div>`;
+  }
+  if (M.type === "hier") {
+    const s = LISTE[M.k], d = lire(s);
+    h = `<h2>Séance restée ouverte</h2>
+      <p>La séance <b>${esc(s.activite)}</b> du ${esc(s.jour)} ${jourMois(dateSeance(s))} a été démarrée à
+      ${new Date(d.debut).toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })} mais jamais terminée.</p>
+      <label class="champ">Durée réelle (min)</label><input type="number" inputmode="numeric" id="m-duree-hier" value="${M.duree}">
+      <p class="petit">Durée estimée d'après ta dernière saisie. Corrige-la si besoin.</p>
+      <div class="choix"><button data-m="fermer">Plus tard</button><button data-m="ok" class="choisi">Terminer cette séance</button></div>`;
+  }
   if (M.type === "mesures") {
     const m = lireMesures(M.sem), a = autoSemaine(M.sem);
     h = `<h2>Mesures de la semaine ${M.sem}</h2>` + CHAMPS_MESURES.map(([c, lab, type]) =>
@@ -591,14 +827,40 @@ function afficherModal() {
 $("modal").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b || !M) return;
   const t = b.dataset, type = M.type;
+  if (type === "menu" && t.m && t.m !== "fermer") return actionMenu(t.m);
+  if (type === "circuit" && ["ccot", "cok", "tout"].includes(t.m)) {
+    if (t.m === "ccot") M.items[Number(t.j)].cot = t.valeur;
+    if (t.m === "cok") M.items[Number(t.j)].ok = t.valeur === "true";
+    if (t.m === "tout") { M.items.forEach(it => it.ok = true); return enregistrerCircuit(); }
+    return afficherModal();
+  }
   if (t.m === "fermer") {
-    const i = M.ligne; fermerModal();
-    if (type === "resultat") { if (derniereAction && derniereAction.i === i) montrerToast(); apresPassage(i); }
+    const i = M.ligne, edit = M.edit; fermerModal();
+    if ((type === "resultat" && edit === undefined) || type === "circuit") { if (derniereAction && derniereAction.i === i) montrerToast(); apresPassage(i); }
     if (type === "mesures") afficher(false);
     return;
   }
   if (t.m === "ok") {
     if (type === "resultat") return enregistrerResultat();
+    if (type === "circuit") return enregistrerCircuit();
+    if (type === "ajout") {
+      const etat = M; fermerModal();
+      const ligne = `${etat.series}× « ${etat.exo} »${etat.detail.trim() ? " · " + etat.detail.trim() : ""}${etat.repos ? ` (repos ${etat.repos} s)` : ""}${etat.dureeAj ? ` (durée ${etat.dureeAj} min)` : ""}`;
+      modifier(d => { d.ajouts = d.ajouts || []; d.ajouts.push(ligne); });
+      return allerAuSuivant();
+    }
+    if (type === "note") {
+      const etat = M; fermerModal();
+      return modifier(d => { d.notesLignes = d.notesLignes || {}; const k = ck(d, etat.ligne);
+        if (etat.texte.trim()) d.notesLignes[k] = etat.texte.trim(); else delete d.notesLignes[k]; });
+    }
+    if (type === "hier") {
+      const etat = M; fermerModal();
+      const s = LISTE[etat.k], d = lire(s), duree = Math.max(1, Math.min(DUREE_MAX, Number(etat.duree) || 90));
+      d.fin = d.debut + duree * 60000; d.duree = duree; d.fait = "Oui"; ecrire(s, d);
+      libererEcran(); changer(etat.k);
+      return ouvrirBilan("Bilan de la séance");
+    }
     const etat = M; fermerModal();
     if (type === "fin") return modifier(d => {
       d.effort = etat.effort ?? d.effort; d.douleur = etat.douleur ?? d.douleur;
@@ -613,6 +875,9 @@ $("modal").addEventListener("click", e => {
       else if (!d.zone) d.zone = etat.zone;
     });
   }
+  if (t.m === "series") { M.series = Math.max(1, Math.min(20, M.series + Number(t.pas))); return afficherModal(); }
+  if (t.m === "repos") { M.repos = Number(t.valeur); return afficherModal(); }
+  if (t.m === "dureeAj") { M.dureeAj = Number(t.valeur); return afficherModal(); }
   if (t.m === "sec") M.sec = Math.max(1, M.sec + Number(t.pas));
   else if (t.m) M[t.m] = ["effort", "douleur", "niv"].includes(t.m) ? Number(t.valeur) : t.valeur;   // les cotations restent du texte
   // Résultat en deux appuis : toucher un résultat (sauf « Avec sec ») enregistre directement
@@ -623,10 +888,56 @@ $("modal").addEventListener("input", e => {             // champs texte des fen�
   if (!M) return;
   if (e.target.id === "m-duree") M.duree = e.target.value;
   if (e.target.id === "m-notes") M.notes = e.target.value;
+  if (e.target.id === "m-note") M.texte = e.target.value;
+  if (e.target.id === "m-detail") M.detail = e.target.value;
+  if (e.target.id === "m-duree-hier") M.duree = e.target.value;
   if (e.target.dataset.mesure) {
     const m = lireMesures(M.sem), v = e.target.value;
     m[e.target.dataset.mesure] = e.target.type === "number" && v !== "" ? Number(v) : v; ecrireMesures(M.sem, m);
   }
+});
+$("modal").addEventListener("change", e => {
+  if (M && M.type === "ajout" && e.target.id === "m-exo") { M.exo = e.target.value; afficherModal(); }
+});
+// Actions du menu ⋯
+function actionMenu(a) {
+  const s = courant(), k = cle(s);
+  if (a === "annuler") {
+    const p = JSON.parse(localStorage.getItem("annuler-" + k) || '{"etats":[]}');
+    const prec = p.etats.pop(); if (prec === undefined) return;
+    localStorage.setItem(k, prec); p.t = Date.now(); localStorage.setItem("annuler-" + k, JSON.stringify(p));
+    if (T && T.cle === k) { T = null; sauverT(); majMinuteur(); }
+    derniereAction = null; $("toast").style.display = "none";
+    afficher(false); return afficherModal();                       // le menu reste ouvert pour annuler encore
+  }
+  if (a === "reinit") {
+    if (!confirm("Réinitialiser cette séance ? Passages, résultats, douleurs et bilan seront effacés (tu pourras encore annuler).")) return;
+    memoriser(k); localStorage.setItem(k, "{}");
+    if (T && T.cle === k) { T = null; sauverT(); majMinuteur(); }
+    derniereAction = null; $("toast").style.display = "none"; libererEcran();
+    fermerModal(); ouverts = new Set(); return afficher();
+  }
+  if (a === "ajout") return ouvrirModal({ type: "ajout", exo: "", series: 3, detail: "", repos: 0, dureeAj: 0 });
+  if (a === "note-etape") {
+    const d = lire(s), i = prochain(s, d), els = elementsDe(s, d);
+    const ligne = i >= 0 ? i : els.length - 1;
+    return ouvrirModal({ type: "note", ligne, texte: (d.notesLignes || {})[ck(d, ligne)] || "" });
+  }
+}
+// Appui long sur une ligne : note
+let appuiLong = false, minuterieAppui = null, departAppui = null;
+$("ecran").addEventListener("pointerdown", e => {
+  if (vue !== "seance") return;
+  const el = e.target.closest("[data-el]"); if (!el || e.target.closest(".exo, .outils, .rond")) return;
+  departAppui = { x: e.clientX, y: e.clientY };
+  minuterieAppui = setTimeout(() => {
+    appuiLong = true; const i = Number(el.dataset.el), d = lire(courant());
+    ouvrirModal({ type: "note", ligne: i, texte: (d.notesLignes || {})[ck(d, i)] || "" });
+  }, 600);
+});
+["pointerup", "pointercancel", "pointerleave"].forEach(ev => $("ecran").addEventListener(ev, () => clearTimeout(minuterieAppui)));
+$("ecran").addEventListener("pointermove", e => {
+  if (departAppui && Math.hypot(e.clientX - departAppui.x, e.clientY - departAppui.y) > 10) clearTimeout(minuterieAppui);
 });
 $("btn-douleur").onclick = () => courant() ? ouvrirModal({ type: "douleur" }) : alert("Ouvre d'abord une séance.");
 
@@ -735,7 +1046,7 @@ function finPhase(silencieux = false) {
     const d = lireCle(T.cle);
     if (ph.routine) { d.routines = d.routines || {}; d.routines[T.ck] = true; }
     else { d.compteurs = d.compteurs || {}; d.compteurs[T.ck] = Math.min(T.n, (d.compteurs[T.ck] || 0) + 1); }
-    localStorage.setItem(T.cle, JSON.stringify(d));
+    ecrireCle(T.cle, d);
   }
   const etaitRepos = ph.type === "repos";
   if (T.k < T.phases.length - 1) {
@@ -812,6 +1123,7 @@ document.addEventListener("visibilitychange", () => {
 setInterval(() => {
   const d = dCourant(), c = $("chrono");
   if (c && d.debut) c.textContent = minutes(d.debut) + " min";
+  majInfosSeance();
   if (verrou && !seanceEnCours(d)) libererEcran();
 }, 20000);
 
@@ -915,7 +1227,7 @@ function nouveauFormulaire(type = "Escalade", modele) {
 }
 function lignesCreees() {      // lignes du modèle + exercices ajoutés (avant la routine de fin)
   const m = MODELES[F.modele], l = m.lignes(F.p);
-  const ajouts = F.ajouts.map(a => `${a.series}× « ${a.exo} »${a.detail ? " · " + a.detail : ""}${a.repos ? ` (repos ${a.repos} s)` : ""}`);
+  const ajouts = F.ajouts.map(a => `${a.series}× « ${a.exo} »${a.detail ? " · " + a.detail : ""}${a.repos ? ` (repos ${a.repos} s)` : ""}${a.duree ? ` (durée ${a.duree} min)` : ""}`);
   const fin = l.length > 1 && l[l.length - 1].startsWith(">") ? l.length - 1 : l.length;
   return [...l.slice(0, fin), ...ajouts, ...l.slice(fin)];
 }
@@ -930,7 +1242,7 @@ function afficherSemaine() {
   items.forEach(({ s, k }) => {
     const d = lire(s), v = nomVersion(s, d), titre = s.libre && s.phase !== "Séance libre" ? s.phase.replace("Séance créée · ", "") : s.activite;
     const auj = isoDate(dateSeance(s)) === isoDate(new Date());
-    h += `<button class="gros semaine-item ${auj ? "aujourdhui" : ""}" data-ouvrir="${k}">${auj ? `<span class="petit-etiquette">Aujourd'hui</span><br>` : ""}${etat(d)} &nbsp;${esc(s.jour)} ${jourMois(dateSeance(s))} · ${esc(titre)}${s.libre ? " (créée)" : ""}${d.fait === "Oui" && v ? `<br><span class="petit">${esc(v)}</span>` : ""}</button>`;
+    h += `<button class="gros semaine-item ${auj ? "aujourdhui" : ""}" data-act="${esc(s.activite)}" data-ouvrir="${k}">${auj ? `<span class="petit-etiquette">Aujourd'hui</span><br>` : ""}${etat(d)} &nbsp;${esc(s.jour)} ${jourMois(dateSeance(s))} · ${esc(titre)}${s.libre ? " (créée)" : ""}${d.fait === "Oui" && v ? `<br><span class="petit">${esc(v)}</span>` : ""}</button>`;
   });
   h += `<p class="petit">✓ faite · ✗ non faite ou sautée · ● en cours · ○ à faire</p></div>`;
   h += F ? formulaireCreation() : `<button class="gros" data-cree="ouvrir">+ Créer une séance</button><p></p>`;
@@ -970,6 +1282,7 @@ function formulaireCreation() {
       <div class="compteur"><button data-cree="series" data-pas="-1">−</button><span>${F.series}</span><button data-cree="series" data-pas="1">+</button></div>
       <label class="champ">Détail (facultatif)</label><input type="text" id="cree-detail" value="${esc(F.detail)}" placeholder="ex. 30 s · 8 · 15 par côté">
       <label class="champ">Repos</label>${puces('data-cree="repos"', [[0, "Par défaut"], [30, "30 s"], [60, "1 min"], [90, "1 min 30"], [180, "3 min"], [300, "5 min"]], F.repos)}
+      <label class="champ">Durée prévue</label>${puces('data-cree="duree"', [[0, "Estimée"], [5, "5 min"], [10, "10 min"], [15, "15 min"], [20, "20 min"], [30, "30 min"]], F.dureeAj || 0)}
       <p></p><button class="gros" data-cree="ajouter" ${F.exo ? "" : "disabled"}>+ Ajouter cet exercice</button></details>
       ${F.ajouts.map((a, k) => `<div class="voie"><span>${a.series}× ${esc(a.exo)}${a.detail ? " · " + esc(a.detail) : ""}</span><button data-cree="retirer" data-valeur="${k}">✕</button></div>`).join("")}
       <label class="champ">Aperçu</label><div class="explic">${apercu}</div>`;
@@ -992,7 +1305,8 @@ $("ecran").addEventListener("click", e => {
   else if (t.cree === "modele") { F = nouveauFormulaire(F.type, Number(t.valeur)); }
   else if (t.cree === "series") F.series = Math.max(1, Math.min(20, F.series + Number(t.pas)));
   else if (t.cree === "repos") F.repos = Number(t.valeur);
-  else if (t.cree === "ajouter" && F.exo) { F.ajouts.push({ exo: F.exo, series: F.series, detail: F.detail.trim(), repos: F.repos }); F.exo = ""; F.detail = ""; }
+  else if (t.cree === "duree") F.dureeAj = Number(t.valeur);
+  else if (t.cree === "ajouter" && F.exo) { F.ajouts.push({ exo: F.exo, series: F.series, detail: F.detail.trim(), repos: F.repos, duree: F.dureeAj || 0 }); F.exo = ""; F.detail = ""; F.dureeAj = 0; }
   else if (t.cree === "retirer") F.ajouts.splice(Number(t.valeur), 1);
   else if (t.reg) {
     const r = MODELES[F.modele].reglages.find(x => x.cle === t.reg);
@@ -1026,7 +1340,7 @@ $("ecran").addEventListener("change", e => {
 // 14. ÉCRANS EXERCICES (menus déroulants) ET RÉGLAGES (panneaux)
 // =====================================================================
 // --- Écran Exercices : une rangée de disciplines, des sous-menus, des fiches complètes ---
-const DISCIPLINES = ["Voie et bloc", "Voie", "Bloc", "Muscu", "Course", "Mobilité"];
+const DISCIPLINES = ["Voie et bloc", "Voie", "Bloc", "Méthodes", "Muscu", "Course", "Mobilité"];
 let filtreEx = null;            // bouton choisi dans la rangée (null = choix automatique)
 let toutAfficher = false;       // false : les exercices prévus plus tard sont grisés
 const lireFavoris = () => JSON.parse(localStorage.getItem("favoris") || "[]");
@@ -1069,11 +1383,11 @@ function ficheExercice(x) {
   const u = usage(x.nom), df = derniereFoisExo(x.nom);
   const prevu = x.depuis ? (x.semaine >= 999 ? x.depuis.toLowerCase() : "à partir de : " + x.depuis.toLowerCase()) : "";
   const utilise = u.length ? u.slice(0, 6).map(s => `sem. ${s.semaine} (${ABREG[s.jour] || s.jour})`).join(", ") + (u.length > 6 ? ` et ${u.length - 6} autres` : "") : "";
-  return `<details class="item ${plusTard ? "verrou" : ""}" data-nom="${esc(x.nom)}" data-t="${esc(sansAccents(x.discipline + " " + x.categorie + " " + x.nom + " " + x.comment + " " + x.cle))}">
+  return `<details class="item ${plusTard ? "verrou" : ""}" data-nom="${esc(x.nom)}" data-t="${esc(sansAccents([x.discipline, x.categorie, x.nom, x.but, x.comment, x.erreurs, x.facile, x.cle].join(" ")))}">
     <summary>${estFavori(x.nom) ? "★ " : ""}${esc(x.nom)}${plusTard ? ` <span class="petit">· ${esc(prevu)}</span>` : ""}</summary>
     <p><span class="badge">${esc(x.niveau || "—")}</span> <span class="petit">${esc(x.discipline)} · ${esc(x.categorie)}${prevu && !plusTard ? " · " + esc(prevu) : ""}</span></p>
     ${plusTard ? `<div class="avert">Prévu plus tard dans ta progression. Attends ce stade, ou demande conseil à un moniteur avant de l'essayer.</div>` : ""}
-    <p>${esc(x.comment)}</p><p class="petit">${esc(x.cle)}</p>
+    ${corpsFiche(x)}
     ${utilise ? `<p class="petit"><b>Dans ton programme :</b> ${esc(utilise)}</p>` : ""}
     <p class="petit"><b>Dernière fois :</b> ${df ? esc(df) : "pas encore fait"}</p>
     <div class="choix"><button data-favori="${k}">${estFavori(x.nom) ? "★ Retirer des favoris" : "☆ Ajouter aux favoris"}</button>
@@ -1102,7 +1416,7 @@ function afficherExercices() {
   };
   if (q.trim()) {
     const m = sansAccents(q.trim());
-    const trouves = EXERCICES.filter(x => sansAccents(`${x.discipline} ${x.categorie} ${x.nom} ${x.comment} ${x.cle}`).includes(m));
+    const trouves = EXERCICES.filter(x => sansAccents([x.discipline, x.categorie, x.nom, x.but, x.comment, x.erreurs, x.facile, x.cle].join(" ")).includes(m));
     h += trouves.length ? enGroupes(trouves, true) : `<p class="petit">Aucun exercice ne contient « ${esc(q)} ».</p>`;
   } else if (filtreEx === "routines") {
     const g = {};
@@ -1162,7 +1476,14 @@ function afficherReglages() {
       <p class="petit">À régler une seule fois, le jour où tu commences : tes saisies sont rangées par numéro de semaine.</p>`],
     ["minuteur", "⏱ Minuteur", `
       <label class="champ">Repos après un passage</label>${choix("auto", [[true, "Automatique"], [false, "Manuel (bouton ⏱)"]])}
-      <label class="champ">Noter le résultat d'une voie ou d'un bloc</label>${choix("releve", [[true, "Oui, à chaque passage"], [false, "Non"]])}`],
+      <label class="champ">Noter le résultat d'une voie ou d'un bloc</label>${choix("releve", [[true, "Oui, à chaque passage"], [false, "Non"]])}
+      <label class="champ">Temps moyen par voie (pour les durées prévues)</label>
+      <div class="compteur"><button data-tps="tVoie" data-pas="-0.5">−</button><span>${String(R.tVoie).replace(".", ",")} min</span><button data-tps="tVoie" data-pas="0.5">+</button></div>
+      <label class="champ">Temps moyen par bloc</label>
+      <div class="compteur"><button data-tps="tBloc" data-pas="-0.5">−</button><span>${String(R.tBloc).replace(".", ",")} min</span><button data-tps="tBloc" data-pas="0.5">+</button></div>
+      <label class="champ">Ajuster à ma moyenne réelle</label>${choix("ajuster", [[true, "Oui"], [false, "Non, garder ces valeurs"]])}
+      <p class="petit">${(() => { const m = lireMoyennes(), f = (t, l) => l.length >= 3 ? `${t} : ${String(Math.round(tempsParPassage(t === "Voie" ? "Voie" : "Bloc") * 10) / 10).replace(".", ",")} min (sur ${l.length} étapes)` : `${t} : pas encore assez de séances (${l.length}/3)`;
+        return `Ta moyenne réelle — ${f("Voie", m.Voie || [])} · ${f("Bloc", m.Bloc || [])}`; })()}</p>`],
     ["son", "🔊 Son", `
       <label class="champ">Son</label>${choix("son", [[true, "Activé"], [false, "Coupé"]])}
       <label class="champ">Volume</label>${choix("volume", [["faible", "Faible"], ["moyen", "Moyen"], ["fort", "Fort"]])}
@@ -1194,6 +1515,7 @@ $("ecran").addEventListener("click", e => {
   if (t.test === "son") { initAudio(); const s = R.son; R.son = true; bip("fin"); R.son = s; return; }
   if (t.test === "calendrier") return calendrier();
   if (t.test === "restaurer") return $("fichier").click();
+  if (t.tps) { R[t.tps] = Math.max(0.5, Math.min(15, R[t.tps] + Number(t.pas))); sauverReglages(); afficherReglages(); return window.scrollTo(0, y); }
   if (t.bascule) R[t.bascule] = !R[t.bascule];
   if (t.reglage) { const v = t.valeur; R[t.reglage] = v === "true" ? true : v === "false" ? false : isNaN(v) ? v : Number(v); }
   if (t.reglage === "mode") { sauverReglages(); reconstruire(); index = indexAujourdhui(); }
@@ -1228,7 +1550,9 @@ function exporter() {
     const notes = [s.libre && s.phase !== "Séance libre" ? s.phase : "",
       nomVersion(s, d) && (d.fait || d.debut) ? "Version : " + nomVersion(s, d) : "", d.notes,
       (d.voies || []).length ? "Relevé : " + d.voies.map(resume).join(", ") : "",
-      (d.douleurs || []).length ? "Douleurs : " + d.douleurs.map(x => `${x.zone} ${x.niv} (${x.heure})`).join(", ") : ""
+      (d.douleurs || []).length ? "Douleurs : " + d.douleurs.map(x => `${x.zone} ${x.niv} (${x.heure})`).join(", ") : "",
+      d.debut && d.fin ? `Temps : ${hm((d.fin - d.debut) / 1000)} (prévu ${hm(dureeTotale(s, d))})` + (d.temps ? " — " + etapesDe(elementsDe(s, d))
+        .filter(x => d.temps[ck(d, x.i)]).map((x, n) => `${n + 1}. ${Math.round(d.temps[ck(d, x.i)] / 60000)}/${Math.round(dureeElement(s, d, x.e) / 60)} min`).join(", ") : "") : ""
     ].filter(Boolean).join(" | ");
     lignes.push([s.libre ? "Séance libre" : "Séance", ...base, d.fait, d.duree, d.effort, d.douleur, d.zone,
                  perfFinale(d, act), secFinal(d), notes]);
@@ -1314,6 +1638,26 @@ if ("serviceWorker" in navigator) {
 // =====================================================================
 // 17. NAVIGATION
 // =====================================================================
+// Ligne sous l'en-tête : « ⏱ 0:47 · ≈ 1 h 50 prévu · fin vers 20:35 »
+function majInfosSeance() {
+  const el = $("infos-seance"), s = vue === "seance" ? courant() : null;
+  if (!s) { el.style.display = "none"; document.documentElement.style.setProperty("--haut-entete", "63px"); return; }
+  const d = lire(s), total = dureeTotale(s, d);
+  let t = `≈ ${hm(total)} prévu`;
+  if (d.debut && !d.fin) {
+    const ecoule = (Date.now() - d.debut) / 1000, els = elementsDe(s, d), k = prochain(s, d);
+    const reste = els.reduce((r, e, i) => i < k || k < 0 || (e.type === "routine" ? routineOk(d, i) : e.type === "action" && compte(d, i) >= e.n) ? r : r + dureeElement(s, d, e), 0)
+                  - (k >= 0 ? Math.min(tempsEtapeEnCours(d), dureeElement(s, d, els[k])) : 0);
+    const fin = new Date(Date.now() + Math.max(0, reste) * 1000);
+    t = `⏱ ${Math.floor(ecoule / 3600)}:${pad(Math.floor(ecoule / 60) % 60)} · ${t} · fin vers ${fin.toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })}`;
+  } else if (d.fin) t = `Séance faite en ${hm((d.fin - d.debut) / 1000)} · ${t}`;
+  el.textContent = t; el.style.display = "block";
+  const te = $("temps-etape");                                    // temps passé sur l'étape en cours, mis à jour en continu
+  if (te && d.debut && !d.fin) { const passe = tempsEtapeEnCours(d), prevu = Number(te.dataset.prevu);
+    te.textContent = `${hm(passe)} sur ≈ ${hm(prevu)}`; te.classList.toggle("retard", passe > prevu); }
+  document.documentElement.style.setProperty("--haut-entete", document.querySelector("header").offsetHeight + "px");
+  $("mn-ecoule").textContent = d.debut && !d.fin ? t.split(" · ")[0] + " écoulé" : "";
+}
 function afficher(enHaut = true) {
   if (vue === "seance" && !courant()) { vue = "semaine"; semaineVue = Math.max(1, semaineDe(new Date())); }
   ({ seance: afficherSeance, semaine: afficherSemaine, exercices: afficherExercices, reglages: afficherReglages })[vue]();
@@ -1321,7 +1665,9 @@ function afficher(enHaut = true) {
   $("btn-reglages").classList.toggle("choisi", vue === "reglages");
   const navigation = vue === "seance" || vue === "semaine";       // ◀ ▶ inutiles dans Exercices et Réglages
   ["prec", "suiv"].forEach(id => $(id).style.visibility = navigation ? "visible" : "hidden");
-  infoExport();
+  $("btn-menu").style.display = vue === "seance" && courant() ? "" : "none";          // ⋯ : seulement sur une séance
+  infoExport(); majInfosSeance();
+  document.body.dataset.activite = vue === "seance" && courant() ? actReleve(courant(), lire(courant())) === "Bloc" && courant().activite === "Voie" ? "Bloc" : courant().activite : "";
   if (enHaut) window.scrollTo(0, 0);
 }
 function changer(i) { vue = "seance"; index = i; ouverts = new Set(); formVoie = null; afficher(); }
@@ -1331,9 +1677,11 @@ $("titre-date").onclick = $("btn-semaine").onclick = () => vue === "semaine"
   ? (courant() ? changer(index) : null)
   : ouvrirSemaine(courant() ? courant().semaine : semaineDe(new Date()));
 $("btn-vue").onclick = () => { vue = vue === "exercices" ? "seance" : "exercices"; afficher(); };
+$("btn-menu").onclick = () => courant() && ouvrirModal({ type: "menu" });
 $("btn-reglages").onclick = () => { vue = vue === "reglages" ? "seance" : "reglages"; afficher(); };
 $("btn-export").onclick = exporter;
 
 afficher();
 if (T) { if (T.fini) { T = null; sauverT(); } else boucle(); }   // reprend un minuteur en cours
 if (seanceEnCours(dCourant())) garderEcran();
+verifierSeanceOuverte();                                          // séance d'un jour précédent restée ouverte

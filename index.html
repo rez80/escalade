@@ -8,6 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="Escalade">
 <title>Escalade</title>
 <link rel="stylesheet" href="style.css">
+<link rel="apple-touch-icon" href="icone-180.png">
+<link rel="icon" type="image/png" href="icone-180.png">
 </head>
 <body>
 
@@ -18,7 +20,10 @@
   <button id="prec" aria-label="Précédent">◀</button>
   <button id="titre-date" aria-label="Voir la semaine"></button>
   <button id="btn-semaine" aria-label="Vue Semaine">📅</button>
+  <button id="btn-menu" aria-label="Menu de la séance">⋯</button>
   <button id="suiv" aria-label="Suivant">▶</button>
+  <!-- Temps écoulé, durée prévue et heure de fin estimée -->
+  <div id="infos-seance"></div>
 </header>
 
 <main id="ecran"></main>
@@ -27,7 +32,7 @@
 <div id="minuteur">
   <div id="mn-haut">
     <svg id="mn-anneau" viewBox="0 0 64 64"><circle id="mn-fond" cx="32" cy="32" r="27"/><circle id="mn-arc" cx="32" cy="32" r="27"/></svg>
-    <div id="mn-textes"><div id="mn-temps"></div><div id="mn-label"></div><div id="mn-suivant"></div></div>
+    <div id="mn-textes"><div id="mn-temps"></div><div id="mn-label"></div><div id="mn-suivant"></div><div id="mn-ecoule"></div></div>
   </div>
   <div id="mn-ctrl">
     <button data-mn="moins">−30</button>
