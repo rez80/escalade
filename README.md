@@ -1,4 +1,4 @@
-# App Escalade — mode d'emploi (version 3.3)
+# App Escalade — mode d'emploi (version 3.5)
 
 ## Les fichiers
 
@@ -9,7 +9,10 @@
 | `app.js` | Tout le fonctionnement, en 17 sections numérotées et commentées | Oui, voir la carte ci-dessous |
 | `data.js` | Le programme, les routines et les exercices | Généré par `generer_app.py` |
 | `sw.js` | Fonctionnement hors connexion | Non (version mise à jour par le script) |
+| `icone-180.png`, `icone-512.png` | Icône de l'app sur l'écran d'accueil | Seulement pour changer l'icône |
 | `generer_app.py` | Crée `data.js` depuis `Journal_escalade.xlsx` | Seulement si la structure de l'Excel change |
+| `fusionner_exports.py` | Fusionne tous les exports archivés dans `exports/` en un seul `import-complet.csv` | Non |
+| `exports/` (dossier à créer) | Ton archive : chaque export de l'app, jamais supprimé | Tu y ranges chaque nouvel export |
 
 ## Carte du code (`app.js`)
 
@@ -19,10 +22,12 @@
 | Les réglages par défaut (son, bips, heures des rappels…) | 1, objet `REGLAGES_DEFAUT` |
 | La façon de lire les lignes d'une séance (`>`, `!`, `3×`, `## version`, durées) | 4. Contenu |
 | Le relevé des voies et les valeurs « Auto » | 5. Relevé |
+| Les durées prévues, le temps réel par étape, les moyennes qui s'ajustent | 4 bis. Durées |
 | Les messages d'avertissement (douleur, effort) | 6. Avertissements |
+| L'annulation sur plusieurs niveaux (`memoriser`) | 2. Outils |
 | L'affichage d'une séance, la carte « Maintenant », les lignes repliées | 7. Écran séance |
-| Ce qui se passe quand on touche un bouton, le démarrage automatique, le bandeau « Annuler » | 8. Actions |
-| Les fenêtres (bilan de fin, résultat, douleur, mesures) | 9. Fenêtres |
+| Ce qui se passe quand on touche un bouton, le démarrage automatique, le bandeau « Annuler », l'appui long | 8. Actions |
+| Les fenêtres (bilan, résultat, circuit, menu ⋯, ajout d'exercice, note, séance restée ouverte, douleur, mesures) | 9. Fenêtres |
 | Le minuteur, les chronos, l'échauffement guidé, « ✓ Fait » du minuteur | 10. Minuteur |
 | Les sons | 11. Son |
 | La vue Semaine, la création de séances en 3 étapes et ses **modèles** (`MODELES`) | 13. Vue semaine |
@@ -31,16 +36,17 @@
 
 ## Mettre à jour l'app sur GitHub
 
-1. Dans ton dépôt, **Add file → Upload files**, glisse `index.html`, `style.css`, `app.js`, `data.js` et `sw.js`, puis **Commit changes**.
-2. Sur l'iPhone, ouvre l'app avec connexion, ferme-la complètement et rouvre-la.
+1. Dans ton dépôt, **Add file → Upload files**, glisse `index.html`, `style.css`, `app.js`, `data.js`, `sw.js` et `icone-180.png`, puis **Commit changes**.
+2. Sur l'iPhone, ouvre l'app avec connexion et touche le bandeau « Nouvelle version disponible ».
 
-À partir de cette version, un **bandeau « Nouvelle version disponible »** apparaît en haut de l'app quand une mise à jour est prête : touche-le pour l'installer. La version de l'app et la date du programme sont affichées en bas de l'écran Réglages (⚙).
+La version de l'app et la date du programme sont affichées en bas de l'écran Réglages (⚙).
+Pour voir la nouvelle icône sur l'écran d'accueil, il faut supprimer l'icône et réinstaller l'app (Partager → Sur l'écran d'accueil) : **exporte d'abord**, puis restaure la sauvegarde après réinstallation.
 
 ## Installation (première fois)
 
 1. Crée un compte gratuit sur github.com. Active la **double authentification** (Settings → Password and authentication).
 2. **New repository**, par exemple `escalade`, en **Public**, puis **Create repository**.
-3. **uploading an existing file** : glisse les 5 fichiers ci-dessus, puis **Commit changes**.
+3. **uploading an existing file** : glisse les 6 fichiers ci-dessus, puis **Commit changes**.
 4. **Settings → Pages** : Branch `main`, `/ (root)`, **Save**. Attends 1 à 2 minutes.
 5. Sur l'iPhone, ouvre l'adresse dans **Safari** (ou Firefox à jour), puis **Partager → Sur l'écran d'accueil**.
 6. Ouvre l'app une fois avec connexion. Ensuite, elle fonctionne en mode avion.
@@ -48,7 +54,11 @@
 ## Pendant la séance
 
 - L'app s'ouvre sur la séance du jour. ◀ ▶ pour changer de séance, **📅** (ou la date) pour la vue Semaine, où la séance du jour est encadrée.
-- **Carte « Maintenant »**, fixée en haut : l'étape en cours et un gros bouton **✓ Fait**. Tout peut se faire depuis elle, sans chercher la bonne ligne.
+- **Carte « Maintenant »**, fixée en haut : « Étape 4 sur 9 », une barre découpée en segments (un par étape, longueur proportionnelle à sa durée : vert = faite, couleur vive = en cours, gris = à venir), l'étape en cours, son temps (« 8 min sur ≈ 12 min », en orange si elle dépasse), l'étape suivante, et un gros bouton **✓ Fait**.
+- **En-tête** : « ⏱ 0:47 · ≈ 1 h 50 prévu · fin vers 20:35 », toujours visible. Le temps écoulé apparaît aussi dans le minuteur.
+- **Étapes numérotées** avec leur état (✓ faite, ▶ en cours, ○ à venir) et leur durée prévue. Les étapes faites se replient en « 3 étapes faites ▸ » ; un appui les déplie.
+- **Durées prévues** : exactes quand la ligne les indique (« 30 s », « 20 min », « (durée 15 min) »), sinon estimées à partir des passages, du temps moyen par voie ou par bloc (⚙ → Minuteur, 4 min et 1 min 30 au départ) et des repos. Après 3 étapes d'escalade terminées, l'app utilise ta moyenne réelle (désactivable).
+- **Couleur par activité** : bleu voie, orange bloc, vert course, violet muscu.
 - **Démarrage automatique** au premier ✓ Fait (l'écran reste allumé 4 h au maximum). Le bouton ▶ Démarrer reste disponible ; dessous, le lien « séance sautée ».
 - **Version** : choisie en haut de la séance (Voie ou Remplacement bloc ; Complète, Courte ou Express ; Course, Marche rapide ou Vélo), puis repliée sur une ligne une fois la séance commencée.
 - **Échauffement guidé** : **▶ Guidé** enchaîne les étapes de la routine avec le minuteur et coche la routine à la fin.
@@ -59,8 +69,14 @@
 - **Lignes repliées** : « La dernière fois » et « voies notées » s'ouvrent au toucher.
 - **Avertissements** en haut de la séance : douleur récente, zone touchée plusieurs fois en 14 jours, ou deux séances de suite à un effort de 8 ou plus.
 - **⚠** : signale une douleur à tout moment.
-- **■ Terminer** : seul bilan de la séance, dans une fenêtre (effort, douleur et zone, durée, notes). La meilleure performance et le nombre de « sec » se calculent seuls. Lien **modifier** pour y revenir.
+- **■ Terminer** : seul bilan de la séance, dans une fenêtre (bilan de temps « faite en 1 h 52, prévu ≈ 1 h 50 » détaillé par étape, effort, douleur et zone, durée, notes). Les temps réels partent dans les notes de l'export. La meilleure performance et le nombre de « sec » se calculent seuls. Lien **modifier** pour y revenir.
 - **Mesures de la semaine** : bouton sur la dernière séance de la semaine, qui ouvre une fenêtre.
+- **Circuits** : une ligne comme « 3× Circuit de 4 blocs » affiche « (série de 4) ». Toucher le rond ouvre une fenêtre avec une ligne par bloc (cotation, ✓ réussi ou ✗ raté), et **Tout réussi** valide la série en un appui.
+- **Passages en plus** : un rond « + » apparaît quand une ligne est terminée, pour compter un passage hors programme.
+- **Corriger un résultat** : ouvre « voies notées » et touche le résultat (✎).
+- **Note sur une ligne** : appui long sur la ligne (ou ⋯ → Note sur l'étape en cours). Elle réapparaît sur la même ligne la fois suivante.
+- **Menu ⋯** (en haut, à côté de 📅) : **↶ Annuler le dernier geste** (jusqu'à 20 fois), **+ Ajouter un exercice à cette séance**, **📝 Note sur l'étape en cours**, **Réinitialiser la séance** (elle-même annulable).
+- **Séance restée ouverte** : si une séance d'un jour précédent n'a pas été terminée, l'app le signale à l'ouverture et propose de la terminer avec une durée estimée.
 
 ## Créer une séance
 
@@ -87,7 +103,7 @@ Pour planifier dans l'Excel : l'onglet **Modèles** produit le texte d'une séan
 
 Un bouton par panneau :
 - **📋 Programme** : « Le programme + mes séances » ou « Uniquement mes séances créées », et la **date de début du programme** (un lundi, à régler une seule fois : les saisies sont rangées par numéro de semaine).
-- **⏱ Minuteur** : repos automatique ou manuel, résultat demandé ou non à chaque passage.
+- **⏱ Minuteur** : repos automatique ou manuel, résultat demandé ou non à chaque passage, temps moyen par voie et par bloc, ajustement à ta moyenne réelle.
 - **🔊 Son** : son activé ou coupé, volume, choix des bips (10 s avant, 3-2-1, fin, changements), son en mode silencieux, **Tester le son**.
 - **📅 Rappels calendrier** : l'heure de chaque activité et le délai du rappel, puis **Créer le fichier calendrier**. Ouvre-le sur l'iPhone et choisis « Ajouter tout », de préférence dans un calendrier « Escalade » dédié.
 - **💾 Sauvegarde** : **Restaurer une sauvegarde**.
@@ -100,17 +116,25 @@ La version de l'app et la date du programme sont affichées en bas de cet écran
 - **Séance du jour** : uniquement les exercices cités dans la séance d'aujourd'hui (choisi par défaut quand il y en a).
 - **Recherche** : cherche dans toutes les disciplines.
 - **Exercices prévus plus tard** : grisés, avec la date à partir de laquelle ils sont prévus. La case « Afficher aussi les exercices prévus plus tard » les rend normaux.
-- **Fiche d'un exercice** : niveau, discipline et sous-catégorie, explication, point de sécurité, séances du programme où il apparaît, dernière fois que tu l'as fait, **☆ Ajouter aux favoris** et **+ Ajouter à une séance** (ouvre la création de séance avec cet exercice).
+- **Méthodes** : un bouton de la rangée regroupe les méthodes de séance (circuit, essai d'enchaînement, projet, travail au point, pyramide, volume, séance allégée, repos entre essais), cliquables ⓘ dans les séances.
+- **Fiche d'un exercice** : niveau, discipline et sous-catégorie, but, étapes numérotées, erreurs fréquentes, version plus facile, sécurité, séances du programme où il apparaît, dernière fois que tu l'as fait, **☆ Ajouter aux favoris** et **+ Ajouter à une séance** (ouvre la création de séance avec cet exercice).
 
-Les disciplines, sous-catégories et niveaux viennent de l'onglet Exercices de l'Excel (colonnes Discipline et Niveau, en listes déroulantes) : pour reclasser ou ajouter un exercice, modifie l'Excel puis relance `generer_app.py`.
+Les fiches viennent de l'onglet Exercices de l'Excel : Comment faire (une étape par ligne, Alt+Entrée), Sécurité, But, Erreurs fréquentes, Plus facile, Discipline et Niveau (en listes déroulantes) : pour reclasser ou ajouter un exercice, modifie l'Excel puis relance `generer_app.py`.
 
-## Exporter vers l'Excel
+## Exporter vers l'Excel (avec archive)
+
+Chaque export de l'app contient tout l'historique du téléphone. Mais si l'app est effacée (nouveau téléphone, icône supprimée) et que la sauvegarde n'est pas restaurée, l'export suivant ne contient plus l'historique : le coller directement effacerait ton passé dans l'Excel. D'où l'archive.
 
 1. Dans l'app, **Exporter** : deux fichiers. Envoie-les vers ton PC, de préférence par AirDrop (ils contiennent tes douleurs).
-2. Ouvre `export-escalade-….csv` dans Excel, **Ctrl+A**, **Ctrl+C**.
-3. Dans Journal_escalade.xlsx, onglet **Import** : coin en haut à gauche de la grille, **Suppr**, puis **A1** et **Ctrl+V**.
+2. Range `export-escalade-….csv` dans le dossier **`exports/`**, à côté de `fusionner_exports.py`. **Ne supprime jamais un ancien export** : c'est ton archive. Les anciens formats (`journal-…` et `mesures-…`) y ont aussi leur place.
+3. Lance `python fusionner_exports.py`. Pour chaque jour, il garde la version la plus récente qui contient des données ; un jour absent du dernier export est repris d'un export plus ancien, avec une alerte « ⚠ ATTENTION » (pense alors à restaurer la sauvegarde dans l'app).
+4. Ouvre `import-complet.csv` dans Excel, **Ctrl+A**, **Ctrl+C**.
+5. Dans Journal_escalade.xlsx, onglet **Import** : coin en haut à gauche de la grille, **Suppr**, puis **A1** et **Ctrl+V**. Comme ce fichier contient toute l'archive, remplacer l'onglet ne fait rien perdre.
+6. Regarde l'onglet **Contrôle import** : le verdict doit être « ✓ Import cohérent ».
 
-Tous les onglets se mettent à jour. Garde `sauvegarde-escalade-….json` : il sert à restaurer l'app (⚙ → Sauvegarde).
+Garde aussi `sauvegarde-escalade-….json` : il sert à tout restaurer dans l'app (⚙ → Sauvegarde). C'est la première protection.
+
+Sous le bouton Exporter, la date du dernier export s'affiche ; elle passe en orange après 7 jours.
 Les onglets calculés sont protégés (sans mot de passe) pour éviter d'écraser une formule : **Révision → Ôter la protection** si nécessaire.
 
 ## Écrire ou modifier une séance
@@ -123,9 +147,11 @@ Dans l'Excel, colonne G du Journal, une ligne par élément (Alt+Entrée pour pa
 | `! Repos au moins 5 min` | Consigne grise, sans case |
 | `3× Voie en 5a` | Action avec 3 ronds (sans nombre : 1 rond) |
 | `… (repos 4 min)` ou `(repos 90 s)` | Durée du repos (sinon : 5 min voie, 3 min bloc, 90 s maison, rien en course) |
+| `… (durée 15 min)` | Durée prévue de l'étape (sinon estimée automatiquement) |
 | `… · 30 s` ou `… 25 min …` | Ajoute un bouton ▶ chrono de cette durée |
 | `6× 2 min course + 2 min marche` | Ajoute un minuteur de fractions |
-| `« Bras tendus »` | Lien vers l'explication (nom identique à l'onglet Exercices) |
+| `« Bras tendus »` | Lien vers l'explication (nom identique à l'onglet Exercices, méthodes comprises : `« Circuit »`, `« Projet »`…) |
+| `3× « Circuit » de 4 blocs` | « N blocs » ou « N voies » dans une ligne : un résultat par bloc à chaque série |
 | `## Courte (12 min)` | Début d'une version ; les lignes avant le premier `##` sont communes |
 
 Puis lance `python generer_app.py` (il signale les noms introuvables) et remets `data.js` et `sw.js` sur GitHub.
