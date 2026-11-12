@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>App Escalade · Guide d'utilisation</title>
+<style>
+  :root { --fond:#EEF1F2; --carte:#FFFFFF; --texte:#1C2A33; --doux:#5E6E78; --bord:#D5DCE0; --info:#E9EDEF; --marque:#1F4E5A; --lien:#2E6FB7;
+          --fait:#3B8C3F; --attention:#F2711C; --danger:#C0392B; color-scheme:light; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fond:#141B20; --carte:#1E282F; --texte:#E6ECEF; --doux:#9AAAB3; --bord:#33424B; --info:#26323A; --marque:#6FB3C2; --lien:#6FA8E8;
+            --fait:#5FB563; --attention:#FF8A3D; --danger:#F07070; color-scheme:dark; }
+  }
+  * { box-sizing:border-box; }
+  html { scroll-padding-top:calc(64px + env(safe-area-inset-top, 0px)); }
+  body { margin:0; font-family:-apple-system, system-ui, "Segoe UI", Roboto, Arial, sans-serif; font-size:17px; line-height:1.55;
+         background:var(--fond); color:var(--texte); padding-bottom:calc(40px + env(safe-area-inset-bottom, 0px)); }
+  header { position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:10px; background:var(--carte); border-bottom:1px solid var(--bord);
+           padding:calc(8px + env(safe-area-inset-top, 0px)) 14px 8px; }
+  header a { color:var(--lien); text-decoration:none; font-weight:600; white-space:nowrap; }
+  header span { flex:1; text-align:center; font-weight:700; }
+  main { max-width:760px; margin:auto; padding:12px 16px; }
+  h1 { font-size:28px; line-height:1.2; margin:16px 0 4px; }
+  h2 { font-size:22px; margin:34px 0 10px; padding-top:6px; border-top:2px solid var(--bord); }
+  h3 { font-size:18px; margin:20px 0 6px; }
+  a { color:var(--lien); }
+  .intro { color:var(--doux); }
+  nav.sommaire { background:var(--carte); border:1px solid var(--bord); border-radius:14px; padding:10px 16px; margin:16px 0; }
+  nav.sommaire ol { margin:6px 0; padding-left:22px; columns:2; column-gap:24px; }
+  @media (max-width:520px) { nav.sommaire ol { columns:1; } }
+  table { width:100%; border-collapse:collapse; margin:10px 0; background:var(--carte); font-size:15px; }
+  .tableau { overflow-x:auto; }
+  th, td { border:1px solid var(--bord); padding:7px 9px; text-align:left; vertical-align:top; }
+  th { background:var(--info); }
+  .encadre { background:var(--carte); border:1px solid var(--bord); border-left:6px solid var(--marque); border-radius:0 12px 12px 0; padding:10px 14px; margin:12px 0; }
+  .encadre.attention { border-left-color:var(--attention); }
+  .encadre.danger { border-left-color:var(--danger); }
+  .pastille { display:inline-block; width:12px; height:12px; border-radius:50%; vertical-align:middle; margin-right:4px; border:1px solid var(--bord); }
+  code { background:var(--info); padding:1px 5px; border-radius:5px; font-size:15px; }
+  kbd { border:1px solid var(--bord); border-radius:5px; padding:0 5px; background:var(--carte); font-size:15px; }
+  li { margin:3px 0; }
+  .haut { display:inline-block; margin-top:6px; font-size:14px; }
+  @media print { header, .haut { display:none; } body { background:#fff; color:#000; } h2 { break-before:page; } table, .encadre { break-inside:avoid; } }
+</style>
+</head>
+<body>
+<header><a href="index.html">‹ Retour à l'app</a><span>Guide d'utilisation</span><a href="#sommaire">Sommaire</a></header>
+<main>
+<h1>App Escalade</h1>
+<p class="intro">Le guide complet de l'app et de son rapport. Il fonctionne sans connexion et se partage par son lien : pas de compte ni d'application nécessaires pour le lire.</p>
+
+<nav class="sommaire" id="sommaire"><b>Sommaire</b>
+<ol>
+<li><a href="#presentation">Présentation</a></li>
+<li><a href="#installation">Installation et mises à jour</a></li>
+<li><a href="#ecran">L'écran en un coup d'œil</a></li>
+<li><a href="#reglages">Premiers réglages</a></li>
+<li><a href="#seance">Faire une séance pas à pas</a></li>
+<li><a href="#temps">Suivre l'avancement et le temps</a></li>
+<li><a href="#corriger">Corriger, annuler, compléter</a></li>
+<li><a href="#minuteur">Le minuteur</a></li>
+<li><a href="#exercices">Exercices et méthodes</a></li>
+<li><a href="#creer">Créer ses propres séances</a></li>
+<li><a href="#programme">Le programme</a></li>
+<li><a href="#progression">Feux verts, forme et compétences</a></li>
+<li><a href="#securite">Sécurité</a></li>
+<li><a href="#suivi">Sauvegarde, export et rapport</a></li>
+<li><a href="#depannage">Dépannage</a></li>
+<li><a href="#lexique">Petit lexique</a></li>
+</ol></nav>
+
+<h2 id="presentation">1. Présentation</h2>
+<p>L'app affiche ta séance du jour et t'aide à la faire : étapes à cocher, minuteur de repos, chronos, relevé de tes voies et blocs, suivi des douleurs et de ta forme. Elle fonctionne <b>sans connexion</b>, à la salle comme en mode avion.</p>
+<p>Tout ce que tu notes reste sur ton téléphone : personne d'autre n'y a accès. En contrepartie, si tu supprimes l'app ou changes de téléphone sans sauvegarde, tes saisies sont perdues (voir <a href="#suivi">Sauvegarde</a>).</p>
+<div class="tableau"><table>
+<tr><th>Ce qu'il te faut</th><th>Pourquoi</th></tr>
+<tr><td>Un iPhone ou un téléphone Android récent</td><td>Pour utiliser l'app</td></tr>
+<tr><td>Une connexion internet, une seule fois</td><td>Pour l'installer (puis pour les mises à jour)</td></tr>
+<tr><td>Un ordinateur avec Python et LibreOffice ou Excel (facultatif)</td><td>Pour le rapport détaillé <code>Suivi.xlsx</code> : progression, charge, douleurs, niveaux</td></tr>
+</table></div>
+<p>Tu peux suivre le programme fourni, ou ne faire que tes propres séances, créées en quelques appuis.</p>
+
+<h2 id="installation">2. Installation et mises à jour</h2>
+<h3>Sur iPhone</h3>
+<ol>
+<li>Ouvre l'adresse de l'app dans <b>Safari</b> (ou Firefox à jour) et attends que la page soit chargée.</li>
+<li>Touche <b>Partager</b>, puis <b>Sur l'écran d'accueil</b> (fais défiler la liste ; sinon « Modifier les actions… »), puis <b>Ajouter</b>.</li>
+<li>Ouvre l'app depuis sa nouvelle icône, une première fois avec connexion.</li>
+</ol>
+<h3>Sur Android</h3>
+<ol><li>Ouvre l'adresse dans <b>Chrome</b>.</li><li>Menu <b>⋮</b> → <b>Installer l'application</b> (ou « Ajouter à l'écran d'accueil »).</li></ol>
+<div class="encadre">Installe l'app <b>une seule fois</b> : chaque icône a sa propre mémoire. Pour vérifier qu'elle marche hors connexion, passe en mode avion, ferme-la complètement et rouvre-la.</div>
+<h3>Mises à jour</h3>
+<p>Quand une nouvelle version est disponible, un bandeau <b>« Nouvelle version disponible »</b> apparaît : touche-le. Le numéro de version est affiché en bas de l'onglet <b>Plus</b>.</p>
+<p>Une nouvelle icône n'apparaît qu'après réinstallation : exporte d'abord, supprime l'icône, réinstalle, puis restaure la sauvegarde.</p>
+
+<h2 id="ecran">3. L'écran en un coup d'œil</h2>
+<div class="tableau"><table>
+<tr><th>Onglet (en bas)</th><th>Ce qu'il contient</th></tr>
+<tr><td><b>Séance</b></td><td>La séance du jour (ou celle que tu as ouverte), avec la carte « Maintenant »</td></tr>
+<tr><td><b>Semaine</b></td><td>Les séances de la semaine, ton bilan, les feux verts, le bilan de compétences, <b>+ Créer une séance</b></td></tr>
+<tr><td><b>Plus</b></td><td>Exercices et méthodes, Exporter, Sauvegarde, Réglages, Aide</td></tr>
+</table></div>
+<p><b>En haut</b> : la date (‹ et › ou un glissement du doigt sur l'en-tête pour changer de séance), la ligne « ⏱ 0:47 · ≈ 1 h 50 · fin 20:35 » pendant une séance, et le bouton <b>⋯</b> (menu de la séance). Une <b>pastille orange</b> sur Plus rappelle d'exporter (dernier export il y a plus de 7 jours).</p>
+<h3>Une couleur = un sens</h3>
+<div class="tableau"><table>
+<tr><th>Couleur</th><th>Sens</th></tr>
+<tr><td><span class="pastille" style="background:#2E6FB7"></span>bleu · <span class="pastille" style="background:#C8336B"></span>framboise · <span class="pastille" style="background:#0E9AA7"></span>turquoise · <span class="pastille" style="background:#7B5EA7"></span>violet</td><td>L'activité : voie, bloc, course, muscu</td></tr>
+<tr><td>Bande à gauche d'une étape</td><td><span class="pastille" style="background:#85B7EB"></span>échauffement · <span class="pastille" style="background:#E24B4A"></span>sécurité · <span class="pastille" style="background:#F2D34B"></span>facile · <span class="pastille" style="background:#993C1D"></span>effort · <span class="pastille" style="background:#185FA5"></span>récupération</td></tr>
+<tr><td><span class="pastille" style="background:#3B8C3F"></span>vert</td><td>Fait</td></tr>
+<tr><td><span class="pastille" style="background:#F2711C"></span>orange vif</td><td>Attention</td></tr>
+<tr><td><span class="pastille" style="background:#C0392B"></span>rouge</td><td>Danger</td></tr>
+<tr><td>sable → brun</td><td>L'échelle de 1 à 10 de l'effort et de la douleur</td></tr>
+</table></div>
+
+<h2 id="reglages">4. Premiers réglages</h2>
+<p>Va dans <b>Plus → ⚙ Réglages</b> :</p>
+<ol>
+<li><b>Programme</b> : « Le programme + mes séances » pour suivre le programme fourni, ou « Uniquement mes séances créées ».</li>
+<li><b>Minuteur</b> : repos automatique ou manuel, résultat demandé à chaque passage, temps moyen par voie et par bloc (l'app s'ajuste ensuite à ta moyenne réelle).</li>
+<li><b>Son</b> : volume, bips, son en mode silencieux, puis <b>Tester le son</b>.</li>
+<li><b>Rappels calendrier</b> (facultatif) : l'heure de chaque activité, puis <b>Créer le fichier calendrier</b> et « Ajouter tout ».</li>
+</ol>
+
+<h2 id="seance">5. Faire une séance pas à pas</h2>
+<ol>
+<li><b>Avant de commencer</b>, l'écran montre l'activité, la durée prévue, les éventuels avertissements (encadrés orange : suis leur conseil), le choix de la version et la liste des étapes.</li>
+<li><b>Touche ▶ Commencer.</b> Pour une séance d'escalade, trois questions notées de 1 à 5 : <b>doigts, coudes, épaules</b> (ferme le poing, puis ouvre la main), <b>énergie et sommeil</b>, <b>motivation</b> ; puis la <b>douleur avant la séance</b> (« Aucune » en un appui). L'app en déduit ta <a href="#progression">forme du jour</a>.</li>
+<li><b>La carte Maintenant</b> apparaît en haut, dans la couleur de l'activité : l'étape en cours, son temps, l'étape suivante, et les boutons <b>⚠</b> (douleur), <b>▶ Guidé</b> ou <b>▶ Chrono</b> si besoin, <b>✓ Fait</b>.</li>
+<li><b>Après chaque passage</b>, touche <b>✓ Fait</b>. Pour une voie ou un bloc, la fenêtre de résultat s'ouvre :
+  <ul>
+  <li>cotation, <b>profil</b> (Dalle, Vertical, Léger dévers, Dévers, Toit) et <b>style</b> (À vue, Flash, Après travail) sont préremplis ;</li>
+  <li><b>couleur</b> des prises (pastilles) et <b>nom</b> : facultatifs, ils servent à compter les voies différentes ;</li>
+  <li><b>✓ Enchaînée</b> (ou Réussi) enregistre directement ; <b>Pas finie</b> ou <b>Avec « sec »</b> demandent la <b>cause principale</b> (Lecture, Pieds, Placement ou gainage, Force, Endurance, Peur), facultative.</li>
+  </ul></li>
+<li><b>Les circuits</b> (« Circuit de 4 voies : 5a, 5b, 5a, 5b ») demandent un résultat par voie, préremplis avec les cotations de la ligne. <b>Tout réussi</b> valide la série.</li>
+<li><b>Les exercices en durée</b> ont un bouton <b>▶ Chrono</b> : chrono, repos, passage coché tout seul.</li>
+<li><b>Les noms soulignés ⓘ</b> ouvrent l'explication de l'exercice. « <b>Dernière fois ▸</b> » montre ce que tu as fait la fois précédente.</li>
+<li><b>Quand tout est fait</b>, la carte propose <b>■ Terminer la séance</b> (ou ⋯ → Terminer, pour arrêter avant la fin).</li>
+<li><b>Le bilan</b> : temps réel comparé au prévu, rappel « Ce soir : crème sur les mains », <b>effort</b> et <b>douleur après la séance</b> (de 1 à 10), zone, durée et notes.</li>
+</ol>
+<p>Tu ne fais pas une séance ? Sous ▶ Commencer, touche <b>Séance sautée</b>. Le dernier jour de la semaine, le bouton <b>Mesures de la semaine</b> ouvre les mesures (et les tests de mobilité tous les 3 mois).</p>
+
+<h2 id="temps">6. Suivre l'avancement et le temps</h2>
+<ul>
+<li><b>Carte Maintenant</b> : « Étape 4 sur 7 », une barre découpée par étape (vert = fait, blanc = en cours), « 8 min sur ≈ 12 min » et l'étape suivante.</li>
+<li><b>Liste</b> : chaque étape a un numéro, un type, un état (✓, ▶, ○) et une durée prévue. Les étapes faites se replient (« 3 étapes faites ▸ »).</li>
+<li><b>Durées prévues</b> : exactes quand la séance les indique ; sinon passages × temps moyen (4 min par voie, 1 min 30 par bloc au départ) + repos. Après quelques séances, l'app utilise ta moyenne réelle.</li>
+</ul>
+
+<h2 id="corriger">7. Corriger, annuler, compléter</h2>
+<p><b>Le menu ⋯</b>, en haut à côté de la date :</p>
+<ul>
+<li><b>■ Terminer la séance</b>, même avant la fin ;</li>
+<li><b>↶ Annuler le dernier geste</b>, jusqu'à 20 fois ;</li>
+<li><b>📖 Exercices de cette séance</b> ;</li>
+<li><b>+ Ajouter un exercice à cette séance</b> ;</li>
+<li><b>📝 Note sur l'étape en cours</b> (ou appui long sur une ligne) : elle réapparaît la fois suivante ;</li>
+<li><b>⚠ Signaler une douleur</b> ;</li>
+<li><b>⟲ Réinitialiser la séance</b> : tout repart de zéro (et s'annule encore avec ↶).</li>
+</ul>
+<p>Après chaque passage, un bandeau « Passage noté · <b>Annuler</b> » reste 5 secondes. Un rond <b>+</b> compte un passage en plus. Pour <b>corriger un résultat</b>, touche « voies notées », puis le résultat (✎). Une <b>séance oubliée</b> est signalée à la prochaine ouverture, avec une durée estimée.</p>
+
+<h2 id="minuteur">8. Le minuteur</h2>
+<p>Il s'affiche en bas pendant un repos, un chrono ou un échauffement guidé. <b>Sa couleur indique la phase</b> : couleur de l'activité pendant l'effort, bleu pendant le repos, orange vif dans les 10 dernières secondes, vert à la fin.</p>
+<div class="tableau"><table>
+<tr><th>Bouton</th><th>Effet</th></tr>
+<tr><td>−30 / +30</td><td>Retire ou ajoute 30 secondes</td></tr>
+<tr><td>❚❚ / ▶</td><td>Pause ou reprise</td></tr>
+<tr><td>Passer</td><td>Termine l'étape et passe à la suivante</td></tr>
+<tr><td>🔊 (coin)</td><td>Coupe ou remet le son</td></tr>
+<tr><td>✕ (coin)</td><td>Ferme le minuteur</td></tr>
+<tr><td>✓ Fait : …</td><td>Pendant un repos, valide directement l'étape suivante</td></tr>
+</table></div>
+<p>Touche le temps pour le <b>plein écran</b>. Le minuteur reprend où il en était si tu fermes l'app.</p>
+
+<h2 id="exercices">9. Exercices et méthodes</h2>
+<p><b>Plus → 📖 Exercices et méthodes</b> : une recherche, et des tuiles (★ Favoris, Voie et bloc, Voie, Bloc, Méthodes, Muscu, Course, Mobilité, Soins, Routines). Chaque fiche donne le niveau, le but, les étapes, les erreurs fréquentes, une version plus facile, la sécurité, les séances du programme où il apparaît et la dernière fois que tu l'as fait, avec <b>☆ Favori</b> et <b>+ Ajouter à une séance</b>.</p>
+<p>Les exercices <b>prévus plus tard</b> sont grisés avec un 🔒 : ils demandent plus aux tendons. Demande conseil à un moniteur avant de les essayer.</p>
+
+<h2 id="creer">10. Créer ses propres séances</h2>
+<p>Onglet <b>Semaine → + Créer une séance</b>, en trois étapes : type et modèle (chaque carte indique sa durée estimée), réglages (durée totale en direct), aperçu et exercices ajoutés. Puis <b>Créer la séance</b>.</p>
+<div class="tableau"><table>
+<tr><th>Type</th><th>Modèles</th></tr>
+<tr><td>Escalade</td><td>Bloc technique léger, Bloc projets, Bloc endurance, Voie volume, Voie projets</td></tr>
+<tr><td>Course</td><td>Fractionné, Course continue, Marche rapide, Vélo</td></tr>
+<tr><td>Muscu</td><td>Complète (25 min), Courte (12 min), Express (6 min), Gainage express</td></tr>
+<tr><td>Libre</td><td>Séance vide : tu notes ce que tu fais</td></tr>
+</table></div>
+
+<h2 id="programme">11. Le programme</h2>
+<p>Le programme avance par <b>blocs de 8 semaines</b>. Le bloc 1 va du lundi 9 novembre 2026 au 3 janvier 2027 ; le bloc suivant est construit à la fin de chaque bloc, d'après tes résultats.</p>
+<div class="tableau"><table>
+<tr><th>Jour</th><th>Séance</th></tr>
+<tr><td>Lundi</td><td>Repos</td></tr>
+<tr><td>Mardi</td><td>Footing en allure conversation (30 min au départ, +5 min toutes les deux semaines)</td></tr>
+<tr><td>Mercredi</td><td>Voie, séance qualité</td></tr>
+<tr><td>Jeudi</td><td>Routine de 15 min : épaules, coudes, hanches, chevilles</td></tr>
+<tr><td>Vendredi</td><td>Bloc performance</td></tr>
+<tr><td>Samedi</td><td>Footing très facile ou randonnée (facultatif)</td></tr>
+<tr><td>Dimanche</td><td>Bloc plaisir : aucune tentative maximale</td></tr>
+</table></div>
+<p>Avant chaque séance d'escalade : <b>contrôle des doigts</b>. Après : <b>routine coudes</b> (5 min). Le vendredi : <b>routine pieds</b>.</p>
+<h3>Les 5 règles</h3>
+<ol>
+<li>Ne jamais augmenter en même temps le volume, la difficulté et la fréquence.</li>
+<li>Une douleur qui augmente trois séances de suite : réduction immédiate de la charge.</li>
+<li>Une semaine allégée toutes les 8 semaines, même en forme.</li>
+<li>Sortir de la salle en pouvant encore faire un ou deux essais.</li>
+<li>La récupération fait partie de l'entraînement.</li>
+</ol>
+<p>Répartition de l'effort : 80 % en maîtrise, 15 % en difficulté, 5 % à la limite.</p>
+
+<h2 id="progression">12. Feux verts, forme et compétences</h2>
+<h3>La forme du jour</h3>
+<p>Calculée au démarrage d'une séance d'escalade à partir de tes trois notes et de la douleur avant :</p>
+<div class="tableau"><table>
+<tr><th>Forme</th><th>Quand</th><th>Ce que ça veut dire</th></tr>
+<tr><td><span class="pastille" style="background:#3B8C3F"></span><b>Verte</b></td><td>toutes les notes à 4 ou plus, aucune douleur</td><td>Projet autorisé</td></tr>
+<tr><td><span class="pastille" style="background:#F2711C"></span><b>Orange</b></td><td>une note à 3, ou une douleur de 1 ou 2</td><td>Intensité normale, projets prudents</td></tr>
+<tr><td><span class="pastille" style="background:#C0392B"></span><b>Rouge</b></td><td>une note à 2 ou moins, ou une douleur au-dessus de 2</td><td>Pas de projet : technique uniquement (les projets sont marqués « À éviter aujourd'hui »)</td></tr>
+</table></div>
+<h3>Les feux verts</h3>
+<p>Ce sont tes résultats, pas le calendrier, qui décident quand tu montes de niveau. Ils sont affichés dans l'onglet <b>Semaine</b> et rappelés sur les lignes « … si feu vert ».</p>
+<div class="tableau"><table>
+<tr><th>Feu vert</th><th>Critères</th></tr>
+<tr><td>Projet en voie 5c</td><td>10 voies 5b différentes réussies sans « sec », et 70 % de réussite en 5b</td></tr>
+<tr><td>Premier essai en 6a</td><td>3 voies 5c différentes réussies</td></tr>
+<tr><td>Projet de bloc 6</td><td>80 % de réussite en bloc 5, 15 blocs 5 différents, sur au moins 4 séances</td></tr>
+<tr><td>Monter en dévers</td><td>3 voies (ou blocs) différentes réussies en dévers au niveau actuel</td></tr>
+<tr><td>Plus de volume</td><td>Aucune douleur au-dessus de 2/10 pendant 4 semaines</td></tr>
+</table></div>
+<p>Une voie « différente » se reconnaît à sa cotation, sa couleur et son nom : pense à toucher la pastille de couleur. <b>La poutre</b> : pas avant 12 mois d'escalade régulière, plusieurs 6a confirmés et 6 mois sans douleur aux doigts ni aux coudes.</p>
+<h3>Le bilan de compétences</h3>
+<p>Pendant la dernière semaine de chaque bloc, l'onglet Semaine propose le <b>bilan du bloc</b> : 8 notes de 1 à 10 (pieds, lecture, dévers, gainage, endurance, repos, profil, confiance). Il sert à construire le bloc suivant ; le rapport en montre l'évolution.</p>
+
+<h2 id="securite">13. Sécurité</h2>
+<div class="encadre danger"><b>La règle d'or</b> : une douleur qui augmente pendant l'effort, c'est stop pour cet exercice. Avant de commencer course et renforcement, un bilan simple chez ton médecin traitant est une bonne précaution.</div>
+<p><b>Les vérifications croisées</b>, avant chaque voie, pour toi et ton partenaire : baudrier bien serré et boucles verrouillées, nœud de huit complet et bien serré, mousqueton de l'assureur verrouillé, système d'assurage correctement installé, bout de la corde noué.</p>
+<div class="tableau"><table>
+<tr><th>Douleur</th><th>Que faire</th></tr>
+<tr><td>0 à 2</td><td>Surveiller</td></tr>
+<tr><td>3 à 4</td><td>Réduire l'intensité, chercher le mouvement déclencheur</td></tr>
+<tr><td>5 et plus</td><td>Arrêter l'exercice</td></tr>
+<tr><td>Douleur vive, perte de force, gonflement, douleur qui persiste</td><td>Avis médical ou kiné</td></tr>
+</table></div>
+<p>Signale chaque douleur avec <b>⚠</b> : l'app et le rapport repèrent une zone touchée plusieurs fois et regroupent les signalements en <b>épisodes</b> (avec leur durée).</p>
+<p><b>La peau</b> : crème le soir des séances (jamais dans les 2 à 3 heures avant de grimper) ; le dimanche, inspecte tes mains et lime seulement les bosses. Fissure profonde, zone chaude ou rouge, début d'arrachement : réduis la séance et protège la zone.</p>
+
+<h2 id="suivi">14. Sauvegarde, export et rapport</h2>
+<p><b>Exporte au moins une fois par semaine</b> : <b>Plus → ⬆ Exporter</b> crée deux fichiers.</p>
+<div class="tableau"><table>
+<tr><th>Fichier</th><th>À quoi il sert</th></tr>
+<tr><td><code>sauvegarde-escalade-….json</code></td><td>Tout restaurer dans l'app (nouveau téléphone, app réinstallée) : <b>Plus → Sauvegarde → Restaurer</b></td></tr>
+<tr><td><code>export-escalade-….csv</code></td><td>Le rapport sur ordinateur</td></tr>
+</table></div>
+<div class="encadre attention">Ces fichiers contiennent tes douleurs : envoie-les de préférence par AirDrop ou câble plutôt que par mail.</div>
+<h3>Le rapport sur ordinateur</h3>
+<ol>
+<li>Range chaque <code>export-escalade-….csv</code> dans le dossier <code>exports</code> de l'app, <b>sans jamais supprimer les anciens</b> : c'est ton archive.</li>
+<li>Dans ce dossier, lance <kbd>python escalade.py</kbd> (une seule fois : <kbd>pip install openpyxl</kbd>).</li>
+<li>Ouvre <code>Suivi.xlsx</code> (LibreOffice ou Excel). Il est entièrement régénéré à chaque fois.</li>
+</ol>
+<div class="tableau"><table>
+<tr><th>Onglet</th><th>Contenu</th></tr>
+<tr><td>Accueil</td><td>Forme du jour, vigilance, semaine en cours, niveaux consolidés, points faibles et exercices conseillés, feux verts</td></tr>
+<tr><td>Séances · Tentatives</td><td>Une ligne par séance, une ligne par voie ou bloc, avec filtres</td></tr>
+<tr><td>Douleurs</td><td>Les épisodes (début, fin, durée, niveau max) et tous les signalements</td></tr>
+<tr><td>Charge · Progression · Pyramides</td><td>Charge par semaine, meilleures cotations, pyramides, réussite par profil, niveau consolidé</td></tr>
+<tr><td>Feux verts · Compétences · Mesures</td><td>Le détail des critères, les bilans de fin de bloc, les mesures et tests de mobilité</td></tr>
+<tr><td>Historique · Contrôle</td><td>L'ancien programme, et la vérification des exports lus</td></tr>
+</table></div>
+<p>Le programme lui-même (séances, exercices, routines, seuils) se modifie dans <code>Programme.xlsx</code>, puis <kbd>python escalade.py</kbd> met à jour l'app.</p>
+<p><b>Changer de programme</b> : l'app propose d'exporter, puis d'effacer les séances de l'ancien (réglages, favoris et moyennes gardés). Range cet export dans <code>exports/programme-1</code>.</p>
+
+<h2 id="depannage">15. Dépannage</h2>
+<div class="tableau"><table>
+<tr><th>Problème</th><th>Solution</th></tr>
+<tr><td>« Sur l'écran d'accueil » n'apparaît pas</td><td>Fais défiler le menu Partager, ou « Modifier les actions… ». Avec Firefox, mets-le à jour ; sinon installe depuis Safari.</td></tr>
+<tr><td>L'app ne s'ouvre pas en mode avion</td><td>Ouvre-la une fois avec connexion depuis l'icône, ferme-la complètement, puis réessaie.</td></tr>
+<tr><td>Aucun son</td><td>Vérifie 🔊 dans le coin du minuteur, le volume, et Plus → Réglages → Son → Tester le son.</td></tr>
+<tr><td>L'écran s'éteint pendant la séance</td><td>La séance n'est pas commencée : touche ▶ Commencer.</td></tr>
+<tr><td>Je me suis trompé</td><td>⋯ → ↶ Annuler le dernier geste ; pour un résultat, touche-le dans « voies notées ».</td></tr>
+<tr><td>Forme rouge par erreur</td><td>⋯ → Annuler le dernier geste, puis note à nouveau la récupération.</td></tr>
+<tr><td>Un feu vert ne progresse pas</td><td>Les voies « différentes » se reconnaissent à la couleur et au nom : touche la pastille en notant le résultat.</td></tr>
+<tr><td>L'app propose « Nouveau programme »</td><td>Exporte, range l'export dans exports/programme-1, puis touche Démarrer. « Plus tard » laisse tout en l'état.</td></tr>
+<tr><td>Mes saisies ont disparu</td><td>Plus → Sauvegarde → Restaurer, avec le dernier fichier .json.</td></tr>
+<tr><td>Le rapport signale des « jours repris »</td><td>L'app a probablement été effacée : ton historique est gardé grâce à l'archive ; restaure la sauvegarde dans l'app.</td></tr>
+<tr><td><code>python escalade.py</code> signale un exercice inconnu</td><td>Le nom écrit entre « » dans Programme.xlsx doit être identique à celui de l'onglet Exercices.</td></tr>
+</table></div>
+
+<h2 id="lexique">16. Petit lexique</h2>
+<div class="tableau"><table>
+<tr><th>Terme</th><th>Signification</th></tr>
+<tr><td>Voie / moulinette</td><td>Escalade encordée ; en moulinette, la corde passe en haut du mur</td></tr>
+<tr><td>Bloc</td><td>Escalade sans corde, à faible hauteur, au-dessus de tapis</td></tr>
+<tr><td>Dévers</td><td>Mur incliné vers toi, plus difficile</td></tr>
+<tr><td>« Sec »</td><td>Demander à l'assureur de bloquer la corde pour se reposer</td></tr>
+<tr><td>Enchaîner</td><td>Réussir une voie sans « sec » ni chute</td></tr>
+<tr><td>À vue / Flash</td><td>Réussir du premier coup sans info / après avoir vu quelqu'un la faire</td></tr>
+<tr><td>Travail au point</td><td>Grimper une voie difficile en prenant des « sec » pour comprendre les mouvements</td></tr>
+<tr><td>Profil, drop knee</td><td>Hanche tournée vers le mur / genou tourné vers le bas, pour gagner de l'allonge</td></tr>
+<tr><td>Niveau consolidé</td><td>La cotation la plus haute que tu réussis régulièrement (au moins 70 % sur 5 essais)</td></tr>
+<tr><td>Charge</td><td>Durée × effort d'une séance : la quantité d'entraînement</td></tr>
+<tr><td>Décharge</td><td>Semaine allégée qui permet au corps d'assimiler les progrès</td></tr>
+<tr><td>Poulies</td><td>Petits ligaments des doigts, fragiles chez les débutants</td></tr>
+</table></div>
+<p><a class="haut" href="#sommaire">↑ Retour au sommaire</a> · <a class="haut" href="index.html">‹ Retour à l'app</a></p>
+</main>
+</body>
+</html>

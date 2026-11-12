@@ -278,3 +278,31 @@ body.flash { animation:flash .5s 3; }
 .panneau-titre { display:flex; justify-content:space-between; align-items:center; padding:0 16px; text-align:left; background:var(--carte); font-size:17px; }
 .carte-modele.choisi, .tuile.choisi { font-weight:inherit; }
 .carte-modele.choisi .cm-nom, .tuile.choisi { font-weight:700; }
+
+/* ---------- Version 4.1 : résultat enrichi, récupération, feux verts ---------- */
+.segment button { font-size:14px; padding:0 4px; }
+.pastilles { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:8px; }
+.pastille { width:36px; height:36px; border-radius:50%; border:2px solid var(--bord); padding:0; }
+.pastille.choisi { outline:3px solid var(--act); outline-offset:2px; border-color:var(--carte); }
+.maintenant-alerte { background:var(--attention); color:#fff; font-weight:700; font-size:14px; border-radius:10px; padding:6px 10px; margin-bottom:8px; }
+.lien-blanc { border:none; background:none; color:#fff; font-size:13px; text-decoration:underline; padding:0 0 6px; }
+.a-eviter { display:inline-block; font-size:11px; font-weight:700; text-transform:uppercase; color:#fff; background:var(--attention); border-radius:6px; padding:1px 6px; }
+.feu-rappel { font-size:13px; margin-top:6px; padding:4px 8px; border-radius:8px; background:var(--info); color:var(--doux); }
+.feu-rappel.ok { background:#DFF3E0; color:#2F6E33; }
+.carte.feux summary { font-size:17px; padding:2px 0; }
+.feu-ligne { padding:10px 0 4px; border-top:1px solid var(--bord); margin-top:8px; }
+.feu-titre { font-weight:700; margin-bottom:4px; }
+.feu-critere { display:flex; justify-content:space-between; gap:8px; font-size:14px; color:var(--doux); }
+.feu-ok { color:var(--fait); font-weight:700; }
+.feu-barre { height:6px; border-radius:3px; background:var(--info); margin:3px 0 6px; overflow:hidden; }
+.feu-barre span { display:block; height:100%; background:var(--fait); border-radius:3px; }
+.rappel-peau { background:var(--info); border-radius:10px; padding:8px 10px; font-size:14px; }
+
+/* ---------- Version 5.0 : forme du jour, bilan de compétences ---------- */
+.forme { font-weight:700; font-size:14px; border-radius:10px; padding:6px 10px; margin-bottom:8px; color:#fff; }
+.forme-vert { background:var(--fait); }
+.forme-orange { background:var(--attention); }
+.forme-rouge { background:var(--danger); }
+#fond-modal .forme { margin-top:12px; }
+.petit-segment button { font-size:13px; min-height:38px; padding:0; }
+.carte.competences { border-left:6px solid var(--act); }

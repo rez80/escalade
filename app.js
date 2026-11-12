@@ -9,13 +9,23 @@
 // =====================================================================
 // 1. RÉGLAGES DU PROGRAMME (modifiables dans le code)
 // =====================================================================
-const APP_VERSION = "4.0";
+const APP_VERSION = "5.0";
 const REPOS_DEFAUT = { Voie: 300, Bloc: 180, Maison: 90 };   // secondes, si la ligne n'indique rien
 const COTATIONS = { Voie: ["3","4","4c","5a","5b","5c","6a","6b","6c"], Bloc: ["2","3","4","5","6","7"] };
 COTATIONS["Escalade extérieur"] = COTATIONS.Voie;               // se note comme une voie
 const ACTIVITES_LIBRES = ["Voie","Bloc","Maison","Course","Escalade extérieur","Autre sport"];
 const JOURS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
-const URL_GUIDE = "https://claude.ai/artifact/1oFtL5gzb5YTDYjYvQ8vdj";   // guide d'utilisation (❓ Aide)
+const PROFILS = ["Dalle", "Vertical", "Léger dévers", "Dévers", "Toit"];
+const STYLES = ["À vue", "Flash", "Après travail"];
+const CAUSES = ["Lecture", "Pieds", "Placement ou gainage", "Force", "Endurance", "Peur"];
+const COULEURS = [["Rouge", "#D93636"], ["Orange", "#F28C28"], ["Jaune", "#F2D34B"], ["Vert", "#3FA066"], ["Bleu", "#2E6FB7"], ["Violet", "#7B5EA7"],
+                  ["Rose", "#E35D9C"], ["Noir", "#222222"], ["Blanc", "#F5F5F5"], ["Gris", "#9AA5AD"], ["Marron", "#8B5A2B"]];
+const ESCALADE = ["Voie", "Bloc", "Escalade extérieur"];
+const enDevers = p => ["Léger dévers", "Dévers", "Toit"].includes(p);
+const reussi = v => v.res === "Enchaînée" || v.res === "Réussi";
+const URL_GUIDE = "aide.html";                     // guide d'utilisation (❓ Aide), dans le dossier de l'app
+// Paramètres réglables dans Programme.xlsx (onglet Paramètres), transmis par data.js
+const PA = (nom, defaut) => typeof PARAMS !== "undefined" && PARAMS[nom] !== undefined ? PARAMS[nom] : defaut;
 const DUREE_MAX = 240;                                           // minutes : au-delà, l'écran n'est plus maintenu allumé
 const DUREES_CALENDRIER = { Voie: 120, Bloc: 120, Maison: 25, Course: 40, "Repos actif": 45 };
 
@@ -27,7 +37,7 @@ const REGLAGES_DEFAUT = {
   bip10: true, bip321: true, bipFin: true, bipFractions: true,
   heures: { Voie: "19:00", Bloc: "10:00", Maison: "19:00", Course: "18:30", "Repos actif": "18:00" },
   avance: 60,            // minutes avant la séance pour le rappel du calendrier
-  tVoie: 4, tBloc: 1.5,  // minutes par voie et par bloc (estimation des durées)
+  tVoie: PA("temps_voie", 4), tBloc: PA("temps_bloc", 1.5),  // minutes par voie et par bloc (estimation des durées)
   ajuster: true,         // remplacer ces valeurs par ta moyenne réelle après quelques séances
   mode: "programme",     // "programme" : suit le programme ; "libre" : uniquement les séances créées
   dateDebut: ""          // vide = date de début du programme (data.js)
@@ -66,7 +76,7 @@ function memoriser(k) {
   p.t = Date.now(); localStorage.setItem("annuler-" + k, JSON.stringify(p));
 }
 const ecrireCle = (k, d) => {
-  memoriser(k); d.dernierGeste = Date.now();
+  memoriser(k); d.dernierGeste = Date.now(); cacheFeux = null;
   const s = LISTE.find(x => cle(x) === k);
   if (s && d.debut) suivreEtape(s, d);                    // temps réel par étape (bilan de temps, moyennes)
   localStorage.setItem(k, JSON.stringify(d));
@@ -180,7 +190,7 @@ function dureeElement(s, d, e) {
   if (e.intervalle) return e.n * (e.intervalle.course + e.intervalle.marche);
   if (e.travail) return e.n * (e.travail * (e.cotes ? 2 : 1) + (e.cotes ? 5 : 0)) + entre;
   if (estEscalade(e)) {
-    const type = estVoie(actReleve(s, d)) && !/bloc|circuit/i.test(e.texte) ? "Voie" : "Bloc";
+    const type = estVoie(actReleve(s, d)) && !/bloc/i.test(e.texte) ? "Voie" : "Bloc";
     return e.n * tempsParPassage(type) * 60 * Math.max(1, e.serie) + entre;
   }
   return e.n * 120 + entre;                             // autre action : 2 min par passage
@@ -206,7 +216,7 @@ function suivreEtape(s, d) {
 function noterMoyenne(s, d, i, ms) {
   const e = elementsDe(s, d)[i];
   if (!e || e.type !== "action" || !estEscalade(e) || e.travail || e.intervalle || e.dureePrevue || compte(d, i) < e.n) return;
-  const type = estVoie(actReleve(s, d)) && !/bloc|circuit/i.test(e.texte) ? "Voie" : "Bloc";
+  const type = estVoie(actReleve(s, d)) && !/bloc/i.test(e.texte) ? "Voie" : "Bloc";
   const parPassage = (ms / 1000 - Math.max(0, e.n - 1) * reposDe(s, e)) / 60 / (e.n * Math.max(1, e.serie));
   if (!(parPassage >= 0.5 && parPassage <= 20)) return;          // valeur aberrante : ignorée
   const m = lireMoyennes(); m[type] = [...(m[type] || []), Math.round(parPassage * 10) / 10].slice(-10);
@@ -241,18 +251,18 @@ function cotationDe(texte, act) {          // cotation proposée d'après le tex
 function autoPerf(d, act) {               // voie ou bloc le plus dur réussi
   const ok = (d.voies || []).filter(v => (v.act || act) === act && (v.res === "Enchaînée" || v.res === "Réussi"));
   if (!ok.length) return "";
-  ok.sort((a, b) => rang(act, b.cot) - rang(act, a.cot) || (b.profil === "Dévers") - (a.profil === "Dévers"));
-  return ok[0].cot + (ok[0].profil === "Dévers" ? " dévers" : "");
+  ok.sort((a, b) => rang(act, b.cot) - rang(act, a.cot) || enDevers(b.profil) - enDevers(a.profil));
+  return ok[0].cot + (enDevers(ok[0].profil) ? " dévers" : "");
 }
 function autoSec(d) {                     // nb de « sec » sur la voie en dévers la plus dure
-  const dev = (d.voies || []).filter(v => estVoie(v.act || "Voie") && v.profil === "Dévers" && (v.res === "Enchaînée" || v.res === "Avec sec"));
+  const dev = (d.voies || []).filter(v => estVoie(v.act || "Voie") && enDevers(v.profil) && (v.res === "Enchaînée" || v.res === "Avec sec"));
   if (!dev.length) return "";
   const max = Math.max(...dev.map(v => rang("Voie", v.cot)));
   return Math.min(...dev.filter(v => rang("Voie", v.cot) === max).map(v => v.res === "Enchaînée" ? 0 : v.sec));
 }
 const perfFinale = (d, act) => vide(d.perf) ? (COTATIONS[act] ? autoPerf(d, act) : "") : d.perf;
 const secFinal = d => vide(d.sec) ? autoSec(d) : d.sec;
-const resume = v => `${v.cot} ${v.profil === "Dévers" ? "dévers" : "vertical"} ${v.res === "Avec sec" ? v.sec + " sec" : v.res.toLowerCase()}`;
+const resume = v => `${v.cot} ${(v.profil || "Vertical").toLowerCase()}${v.couleur ? " " + v.couleur.toLowerCase() : ""} ${v.res === "Avec sec" ? v.sec + " sec" : v.res.toLowerCase()}`;
 
 function autoSemaine(sem) {               // valeurs automatiques de la semaine
   const seances = LISTE.filter(s => s.semaine === sem);
@@ -260,7 +270,7 @@ function autoSemaine(sem) {               // valeurs automatiques de la semaine
   const meilleur = (act, filtre) => {
     const ok = entrees.filter(filtre);
     if (!ok.length) return "";
-    ok.sort((a, b) => rang(act, b.cot) - rang(act, a.cot)); return ok[0].cot + (ok[0].profil === "Dévers" ? " dévers" : "");
+    ok.sort((a, b) => rang(act, b.cot) - rang(act, a.cot)); return ok[0].cot + (enDevers(ok[0].profil) ? " dévers" : "");
   };
   const secs = seances.map(s => autoSec(lire(s))).filter(x => x !== "");
   return { sec: secs.length ? Math.min(...secs) : "",
@@ -324,7 +334,8 @@ const titreAction = e => sansGuillemets(e.texte);
 const TYPES_ETAPE = { echauffement: "Échauffement", securite: "Sécurité", facile: "Facile", effort: "Effort", recup: "Récupération" };
 function typeEtape(e) {
   if (e.type === "routine") {
-    if (/^Vérif/i.test(e.nom)) return "securite";
+    if (/^Vérif|^Contrôle/i.test(e.nom)) return "securite";
+    if (/jeudi/i.test(e.nom)) return "recup";
     if (/Retour au calme|Mobilité|après/i.test(e.nom)) return "recup";
     if (/Gainage/i.test(e.nom)) return "facile";
     return "echauffement";
@@ -396,6 +407,90 @@ function afficherSeance() {
   if (s.libre) h += `<button class="gros contour danger" data-action="supprimer-libre">Supprimer cette séance</button>`;
   $("ecran").innerHTML = h;
 }
+// =====================================================================
+// FEUX VERTS : critères de progression calculés à partir de tes résultats
+// =====================================================================
+let cacheFeux = null;
+function toutesVoies() {
+  return LISTE.flatMap(s => (lire(s).voies || []).map(v => ({ ...v, act: v.act || s.activite, seance: cle(s) })));
+}
+function feuxVerts() {
+  if (cacheFeux) return cacheFeux;
+  const vs = toutesVoies();
+  let n = 0;
+  const id = v => v.couleur || v.nom ? `${v.act}|${v.cot}|${v.couleur || ""}|${v.nom || ""}` : "#" + (n++);
+  const differentes = l => new Set(l.map(id)).size;
+  const de = (act, cot, filtre = () => true) => vs.filter(v => v.act === act && String(v.cot) === cot && filtre(v));
+  const taux = l => l.length ? l.filter(reussi).length / l.length : 0;
+  const crit = (t, val, cible, pct = false) => ({ t, val, cible, pct, ok: val >= cible });
+  const v5b = de("Voie", "5b"), b5 = de("Bloc", "5");
+  // Douleur max sur 28 jours (avant, pendant, après)
+  const limite = Date.now() - PA("feu_volume_jours", 28) * 864e5;
+  let dmax = 0;
+  LISTE.forEach(s => { if (dateSeance(s).getTime() < limite || dateSeance(s) > new Date()) return;
+    const d = lire(s); dmax = Math.max(dmax, Number(d.douleur) || 0, Number((d.recup || {}).douleurAvant) || 0, ...(d.douleurs || []).map(x => Number(x.niv) || 0)); });
+  const ancien = (Date.now() - new Date(debutProgramme() + "T00:00:00").getTime()) / 864e5;
+  const niveau = (act, cots) => { let niv = cots[0];
+    for (let k = 0; k < cots.length - 1; k++) if (differentes(de(act, cots[k], v => enDevers(v.profil) && reussi(v))) >= PA("feu_devers", 3)) niv = cots[k + 1]; return niv; };
+  const nivVoie = niveau("Voie", ["5a", "5b", "5c", "6a"]), nivBloc = niveau("Bloc", ["4", "5", "6"]);
+  const prochain = (act, niv) => differentes(de(act, niv === "6a" || niv === "6" ? niv : niv, v => enDevers(v.profil) && reussi(v)));
+  cacheFeux = [
+    { id: "voie5c", titre: "Projet en voie 5c", criteres: [crit("Voies 5b différentes réussies sans « sec »", differentes(v5b.filter(v => v.res === "Enchaînée")), PA("feu_5c_voies", 10)),
+                                                           crit("Réussite en 5b", Math.round(taux(v5b) * 100), Math.round(PA("feu_5c_taux", 0.7) * 100), true)] },
+    { id: "voie6a", titre: "Premier essai en 6a", criteres: [crit("Voies 5c différentes réussies", differentes(de("Voie", "5c", reussi)), PA("feu_6a_voies", 3))] },
+    { id: "bloc6", titre: "Projet de bloc 6", criteres: [crit("Réussite en bloc 5", Math.round(taux(b5) * 100), Math.round(PA("feu_bloc6_taux", 0.8) * 100), true),
+                                                        crit("Blocs 5 différents réussis", differentes(b5.filter(reussi)), PA("feu_bloc6_blocs", 15)),
+                                                        crit("Séances avec un bloc 5 réussi", new Set(b5.filter(reussi).map(v => v.seance)).size, PA("feu_bloc6_seances", 4))] },
+    { id: "deversVoie", titre: `Voie en dévers : travailler le ${nivVoie}`, info: true,
+      criteres: nivVoie === "6a" ? [] : [crit(`Voies ${nivVoie} différentes réussies en dévers`, prochain("Voie", nivVoie), PA("feu_devers", 3))] },
+    { id: "deversBloc", titre: `Bloc en dévers : travailler le ${nivBloc}`, info: true,
+      criteres: nivBloc === "6" ? [] : [crit(`Blocs ${nivBloc} différents réussis en dévers`, prochain("Bloc", nivBloc), PA("feu_devers", 3))] },
+    { id: "volume", titre: "Plus de volume", criteres: [crit(`Douleur max sur ${PA("feu_volume_jours", 28)} jours (≤ ${PA("feu_volume_douleur", 2)})`, dmax <= PA("feu_volume_douleur", 2) ? 1 : 0, 1), crit("Jours de programme", Math.max(0, Math.floor(ancien)), PA("feu_volume_jours", 28))] },
+  ].map(f => ({ ...f, ok: f.criteres.every(c => c.ok) }));
+  return cacheFeux;
+}
+// Bilan de compétences : 8 notes de 1 à 10 à la fin de chaque bloc de 8 semaines
+const COMPETENCES = ["Pieds", "Lecture", "Dévers", "Gainage", "Endurance", "Repos", "Profil", "Confiance"];
+const AIDE_COMPETENCES = ["Précision et silence des pieds", "Prévoir les mouvements avant de grimper", "Rester collé au mur en dévers", "Tenir le bassin, ne pas laisser partir les pieds",
+  "Tenir la durée d'une voie ou d'un circuit", "Trouver et utiliser les positions de repos", "Utiliser profil et drop knee", "Oser, rester calme en hauteur"];
+const lireBilan = bloc => JSON.parse(localStorage.getItem("competences-" + bloc) || "null");
+function carteCompetences(sem) {
+  const bloc = Math.ceil(sem / 8);
+  // fin du bloc (semaine 8), ou première semaine du bloc suivant si le bilan n'a pas été fait
+  const cible = sem % 8 === 0 ? bloc : sem % 8 === 1 && bloc > 1 && !lireBilan(bloc - 1) ? bloc - 1 : null;
+  if (!cible) return "";
+  const b = lireBilan(cible);
+  if (b) return `<div class="carte competences"><b>Bilan du bloc ${cible}</b> <span class="petit">fait le ${jourMois(new Date(b.date))} · moyenne ${(b.notes.reduce((a, n) => a + n, 0) / b.notes.length).toFixed(1).replace(".", ",")}</span>
+    · <button class="lien" data-bilan-bloc="${cible}">modifier</button></div>`;
+  return `<div class="carte competences"><b>Fin du bloc ${cible} : ton bilan de compétences</b><p class="petit">8 notes de 1 à 10, en 1 minute. Elles servent à construire le bloc suivant.</p>
+    <button class="gros contour" data-bilan-bloc="${cible}">Faire le bilan du bloc ${cible}</button></div>`;
+}
+// Carte « Feux verts » (onglet Semaine)
+function carteFeux() {
+  return `<details class="carte feux" ${ouverts.has("feux") ? "open" : ""}><summary><b>Feux verts</b> <span class="petit">· ${feuxVerts().filter(f => f.ok && !f.info).length} sur ${feuxVerts().filter(f => !f.info).length}</span></summary>
+    ${feuxVerts().map(f => `<div class="feu-ligne"><div class="feu-titre">${f.info ? "▶" : f.ok ? "🟢" : "⚪"} ${esc(f.titre)}</div>
+      ${f.criteres.map(c => `<div class="feu-critere"><span>${esc(c.t)}</span><span class="${c.ok ? "feu-ok" : ""}">${c.id === "volume" ? "" : ""}${c.t.startsWith("Douleur") ? (c.ok ? "✓" : "trop haute") : c.val + (c.pct ? " %" : "") + " / " + c.cible + (c.pct ? " %" : "")}</span></div>
+        <div class="feu-barre"><span style="width:${Math.min(100, c.cible ? c.val / c.cible * 100 : 0)}%"></span></div>`).join("")}</div>`).join("")}</details>`;
+}
+// Rappel dans la séance, sur les lignes « … si feu vert »
+function rappelFeu(e) {
+  if (e.type !== "action" || !/si feu vert/i.test(e.texte)) return "";
+  const id = /6a si feu vert/i.test(e.texte) ? "voie6a" : /5c si feu vert/i.test(e.texte) ? "voie5c" : /6 si feu vert|bloc 6/i.test(e.texte) ? "bloc6" : null;
+  const f = id && feuxVerts().find(x => x.id === id); if (!f) return "";
+  const c = f.criteres.find(x => !x.ok) || f.criteres[0];
+  return `<div class="feu-rappel ${f.ok ? "ok" : ""}">${f.ok ? "🟢 Feu vert atteint : tu peux viser plus haut" : `⚪ ${esc(f.titre)} : ${esc(c.t)} ${c.val}${c.pct ? " %" : ""} / ${c.cible}${c.pct ? " %" : ""}`}</div>`;
+}
+// Récupération : une réponse ≤ 2 = pas de projet aujourd'hui
+function formeDuJour(r) {                         // r = { corps, energie, motivation, douleurAvant }
+  if (!r || !r.corps || !r.energie || !r.motivation) return null;
+  const mini = Math.min(r.corps, r.energie, r.motivation), dav = Number(r.douleurAvant) || 0;
+  if (mini <= PA("forme_rouge", 2) || dav > PA("forme_douleur", 2)) return "rouge";
+  if (mini >= PA("forme_vert", 4) && dav === 0) return "vert";
+  return "orange";
+}
+const TEXTE_FORME = { vert: "Forme verte : projet autorisé.", orange: "Forme orange : intensité normale, projets prudents.", rouge: "Forme rouge : pas de projet aujourd'hui, technique uniquement." };
+const alerteRecup = d => formeDuJour(d.recup) === "rouge";
+const estProjet = e => e.type === "action" && /projet|essai/i.test(e.texte);
 // Échelle « terre » de 1 à 10 (effort, douleur)
 const TERRE = ["#F6EEDC", "#EEDFC0", "#E2CBA0", "#D4B582", "#C29E66", "#AC864E", "#936E3B", "#7A582C", "#61431F", "#4A3219"];
 const couleurEchelle = n => TERRE[Math.max(0, Math.min(9, Number(n) - 1))];
@@ -428,7 +523,10 @@ function carteMaintenant(s, d, els, k) {
     titre = titreAction(e); sous = `Passage ${compte(d, k) + 1} sur ${e.n}`;
     if (e.intervalle || e.travail) boutons += `<button class="sur-couleur" data-chrono="${k}">▶ Chrono</button>`;
   }
-  return `<div class="maintenant ${animer.etape ? "nouvelle" : ""}"><div class="maintenant-haut"><span>Étape ${rang} sur ${etapes.length} · ${esc(sous)}</span><span>${temps}</span></div>${barre}
+  const fo = formeDuJour(d.recup);
+  const bandeauRecup = fo ? `<div class="forme forme-${fo}">${TEXTE_FORME[fo]}</div>`
+    : ESCALADE.includes(s.activite) && !d.recup ? `<button class="lien-blanc" data-action="recup">Noter la récupération ▸</button>` : "";
+  return `<div class="maintenant ${animer.etape ? "nouvelle" : ""}">${bandeauRecup}<div class="maintenant-haut"><span>Étape ${rang} sur ${etapes.length} · ${esc(sous)}</span><span>${temps}</span></div>${barre}
     <div class="maintenant-titre">${esc(titre)}</div>
     ${suivante ? `<div class="maintenant-suite">Ensuite : ${esc(suivante.e.type === "routine" ? suivante.e.nom : titreAction(suivante.e))}</div>` : ""}
     <div class="choix"><button class="sur-couleur" data-action="douleur" aria-label="Signaler une douleur">⚠</button>${boutons}<button class="blanc" data-fait="${k}">✓ Fait</button></div></div>`;
@@ -462,9 +560,10 @@ function ligneAction(s, d, e, i, actuelle, num) {
   if (repos) outils += `<button data-repos="${i}">⏱ repos ${duree(repos)}</button>`;
   // Historique et note précédente : affichés seulement au toucher (« Dernière fois ▸ »)
   const hist = historique(e), detailsAvant = hist || (avant && !note);
+  const eviter = alerteRecup(d) && estProjet(e) && c < e.n;
   const ouvert = ouverts.has("h" + i);
   return `<div class="ligne etape type-${num ? num.type : "facile"} ${c >= e.n ? "finie" : ""} ${actuelle ? "actuelle" : ""}" data-action-ligne="${i}" data-el="${i}">
-    <div class="txt">${entete(num)}${lier(e.texte, i)}${e.serie ? ` <span class="petit">(série de ${e.serie})</span>` : ""}${outils ? `<div class="outils">${outils}</div>` : ""}
+    <div class="txt">${entete(num)}${eviter ? `<span class="a-eviter">À éviter aujourd'hui</span> ` : ""}${lier(e.texte, i)}${rappelFeu(e)}${e.serie ? ` <span class="petit">(série de ${e.serie})</span>` : ""}${outils ? `<div class="outils">${outils}</div>` : ""}
     ${note ? `<div class="note">📝 ${esc(note)}</div>` : ""}
     ${detailsAvant ? `<button class="lien petit" data-plier="h${i}">Dernière fois ${ouvert ? "▾" : "▸"}</button>` : ""}
     ${detailsAvant && ouvert ? `${hist}${avant && !note ? `<div class="note ancienne">📝 ${esc(avant)}</div>` : ""}` : ""}${explication(i)}</div>
@@ -557,16 +656,34 @@ function formulaireResultat(f, act, attr) {
   const CLASSE = { "Enchaînée": "res-ok", "Réussi": "res-ok", "Avec sec": "res-sec", "Pas finie": "res-non", "Pas réussi": "res-non" };
   const resultats = `<div class="resultats">${(estVoie(act) ? ["Enchaînée", "Avec sec", "Pas finie"] : ["Réussi", "Pas réussi"]).map(v =>
     `<button data-${attr}="res" data-valeur="${v}" class="${CLASSE[v]} ${f.res === v ? "choisi" : ""}">${v === "Enchaînée" || v === "Réussi" ? "✓ " : ""}${v === "Avec sec" ? "Avec « sec »" : v}</button>`).join("")}</div>`;
+  const pastilles = `<div class="pastilles">${COULEURS.map(([n, c]) =>
+    `<button data-${attr}="couleur" data-valeur="${n}" class="pastille ${f.couleur === n ? "choisi" : ""}" style="background:${c}" aria-label="${n}"></button>`).join("")}</div>`;
+  const echec = f.res && !reussi(f);
   return `<label class="champ">Cotation</label>${choix("cot", COTATIONS[act])}
-    <label class="champ">Profil</label>${segment("profil", ["Vertical", "Dévers"])}
+    <label class="champ">Profil</label>${segment("profil", PROFILS)}
+    <label class="champ">Style</label>${segment("style", STYLES)}
+    <label class="champ">Couleur et nom <span class="petit">(facultatif)</span></label>${pastilles}
+    <input type="text" id="${attr}-nom" value="${esc(f.nom || "")}" placeholder="Nom ou numéro (facultatif)">
     <label class="champ">Résultat</label>${resultats}
     ${f.res === "Avec sec" ? `<label class="champ">Nombre de « sec »</label><div class="compteur">
-      <button data-${attr}="sec" data-pas="-1">−</button><span>${f.sec}</span><button data-${attr}="sec" data-pas="1">+</button></div>` : ""}`;
+      <button data-${attr}="sec" data-pas="-1">−</button><span>${f.sec}</span><button data-${attr}="sec" data-pas="1">+</button></div>` : ""}
+    ${echec && attr === "m" ? `<label class="champ">Cause principale <span class="petit">(facultatif${f.res === "Avec sec" ? "" : " : un appui enregistre"})</span></label>
+      <div class="choix">${CAUSES.map(c => `<button data-m="cause" data-valeur="${c}" class="${f.cause === c ? "choisi" : ""}">${c}</button>`).join("")}
+      ${f.res === "Avec sec" ? "" : `<button data-m="cause" data-valeur="">Sans préciser</button>`}</div>` : ""}`;
+}
+// Style proposé : « Après travail » si la même voie (cotation + couleur + nom) a déjà été notée
+function stylePropose(act, cot, couleur, nom) {
+  if (!couleur && !nom) return "À vue";
+  const deja = LISTE.some(s => (lire(s).voies || []).some(v => (v.act || s.activite) === act && String(v.cot) === String(cot)
+    && (v.couleur || "") === (couleur || "") && (v.nom || "") === (nom || "")));
+  return deja ? "Après travail" : "À vue";
 }
 
 const CHAMPS_MESURES = [["planche","Planche (s)","number"],["course","Course continue la plus longue (min)","number"],
   ["sec","Nb de « sec » dans la voie en dévers suivie","number"],["voie","Voie la plus dure réussie sans « sec »","text"],
-  ["bloc","Bloc le plus dur réussi","text"],["tractions","Tractions (nb, assistées ou non)","text"],["notes","Notes de la semaine","text"]];
+  ["bloc","Bloc le plus dur réussi","text"],["tractions","Tractions (nb, assistées ou non)","text"],["notes","Notes de la semaine","text"],
+  ["cheville","Tous les 3 mois · genou contre le mur (cm)","number"],["h9090","Tous les 3 mois · 90/90 (s par côté)","number"],
+  ["squat","Tous les 3 mois · squat profond (s)","number"],["epaules","Tous les 3 mois · mains derrière le dos (aucune gêne / gêne)","text"]];
 
 // Défilement automatique vers la prochaine étape
 function allerAuSuivant() {
@@ -612,7 +729,11 @@ $("ecran").addEventListener("click", e => {
   if (b && t.chrono !== undefined) return lancerChrono(Number(t.chrono));
   if (b && t.guide !== undefined) return lancerGuide(Number(t.guide));
   if (b && t.repos !== undefined) return lancerRepos(Number(t.repos));
-  if (b && t.action === "demarrer") { modifier(d => { d.debut = Date.now(); delete d.fin; delete d.fait; }); garderEcran(); return allerAuSuivant(); }
+  if (b && t.action === "demarrer") {
+    if (ESCALADE.includes(courant().activite) && !lire(courant()).recup) return ouvrirModal({ type: "recup", dAvant: null, nAvant: 3, zAvant: "" });
+    modifier(d => { d.debut = Date.now(); delete d.fin; delete d.fait; }); garderEcran(); return allerAuSuivant();
+  }
+  if (b && t.action === "recup") return ouvrirModal({ type: "recup", apres: true, dAvant: null, nAvant: 3, zAvant: "" });
   if (b && t.action === "sauter") return modifier(d => { d.fait = "Sautée"; });
   if (b && t.action === "desauter") return modifier(d => { delete d.fait; });
   if (b && t.action === "terminer") return terminer();
@@ -702,13 +823,15 @@ $("toast-annuler").onclick = () => {
 function actionFormVoie(t) {
   const s = courant(), d = lire(s), act = actReleve(s, d);
   if (t.form === "ouvrir") { const der = (d.voies || []).filter(v => (v.act || act) === act).slice(-1)[0];
-    formVoie = { cot: der ? der.cot : "", profil: der ? der.profil : "Vertical", res: "", sec: 1 }; ouverts.add("releve"); }
+    formVoie = { cot: der ? der.cot : "", profil: der ? der.profil : "Vertical", res: "", sec: 1, style: "À vue", couleur: "", nom: "" }; ouverts.add("releve"); }
   else if (t.form === "annuler") formVoie = null;
   else if (t.form === "sec") formVoie.sec = Math.max(1, formVoie.sec + Number(t.pas));
   else if (t.form === "ajouter") {
     const v = { ...formVoie, act }; if (v.res !== "Avec sec") delete v.sec;
+    if (!v.couleur) delete v.couleur; if (!(v.nom || "").trim()) delete v.nom;
     formVoie = null; return modifier(d => { d.voies = d.voies || []; d.voies.push(v); });
-  } else formVoie[t.form] = t.valeur;
+  } else if (t.form === "couleur") formVoie.couleur = formVoie.couleur === t.valeur ? "" : t.valeur;
+  else formVoie[t.form] = t.valeur;
   afficher(false);
 }
 
@@ -733,19 +856,27 @@ function fermerModal() { M = null; $("fond-modal").style.display = "none"; }
 function ouvrirResultat(i, edit) {
   if (edit !== undefined) {                                      // corriger un résultat déjà noté
     const v = lire(courant()).voies[edit];
-    return ouvrirModal({ type: "resultat", edit, ligne: v.ligne, act: v.act || actReleve(courant(), lire(courant())), cot: v.cot, profil: v.profil, res: v.res, sec: v.sec || 1 });
+    return ouvrirModal({ type: "resultat", edit, ligne: v.ligne, act: v.act || actReleve(courant(), lire(courant())), cot: v.cot, profil: v.profil, res: v.res, sec: v.sec || 1,
+                         style: v.style || "À vue", couleur: v.couleur || "", nom: v.nom || "", cause: v.cause || "" });
   }
   const s = courant(), d = lire(s), act = actReleve(s, d), e = elementsDe(s, d)[i];
   const notes = (d.voies || []).filter(v => (v.act || act) === act);
   const memeLigne = notes.filter(v => v.ligne === i).slice(-1)[0], dernier = notes.slice(-1)[0];
   const cot = memeLigne ? memeLigne.cot : cotationDe(e.texte, act) || (dernier ? dernier.cot : "");
-  const profil = memeLigne ? memeLigne.profil : /dévers/i.test(e.texte) ? "Dévers" : (dernier ? dernier.profil : "Vertical");
-  ouvrirModal({ type: "resultat", ligne: i, act, cot, profil, res: "", sec: 1 });
+  const profil = memeLigne ? memeLigne.profil : /léger dévers/i.test(e.texte) ? "Léger dévers" : /dévers/i.test(e.texte) ? "Dévers" : /dalle/i.test(e.texte) ? "Dalle" : /toit/i.test(e.texte) ? "Toit" : "Vertical";
+  // Projet ou essai : on retente la même voie (couleur, nom, « Après travail ») ; sinon chaque passage est une voie différente
+  const meme = memeLigne && (estProjet(e) || /au point/i.test(e.texte));
+  const couleur = meme ? memeLigne.couleur || "" : "", nom = meme ? memeLigne.nom || "" : "";
+  ouvrirModal({ type: "resultat", ligne: i, act, cot, profil, res: "", sec: 1, couleur, nom, cause: "",
+                style: meme ? "Après travail" : stylePropose(act, cot, couleur, nom) });
 }
 function enregistrerResultat() {
   const etat = M; fermerModal();
-  const v = { cot: etat.cot, profil: etat.profil, res: etat.res, act: etat.act, ligne: etat.ligne };
+  const v = { cot: etat.cot, profil: etat.profil, res: etat.res, act: etat.act, ligne: etat.ligne, style: etat.style || "À vue" };
   if (etat.res === "Avec sec") v.sec = etat.sec;
+  if (etat.couleur) v.couleur = etat.couleur;
+  if ((etat.nom || "").trim()) v.nom = etat.nom.trim();
+  if (etat.cause && !reussi(v)) v.cause = etat.cause;
   if (etat.edit !== undefined) return modifier(d => { d.voies[etat.edit] = v; });   // correction : rien d'autre
   modifier(d => { d.voies = d.voies || []; d.voies.push(v); });
   if (derniereAction && derniereAction.i === etat.ligne) { derniereAction.voie = 1; montrerToast(); }
@@ -758,14 +889,16 @@ function ouvrirCircuit(i) {
   const notes = (d.voies || []).filter(v => (v.act || act) === act), memeLigne = notes.filter(v => v.ligne === i).slice(-1)[0], dernier = notes.slice(-1)[0];
   const cot = memeLigne ? memeLigne.cot : cotationDe(e.texte, act) || (dernier ? dernier.cot : COTATIONS[act][1]);
   const profil = memeLigne ? memeLigne.profil : /dévers/i.test(e.texte) ? "Dévers" : "Vertical";
+  // Cotations écrites dans la ligne (« 5a, 5b, 5a, 5b »), dans l'ordre ; sinon la cotation proposée
+  const ecrites = (e.texte.split(":")[1] || "").match(/\b[3-8][abc]\+?/g) || [];
   ouvrirModal({ type: "circuit", ligne: i, act, profil, serie: compte(d, i), n: e.n,
-                items: Array.from({ length: e.serie }, () => ({ cot, ok: true })) });
+                items: Array.from({ length: e.serie }, (_, j) => ({ cot: ecrites.length ? ecrites[j % ecrites.length] : cot, ok: true })) });
 }
 function enregistrerCircuit() {
   const etat = M; fermerModal();
   const voie = estVoie(etat.act);
   modifier(d => { d.voies = d.voies || [];
-    etat.items.forEach(it => d.voies.push({ cot: it.cot, profil: etat.profil, act: etat.act, ligne: etat.ligne,
+    etat.items.forEach(it => d.voies.push({ cot: it.cot, profil: etat.profil, act: etat.act, ligne: etat.ligne, style: "À vue",
       res: it.ok ? (voie ? "Enchaînée" : "Réussi") : (voie ? "Pas finie" : "Pas réussi") })); });
   if (derniereAction && derniereAction.i === etat.ligne) { derniereAction.voie = etat.items.length; montrerToast(); }
   apresPassage(etat.ligne);
@@ -776,6 +909,19 @@ function optionsExercices(choisi) {
   return EXERCICES.map(x => { let o = ""; const g = `${x.discipline} · ${x.categorie}`;
     if (g !== cat) { o += (cat ? "</optgroup>" : "") + `<optgroup label="${esc(g)}">`; cat = g; }
     return o + `<option ${choisi === x.nom ? "selected" : ""}>${esc(x.nom)}</option>`; }).join("") + "</optgroup>";
+}
+// Nouveau programme : les séances de l'ancien sont effacées (après export), réglages, favoris et moyennes gardés
+function verifierProgramme() {
+  if (typeof PROGRAMME_ID === "undefined" || localStorage.getItem("programme-actif") === PROGRAMME_ID) return false;
+  const saisies = Object.keys(localStorage).some(k => /^(seance-|libre-|mesures-)/.test(k) || k === "libres");
+  if (!saisies) { localStorage.setItem("programme-actif", PROGRAMME_ID); return false; }
+  ouvrirModal({ type: "programme" }); return true;
+}
+function demarrerNouveauProgramme() {
+  Object.keys(localStorage).filter(k => /^(seance-|libre-|mesures-|annuler-|competences-)/.test(k) || ["libres", "minuteur"].includes(k)).forEach(k => localStorage.removeItem(k));
+  delete R.dateDebut; sauverReglages();
+  localStorage.setItem("programme-actif", PROGRAMME_ID);
+  T = null; cacheFeux = null; reconstruire(); index = indexAujourdhui(); vue = "seance"; fermerModal(); afficher();
 }
 // Séance restée ouverte depuis un jour précédent
 function verifierSeanceOuverte() {
@@ -807,9 +953,9 @@ function afficherModal() {
     return `<button data-m="${champ}" data-valeur="${v}" class="${ch ? "choisi" : ""}" style="background:${v ? couleurEchelle(v) : "var(--carte)"};color:${v ? texteEchelle(v) : "var(--texte)"}">${v}</button>`;
   }).join("")}</div>`;
   let h = "";
-  if (M.type === "fin") h = `<h2>${esc(M.titre)}</h2>${bilanTemps()}
+  if (M.type === "fin") h = `<h2>${esc(M.titre)}</h2>${bilanTemps()}${ESCALADE.includes(courant().activite) ? `<p class="rappel-peau">🧴 Ce soir : crème sur les mains${courant().jour === "Dimanche" ? ", puis inspection des durillons (limer seulement les bosses)" : ""}.</p>` : ""}
       <label class="champ">Effort (1 à 10)</label>${echelle("effort", 1)}
-      <label class="champ">Douleur max (0 à 10)</label>${echelle("douleur", 0)}
+      <label class="champ">Douleur après la séance (0 à 10)</label>${echelle("douleur", 0)}
       ${M.douleur > 0 ? `<label class="champ">Zone</label>${choix("zone", zones)}` : ""}
       ${M.douleur >= 5 ? `<div class="alerte">5 ou plus : repos, glace, et consulte si ça dure.</div>` : ""}
       <label class="champ">Durée (min)</label><input type="number" inputmode="numeric" id="m-duree" value="${esc(M.duree)}">
@@ -825,6 +971,35 @@ function afficherModal() {
       ${M.niv >= 5 ? `<div class="alerte">5 ou plus : arrête l'exercice maintenant.</div>` : ""}
       <div class="actions"><button data-m="fermer">Annuler</button>
       <button data-m="ok" class="principal" ${M.zone && M.niv ? "" : "disabled"}>Enregistrer</button></div>`;
+  if (M.type === "recup") {
+    const note = (champ, titre, aide) => `<label class="champ">${titre}</label><p class="petit">${aide}</p>
+      <div class="segment">${[1, 2, 3, 4, 5].map(v => `<button data-m="${champ}" data-valeur="${v}" class="${M[champ] === v ? "choisi" : ""}">${v}</button>`).join("")}</div>`;
+    const complet = M.corps && M.energie && M.motivation && M.dAvant !== null && (M.dAvant === 0 || M.zAvant);
+    h = `<h2>Avant de commencer</h2>
+      ${note("corps", "Doigts, coudes, épaules", "Ferme le poing complètement, puis ouvre la main. 5 = aucune gêne, 1 = douleur nette.")}
+      ${note("energie", "Énergie et sommeil", "5 = en pleine forme, 1 = épuisé.")}
+      ${note("motivation", "Motivation", "5 = très motivé, 1 = aucune envie.")}
+      <label class="champ">Douleur avant la séance</label>
+      <div class="choix"><button data-m="dAvant" data-valeur="0" class="${M.dAvant === 0 ? "choisi" : ""}">Aucune</button>
+        <button data-m="dAvant" data-valeur="1" class="${M.dAvant > 0 ? "choisi" : ""}">Oui</button></div>
+      ${M.dAvant > 0 ? `<label class="champ">Zone</label>${choix("zAvant", zones)}<label class="champ">Niveau</label>${echelle("nAvant", 1)}` : ""}
+      ${(() => { const fo = formeDuJour({ corps: M.corps, energie: M.energie, motivation: M.motivation, douleurAvant: M.dAvant > 0 ? M.nAvant : 0 });
+        return fo && M.dAvant !== null ? `<div class="forme forme-${fo}">${TEXTE_FORME[fo]}</div>` : ""; })()}
+      <div class="actions"><button data-m="fermer">Annuler</button><button data-m="ok" class="principal" ${complet ? "" : "disabled"}>${M.apres ? "Enregistrer" : "▶ Commencer"}</button></div>`;
+  }
+  if (M.type === "programme") h = `<h2>Nouveau programme</h2>
+      <p>Un nouveau programme commence le <b>${jourMois(new Date(PROGRAMME_ID + "T12:00:00"))}</b>. Les séances de l'ancien programme vont être effacées de l'app.</p>
+      <p class="petit">Tes réglages, favoris et moyennes de temps sont gardés. Ton historique reste dans l'Excel (onglet Historique) si tu as exporté.</p>
+      <p><b>1.</b> Exporte d'abord, et range le fichier dans <b>exports/programme-1</b>.</p>
+      <button class="gros contour" data-m="exporter">⬆ Exporter maintenant</button>
+      <p><b>2.</b> Puis démarre le nouveau programme.</p>
+      <div class="actions"><button data-m="fermer">Plus tard</button><button data-m="nouveau" class="principal">Démarrer</button></div>`;
+  if (M.type === "competences") {
+    h = `<h2>Bilan du bloc ${M.bloc}</h2><p class="petit">Note chaque compétence de 1 (point très faible) à 10 (point fort), honnêtement : c'est pour toi.</p>
+      ${COMPETENCES.map((c, k) => `<label class="champ">${c} <span class="petit">· ${AIDE_COMPETENCES[k]}</span></label>
+        <div class="segment petit-segment">${Array.from({ length: 10 }, (_, n) => n + 1).map(v => `<button data-m="comp" data-k="${k}" data-valeur="${v}" class="${M.notes[k] === v ? "choisi" : ""}">${v}</button>`).join("")}</div>`).join("")}
+      <div class="actions"><button data-m="fermer">Annuler</button><button data-m="ok" class="principal" ${M.notes.every(n => n) ? "" : "disabled"}>Enregistrer</button></div>`;
+  }
   if (M.type === "menu") {
     const k = cle(courant()), pile = JSON.parse(localStorage.getItem("annuler-" + k) || '{"etats":[]}').etats;
     const d = lire(courant()), ligne = (m, icone, texte, sous = "", cl = "") =>
@@ -843,7 +1018,7 @@ function afficherModal() {
   if (M.type === "circuit") {
     const res = estVoie(M.act) ? ["Enchaînée", "Pas finie"] : ["Réussi", "Raté"];
     h = `<h2>Série ${M.serie} sur ${M.n} · ${M.items.length} ${estVoie(M.act) ? "voies" : "blocs"}</h2>
-      <label class="champ">Profil</label>${choix("profil", ["Vertical", "Dévers"])}
+      <label class="champ">Profil</label>${choix("profil", PROFILS)}
       ${M.items.map((it, j) => `<div class="circuit-ligne"><b>${estVoie(M.act) ? "Voie" : "Bloc"} ${j + 1}</b>
         <div class="choix compact">${COTATIONS[M.act].map(c => `<button data-m="ccot" data-j="${j}" data-valeur="${c}" class="${String(it.cot) === c ? "choisi" : ""}">${c}</button>`).join("")}</div>
         <div class="choix compact">${res.map((r, n) => `<button data-m="cok" data-j="${j}" data-valeur="${n === 0}" class="${n === 0 ? "res-ok" : "res-non"} ${it.ok === (n === 0) ? "choisi" : ""}">${n === 0 ? "✓ " : "✗ "}${r}</button>`).join("")}</div></div>`).join("")}
@@ -890,6 +1065,12 @@ $("modal").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b || !M) return;
   const t = b.dataset, type = M.type;
   if (type === "menu" && t.m && t.m !== "fermer") return actionMenu(t.m);
+  if (type === "competences" && t.m === "comp") { M.notes[Number(t.k)] = Number(t.valeur); return afficherModal(); }
+  if (type === "programme" && t.m === "exporter") return exporter();
+  if (type === "programme" && t.m === "nouveau") {
+    if (confirm("Effacer les séances de l'ancien programme de l'app ? As-tu bien exporté ?")) demarrerNouveauProgramme();
+    return;
+  }
   if (type === "circuit" && ["ccot", "cok", "tout"].includes(t.m)) {
     if (t.m === "ccot") M.items[Number(t.j)].cot = t.valeur;
     if (t.m === "cok") M.items[Number(t.j)].ok = t.valeur === "true";
@@ -905,6 +1086,20 @@ $("modal").addEventListener("click", e => {
   if (t.m === "ok") {
     if (type === "resultat") return enregistrerResultat();
     if (type === "circuit") return enregistrerCircuit();
+    if (type === "competences") {
+      const etat = M; fermerModal();
+      localStorage.setItem("competences-" + etat.bloc, JSON.stringify({ notes: etat.notes, date: Date.now(), semaine: etat.bloc * 8 }));
+      return afficher(false);
+    }
+    if (type === "recup") {
+      const etat = M; fermerModal();
+      modifier(d => {
+        d.recup = { corps: etat.corps, energie: etat.energie, motivation: etat.motivation, douleurAvant: etat.dAvant > 0 ? etat.nAvant : 0, zoneAvant: etat.dAvant > 0 ? etat.zAvant : "" };
+        if (!etat.apres) { d.debut = Date.now(); delete d.fin; delete d.fait; }
+      });
+      if (!etat.apres) { garderEcran(); allerAuSuivant(); }
+      return;
+    }
     if (type === "ajout") {
       const etat = M; fermerModal();
       const ligne = `${etat.series}× « ${etat.exo} »${etat.detail.trim() ? " · " + etat.detail.trim() : ""}${etat.repos ? ` (repos ${etat.repos} s)` : ""}${etat.dureeAj ? ` (durée ${etat.dureeAj} min)` : ""}`;
@@ -941,9 +1136,11 @@ $("modal").addEventListener("click", e => {
   if (t.m === "repos") { M.repos = Number(t.valeur); return afficherModal(); }
   if (t.m === "dureeAj") { M.dureeAj = Number(t.valeur); return afficherModal(); }
   if (t.m === "sec") M.sec = Math.max(1, M.sec + Number(t.pas));
-  else if (t.m) M[t.m] = ["effort", "douleur", "niv"].includes(t.m) ? Number(t.valeur) : t.valeur;   // les cotations restent du texte
-  // Résultat en deux appuis : toucher un résultat (sauf « Avec sec ») enregistre directement
-  if (type === "resultat" && t.m === "res" && M.res !== "Avec sec" && M.cot) return enregistrerResultat();
+  else if (t.m === "couleur") { M.couleur = M.couleur === t.valeur ? "" : t.valeur; if (type === "resultat" && M.edit === undefined) M.style = stylePropose(M.act, M.cot, M.couleur, M.nom); }
+  else if (t.m) M[t.m] = ["effort", "douleur", "niv", "corps", "energie", "motivation", "dAvant", "nAvant"].includes(t.m) ? Number(t.valeur) : t.valeur;   // les cotations restent du texte
+  // Résultat en deux appuis : une réussite s'enregistre directement ; un échec demande la cause (un appui de plus)
+  if (type === "resultat" && t.m === "res" && reussi(M) && M.cot) return enregistrerResultat();
+  if (type === "resultat" && t.m === "cause" && M.res !== "Avec sec" && M.cot) return enregistrerResultat();
   afficherModal();
 });
 $("modal").addEventListener("input", e => {             // champs texte des fenêtres (sans réafficher)
@@ -951,6 +1148,7 @@ $("modal").addEventListener("input", e => {             // champs texte des fen�
   if (e.target.id === "m-duree") M.duree = e.target.value;
   if (e.target.id === "m-notes") M.notes = e.target.value;
   if (e.target.id === "m-note") M.texte = e.target.value;
+  if (e.target.id === "m-nom") M.nom = e.target.value;
   if (e.target.id === "m-detail") M.detail = e.target.value;
   if (e.target.id === "m-duree-hier") M.duree = e.target.value;
   if (e.target.dataset.mesure) {
@@ -1337,7 +1535,7 @@ function afficherSemaine() {
   const prevues = items.filter(x => !/facultati/i.test(x.s.contenu) || x.d.fait === "Oui");
   const faites = items.filter(x => x.d.fait === "Oui");
   const minutesFaites = faites.reduce((t, x) => t + (x.d.fin && x.d.debut ? (x.d.fin - x.d.debut) / 1000 : (Number(x.d.duree) || 0) * 60), 0);
-  let h = `<div class="bilan-semaine">${faites.length} séance${faites.length > 1 ? "s" : ""} faite${faites.length > 1 ? "s" : ""} sur ${prevues.length}${minutesFaites ? " · " + hm(minutesFaites) : ""}</div>`;
+  let h = carteCompetences(semaineVue) + carteFeux() + `<div class="bilan-semaine">${faites.length} séance${faites.length > 1 ? "s" : ""} faite${faites.length > 1 ? "s" : ""} sur ${prevues.length}${minutesFaites ? " · " + hm(minutesFaites) : ""}</div>`;
   if (!items.length) h += `<p class="petit centre">Aucune séance cette semaine.</p>`;
   const auj = isoDate(new Date());
   items.forEach(({ s, k, d }) => {
@@ -1356,11 +1554,16 @@ function afficherSemaine() {
   h += `<button class="gros go" data-cree="ouvrir">+ Créer une séance</button>`;
   $("ecran").innerHTML = h;
 }
+$("ecran").addEventListener("toggle", e => {
+  if (vue === "semaine" && e.target.classList && e.target.classList.contains("feux")) e.target.open ? ouverts.add("feux") : ouverts.delete("feux");
+}, true);
 $("ecran").addEventListener("click", e => {
   if (vue !== "semaine") return;
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.ouvrir !== undefined) return changer(Number(b.dataset.ouvrir));
   if (b.dataset.cree === "ouvrir") return ouvrirCreation();
+  if (b.dataset.bilanBloc) { const bloc = Number(b.dataset.bilanBloc), x = lireBilan(bloc);
+    return ouvrirModal({ type: "competences", bloc, semaine: semaineVue, notes: x ? [...x.notes] : Array(8).fill(null) }); }
 });
 
 // ---------- Création de séance (plein écran, 3 étapes) ----------
@@ -1448,6 +1651,7 @@ $("ecran").addEventListener("click", e => {
   }
   const y = window.scrollY; afficherCreation(); window.scrollTo(0, t.cree === "suivant" || t.cree === "retour" ? 0 : y);
 });
+$("ecran").addEventListener("input", e => { if (e.target.id === "form-nom" && formVoie) formVoie.nom = e.target.value; });
 $("ecran").addEventListener("input", e => {          // champs du formulaire, sans réafficher (garde le clavier)
   if (vue !== "creation" || !F) return;
   if (e.target.id === "cree-date") F.date = e.target.value || F.date;
@@ -1461,7 +1665,7 @@ $("ecran").addEventListener("change", e => {
 // =====================================================================
 // 14. ONGLET PLUS : bibliothèque d'exercices, exporter, sauvegarde, réglages, aide
 // =====================================================================
-const DISCIPLINES = ["Voie et bloc", "Voie", "Bloc", "Méthodes", "Muscu", "Course", "Mobilité"];
+const DISCIPLINES = ["Voie et bloc", "Voie", "Bloc", "Méthodes", "Muscu", "Course", "Mobilité", "Soins"];
 const ACT_DISCIPLINE = { Voie: "Voie", Bloc: "Bloc", Course: "Course", Muscu: "Maison" };   // tuiles colorées
 const lireFavoris = () => JSON.parse(localStorage.getItem("favoris") || "[]");
 const estFavori = nom => lireFavoris().includes(nom);
@@ -1603,7 +1807,7 @@ function afficherPlus() {
     ${ligne("exporter", "⬆", "Exporter", ex.texte, ex.retard ? "en-retard" : "")}
     ${ligne("sauvegarde", "💾", "Sauvegarde", "Restaurer tes saisies")}
     ${ligne("reglages", "⚙", "Réglages", "Programme, minuteur, son, rappels")}
-    ${ligne("aide", "❓", "Aide", "Le guide d'utilisation (connexion requise)")}
+    ${ligne("aide", "❓", "Aide", "Le guide d'utilisation, même hors connexion")}
     </div><p class="petit centre version">App ${APP_VERSION} · programme du ${esc(vp)}</p>`;
 }
 function afficherSauvegarde() {
@@ -1629,7 +1833,7 @@ $("ecran").addEventListener("click", e => {
   if (a === "sauvegarde") { vue = "sauvegarde"; return afficher(); }
   if (a === "restaurer") return $("fichier").click();
   if (a === "reglages") { vue = "reglages"; return afficher(); }
-  if (a === "aide") return window.open(URL_GUIDE, "_blank");
+  if (a === "aide") { location.href = URL_GUIDE; return; }
 });
 
 // ---------- Réglages (Plus → Réglages) ----------
@@ -1710,7 +1914,7 @@ const isoDate = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDat
 // Colonne Type : Séance, Séance libre, Mesure, Voie, Douleur. Colonnes C1 à C8 selon le type.
 function exporter() {
   const champ = v => typeof v === "number" ? v : `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const lignes = [["Type","Semaine","Jour","Activité","Date","C1","C2","C3","C4","C5","C6","C7","C8"]];
+  const lignes = [["Type","Semaine","Jour","Activité","Date","C1","C2","C3","C4","C5","C6","C7","C8","C9","C10","C11","C12","C13","C14"]];
   LISTE.forEach(s => {
     const d = lire(s), base = [s.semaine, s.jour, s.activite, isoDate(dateSeance(s))], act = actReleve(s, d);
     const notes = [s.libre && s.phase !== "Séance libre" ? s.phase : "",
@@ -1720,11 +1924,12 @@ function exporter() {
       d.debut && d.fin ? `Temps : ${hm((d.fin - d.debut) / 1000)} (prévu ${hm(dureeTotale(s, d))})` + (d.temps ? " — " + etapesDe(elementsDe(s, d))
         .filter(x => d.temps[ck(d, x.i)]).map((x, n) => `${n + 1}. ${Math.round(d.temps[ck(d, x.i)] / 60000)}/${Math.round(dureeElement(s, d, x.e) / 60)} min`).join(", ") : "") : ""
     ].filter(Boolean).join(" | ");
+    const r = d.recup || {}, pendant = (d.douleurs || []).length ? Math.max(...d.douleurs.map(x => Number(x.niv) || 0)) : "";
     lignes.push([s.libre ? "Séance libre" : "Séance", ...base, d.fait, d.duree, d.effort, d.douleur, d.zone,
-                 perfFinale(d, act), secFinal(d), notes]);
+                 perfFinale(d, act), secFinal(d), notes, r.corps ?? "", r.energie ?? "", r.motivation ?? "", r.douleurAvant ?? "", r.zoneAvant ?? "", pendant]);
     (d.voies || []).forEach(v => { const a = v.act || s.activite;
       lignes.push(["Voie", s.semaine, s.jour, a, base[3], v.cot, v.profil, v.res,
-        v.res === "Enchaînée" ? 0 : v.res === "Avec sec" ? v.sec : "", rang(a, v.cot) + 1]); });
+        v.res === "Enchaînée" ? 0 : v.res === "Avec sec" ? v.sec : "", rang(a, v.cot) + 1, v.style || "", v.couleur || "", v.nom || "", v.cause || ""]); });
     (d.douleurs || []).forEach(x => lignes.push(["Douleur", ...base, x.zone, x.niv, x.heure]));
   });
   const derniere = Math.max(...LISTE.map(s => s.semaine));
@@ -1732,9 +1937,13 @@ function exporter() {
     const m = lireMesures(sem), a = autoSemaine(sem);
     lignes.push(["Mesure", sem, "", "", "", ...CHAMPS_MESURES.map(([c]) => vide(m[c]) ? (a[c] ?? "") : m[c])]);
   }
+  Object.keys(localStorage).filter(k => k.startsWith("competences-")).sort().forEach(k => {
+    const b = JSON.parse(localStorage.getItem(k)), bloc = Number(k.split("-")[1]);
+    lignes.push(["Compétences", b.semaine || bloc * 8, "", "", isoDate(new Date(b.date)), ...b.notes, bloc]);
+  });
   const csv = "\uFEFF" + lignes.map(l => l.map(champ).join(";")).join("\r\n");
   const sauvegarde = {};
-  Object.keys(localStorage).filter(k => /^(seance-|mesures-|libre-|libres$|reglages$|favoris$)/.test(k)).forEach(k => sauvegarde[k] = localStorage.getItem(k));
+  Object.keys(localStorage).filter(k => /^(seance-|mesures-|libre-|competences-|libres$|reglages$|favoris$|moyennes$|programme-actif$)/.test(k)).forEach(k => sauvegarde[k] = localStorage.getItem(k));
   const jour = isoDate(new Date());
   partager([new File([csv], `export-escalade-${jour}.csv`, { type: "text/csv" }),
             new File([JSON.stringify(sauvegarde)], `sauvegarde-escalade-${jour}.json`, { type: "application/json" })]);
@@ -1859,4 +2068,4 @@ document.querySelector("header").addEventListener("touchend", e => {
 afficher();
 if (T) { if (T.fini) { T = null; sauverT(); } else boucle(); }   // reprend un minuteur en cours
 if (seanceEnCours(dCourant())) garderEcran();
-verifierSeanceOuverte();                                          // séance d'un jour précédent restée ouverte
+if (!verifierProgramme()) verifierSeanceOuverte();                // nouveau programme, sinon séance d'un jour précédent restée ouverte

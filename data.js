@@ -1,8 +1,33 @@
-// Fichier généré par generer_app.py — tu peux aussi le modifier à la main.
+// Fichier généré par escalade.py à partir de Programme.xlsx — ne pas modifier à la main.
 
-const VERSION_PROGRAMME = "12/11/2026 10:22";
+const VERSION_PROGRAMME = "12/11/2026 23:08";
 
-const DATE_DEBUT = "2026-10-26";
+const DATE_DEBUT = "2026-11-09";
+
+const PROGRAMME_ID = "2026-11-09";
+
+const PARAMS = {
+ "temps_voie": 4,
+ "temps_bloc": 1.5,
+ "consolide_essais": 5,
+ "consolide_taux": 0.7,
+ "feu_5c_voies": 10,
+ "feu_5c_taux": 0.7,
+ "feu_6a_voies": 3,
+ "feu_bloc6_taux": 0.8,
+ "feu_bloc6_blocs": 15,
+ "feu_bloc6_seances": 4,
+ "feu_devers": 3,
+ "feu_volume_douleur": 2,
+ "feu_volume_jours": 28,
+ "forme_vert": 4,
+ "forme_rouge": 2,
+ "forme_douleur": 2,
+ "episode_ecart": 7,
+ "faible_semaines": 8,
+ "faible_essais": 5,
+ "charge_hausse": 1.3
+};
 
 const ZONES = [
  "Aucune",
@@ -20,1151 +45,339 @@ const ZONES = [
 const SEANCES = [
  {
   "semaine": 1,
-  "phase": "C1 · Pieds précis, bras tendus",
+  "phase": "B1 · S1-2 Consolider le 5b",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "! Avant de démarrer course et renforcement, un bilan simple chez ton médecin traitant est une bonne précaution.\n## Course\n> Course · avant\n6× 2 min course + 2 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 35 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "contenu": "> Course · avant\n1× 30 min de course · « Allure conversation » · « Foulée courte et légère »\n! Tu dois pouvoir parler en phrases complètes. Essoufflé : ralentis ou marche.\n> Course · après"
  },
  {
   "semaine": 1,
-  "phase": "C1 · Pieds précis, bras tendus",
+  "phase": "B1 · S1-2 Consolider le 5b",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Pieds silencieux »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n2× Voie en 4 ou 5a · « Pieds silencieux »\n2× Voie en 4 ou 5a · « Bras tendus »\n2× Voie en 5b · « Travail au point »\n! 5b verticale si possible, sinon en dévers. Note tes « sec » avec le bouton + Voie.\n! Repos au moins 5 min entre les voies (« Repos entre essais »).\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Thème de la semaine : pieds silencieux.\n2× Voie en 5a · « Pieds silencieux » · « Regarder le pied jusqu'à la pose » (repos 3 min)\n2× Voie en 5b · « Aucun repositionnement » (repos 4 min)\n3× Voie en 5b en dévers · « Travail au point » · 3 essais max (repos 5 min)\n! Après chaque essai, note la cause d'échec : pieds, placement ou énergie.\n2× Voie facile en 4 ou 5a · montée lente · « Grimpe fluide » (repos 2 min)\n> Coudes après la séance"
  },
  {
   "semaine": 1,
-  "phase": "C1 · Pieds précis, bras tendus",
-  "jour": "Vendredi",
+  "phase": "B1 · S1-2 Consolider le 5b",
+  "jour": "Jeudi",
   "activite": "Maison",
-  "contenu": "! Choisis ta version. Règle : au moins la version courte.\n## Complète (25 min)\n> Échauffement maison\n3× « Planche » · 20 s\n2× « Planche latérale » · 15 s par côté\n3× « Dead bug » · 6 par côté\n3× « Pompes » · 6, mains sur une table\n3× « Rowing inversé » · 5, genoux pliés\n3× « Suspension active » · 5, pieds sur une chaise (si barre)\n2× « Rotations externes à l'élastique » · 12 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité\n## Courte (12 min)\n> Échauffement maison\n2× « Planche » · 20 s\n2× « Dead bug » · 6 par côté\n2× « Pompes » · 6, mains sur une table\n2× « Rowing inversé » · 5, genoux pliés\n1× « Extensions des doigts » · 15\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n## Express (6 min)\n2× « Planche » · 20 s (repos 45 s)\n1× « Extensions des doigts » · 15\n1× « Rotations externes à l'élastique » · 12 par bras"
+  "contenu": "> Routine du jeudi\n! Cette semaine : tests de mobilité de référence (« Tests de mobilité »), à noter dans les mesures de dimanche."
  },
  {
   "semaine": 1,
-  "phase": "C1 · Pieds précis, bras tendus",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n5× 2 min course + 2 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 30 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "phase": "B1 · S1-2 Consolider le 5b",
+  "jour": "Vendredi",
+  "activite": "Bloc",
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n5× Bloc niveau 4 · tous réussis, aucune précipitation (repos 2 min)\n6× Essai sur « Projet » : bloc 5 vertical (6 si feu vert) · 6 essais max (repos 4 min)\n! Quand le mouvement devient aléatoire : arrêt du projet.\n2× Bloc dévers facile · montée, « Désescalade », remontée · « Hanches collées » (repos 2 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 1,
-  "phase": "C1 · Pieds précis, bras tendus",
+  "phase": "B1 · S1-2 Consolider le 5b",
+  "jour": "Samedi",
+  "activite": "Course",
+  "contenu": "! Séance facultative : footing très facile ou randonnée, selon l'envie.\n1× 25 min de course très facile · « Allure conversation »\n> Course · après"
+ },
+ {
+  "semaine": 1,
+  "phase": "B1 · S1-2 Consolider le 5b",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Pieds silencieux »\n8× Bloc vertical niveau 3-4, 2 fois chacun (repos 2 min)\n1× 20 min en dévers niveau 3 · « Hanches collées »\n2× Bloc vertical niveau 5 · 2 essais maximum\n! « Désescalade » plutôt que sauter.\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Thème technique : « Pieds silencieux ».\n5× Bloc niveau 4 · « Pieds silencieux » (repos 2 min)\n4× Bloc niveau 5 · sans pression (repos 3 min)\n2× Bloc difficile · 2 essais puis arrêt [effort] (repos 3 min)\n> Coudes après la séance"
  },
  {
   "semaine": 2,
-  "phase": "C1 · Pieds précis, bras tendus",
+  "phase": "B1 · S1-2 Consolider le 5b",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n6× 2 min course + 2 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 35 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "contenu": "> Course · avant\n1× 30 min de course · « Allure conversation » · « Foulée courte et légère »\n! Tu dois pouvoir parler en phrases complètes. Essoufflé : ralentis ou marche.\n> Course · après"
  },
  {
   "semaine": 2,
-  "phase": "C1 · Pieds précis, bras tendus",
+  "phase": "B1 · S1-2 Consolider le 5b",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Regarder le pied jusqu'à la pose »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n2× Voie en 4 ou 5a · « Pieds silencieux »\n2× Voie en 4 ou 5a · « Bras tendus »\n2× Voie en 5b · « Travail au point »\n! 5b verticale si possible, sinon en dévers. Note tes « sec » avec le bouton + Voie.\n! Repos au moins 5 min entre les voies (« Repos entre essais »).\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Thème de la semaine : regarder chaque pied jusqu'à la pose.\n2× Voie en 5a · « Pieds silencieux » · « Regarder le pied jusqu'à la pose » (repos 3 min)\n2× Voie en 5b · « Aucun repositionnement » (repos 4 min)\n3× Voie en 5b en dévers · « Travail au point » · 3 essais max (repos 5 min)\n! Après chaque essai, note la cause d'échec : pieds, placement ou énergie.\n2× Voie facile en 4 ou 5a · montée lente · « Grimpe fluide » (repos 2 min)\n> Coudes après la séance"
  },
  {
   "semaine": 2,
-  "phase": "C1 · Pieds précis, bras tendus",
-  "jour": "Vendredi",
+  "phase": "B1 · S1-2 Consolider le 5b",
+  "jour": "Jeudi",
   "activite": "Maison",
-  "contenu": "! Choisis ta version. Règle : au moins la version courte.\n## Complète (25 min)\n> Échauffement maison\n3× « Planche » · 20 s\n2× « Planche latérale » · 15 s par côté\n3× « Dead bug » · 6 par côté\n3× « Pompes » · 6, mains sur une table\n3× « Rowing inversé » · 5, genoux pliés\n3× « Suspension active » · 5, pieds sur une chaise (si barre)\n2× « Rotations externes à l'élastique » · 12 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité\n## Courte (12 min)\n> Échauffement maison\n2× « Planche » · 20 s\n2× « Dead bug » · 6 par côté\n2× « Pompes » · 6, mains sur une table\n2× « Rowing inversé » · 5, genoux pliés\n1× « Extensions des doigts » · 15\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n## Express (6 min)\n2× « Planche » · 20 s (repos 45 s)\n1× « Extensions des doigts » · 15\n1× « Rotations externes à l'élastique » · 12 par bras"
+  "contenu": "> Routine du jeudi"
  },
  {
   "semaine": 2,
-  "phase": "C1 · Pieds précis, bras tendus",
+  "phase": "B1 · S1-2 Consolider le 5b",
+  "jour": "Vendredi",
+  "activite": "Bloc",
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n5× Bloc niveau 4 · tous réussis, aucune précipitation (repos 2 min)\n6× Essai sur « Projet » : bloc 5 vertical (6 si feu vert) · 6 essais max (repos 4 min)\n! Quand le mouvement devient aléatoire : arrêt du projet.\n2× Bloc dévers facile · montée, « Désescalade », remontée · « Hanches collées » (repos 2 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
+ },
+ {
+  "semaine": 2,
+  "phase": "B1 · S1-2 Consolider le 5b",
   "jour": "Samedi",
   "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n5× 2 min course + 2 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 30 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "contenu": "! Séance facultative : footing très facile ou randonnée, selon l'envie.\n1× 25 min de course très facile · « Allure conversation »\n> Course · après"
  },
  {
   "semaine": 2,
-  "phase": "C1 · Pieds précis, bras tendus",
+  "phase": "B1 · S1-2 Consolider le 5b",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Regarder le pied jusqu'à la pose »\n8× Bloc vertical niveau 3-4, 2 fois chacun (repos 2 min)\n1× 20 min en dévers niveau 3 · « Hanches collées »\n2× Bloc vertical niveau 5 · 2 essais maximum\n! « Désescalade » plutôt que sauter.\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Thème technique : « Bras tendus ».\n5× Bloc niveau 4 · « Bras tendus » (repos 2 min)\n4× Bloc niveau 5 · sans pression (repos 3 min)\n2× Bloc difficile · 2 essais puis arrêt [effort] (repos 3 min)\n> Coudes après la séance"
  },
  {
   "semaine": 3,
-  "phase": "C1 · Profil et drop knee",
+  "phase": "B1 · S3-4 Dévers",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n5× 3 min course + 1 min 30 marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 35 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "contenu": "> Course · avant\n1× 35 min de course · « Allure conversation » · « Foulée courte et légère »\n! Tu dois pouvoir parler en phrases complètes. Essoufflé : ralentis ou marche.\n> Course · après"
  },
  {
   "semaine": 3,
-  "phase": "C1 · Profil et drop knee",
+  "phase": "B1 · S3-4 Dévers",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Pied qui plane »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n1× Voie en 5a · « Main qui plane »\n1× Voie en 5a · « Grimpe au ralenti »\n2× Voie en 5b en dévers · « Travail au point » · « Profil alterné »\n! Repère les endroits où tu prends « sec ».\n1× Voie en 5b verticale · essai d'enchaînement, sans pression\n! Pense à réserver une séance avec un moniteur pour la semaine suivante.\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Objectif : le dévers. Bassin collé au mur, bras tendus.\n3× Voie en 5a en dévers · « Hanches collées » (repos 3 min)\n2× Voie en 5b en dévers · « Profil alterné » (repos 4 min)\n3× Essai sur « Projet » : voie 5b en dévers (5c si feu vert) · 3 essais max (repos 10 min)\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance"
  },
  {
   "semaine": 3,
-  "phase": "C1 · Profil et drop knee",
-  "jour": "Vendredi",
+  "phase": "B1 · S3-4 Dévers",
+  "jour": "Jeudi",
   "activite": "Maison",
-  "contenu": "! Choisis ta version. Règle : au moins la version courte.\n## Complète (25 min)\n> Échauffement maison\n3× « Planche » · 30 s\n2× « Planche latérale » · 20 s par côté\n3× « Dead bug » · 8 par côté\n3× « Hollow body » · 15 s, genoux pliés\n3× « Pompes » · 8, mains sur une table\n3× « Rowing inversé » · 8, genoux pliés\n3× « Suspension active » · 6, pieds sur une chaise\n2× « Rotations externes à l'élastique » · 12 par bras\n2× « Extensions des doigts » · 15 (repos 30 s)\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n> Mobilité\n## Courte (12 min)\n> Échauffement maison\n2× « Planche » · 30 s\n2× « Hollow body » · 15 s, genoux pliés\n2× « Pompes » · 8, mains sur une table\n2× « Rowing inversé » · 8, genoux pliés\n1× « Extensions des doigts » · 15\n! Mouvements lents : 2 s aller, 2 s retour, aucun à-coup.\n## Express (6 min)\n2× « Planche » · 30 s (repos 45 s)\n1× « Extensions des doigts » · 15\n1× « Rotations externes à l'élastique » · 12 par bras"
+  "contenu": "> Routine du jeudi"
  },
  {
   "semaine": 3,
-  "phase": "C1 · Profil et drop knee",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n4× 3 min course + 1 min 30 marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 30 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "phase": "B1 · S3-4 Dévers",
+  "jour": "Vendredi",
+  "activite": "Bloc",
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n5× Essai sur « Projet » : bloc 5 en dévers · 5 essais max (repos 4 min)\n3× Essai sur « Projet » : bloc 5 vertical (6 si feu vert) (repos 4 min)\n2× « Traversée dévers aller-retour » (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 3,
-  "phase": "C1 · Profil et drop knee",
+  "phase": "B1 · S3-4 Dévers",
+  "jour": "Samedi",
+  "activite": "Course",
+  "contenu": "! Séance facultative : footing très facile ou randonnée, selon l'envie.\n1× 25 min de course très facile · « Allure conversation »\n> Course · après"
+ },
+ {
+  "semaine": 3,
+  "phase": "B1 · S3-4 Dévers",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Pied qui plane »\n4× Bloc niveau 3 (repos 2 min)\n3× Bloc niveau 4 (repos 2 min)\n2× Bloc niveau 5\n1× 25 min en dévers niveau 3-4 · « Profil alterné » · « Drop knee »\n5× « Désescalade » d'un bloc facile (repos 2 min)\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Thème : lecture. Avant chaque bloc, annonce mains, pieds et positions de repos.\n6× Bloc niveau 4 · « Lecture à voix haute » (repos 2 min)\n4× Bloc niveau 5 · « Les trois prises » (repos 3 min)\n> Coudes après la séance"
  },
  {
   "semaine": 4,
-  "phase": "C1 · Profil et drop knee",
+  "phase": "B1 · S3-4 Dévers",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n5× 3 min course + 1 min 30 marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 35 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "contenu": "> Course · avant\n1× 35 min de course · « Allure conversation » · « Foulée courte et légère »\n! Tu dois pouvoir parler en phrases complètes. Essoufflé : ralentis ou marche.\n> Course · après"
  },
  {
   "semaine": 4,
-  "phase": "C1 · Profil et drop knee",
+  "phase": "B1 · S3-4 Dévers",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Trois points d'appui »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n1× Séance avec un moniteur, si réservée : hanches, pieds, dévers\n1× Voie en 5a · « Main qui plane »\n1× Voie en 5a · « Grimpe au ralenti »\n2× Voie en 5b en dévers · « Travail au point » · « Profil alterné »\n! Repère les endroits où tu prends « sec ».\n1× Voie en 5b verticale · essai d'enchaînement, sans pression\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Objectif : le dévers. Bassin collé au mur, bras tendus.\n3× Voie en 5a en dévers · « Hanches collées » (repos 3 min)\n2× Voie en 5b en dévers · « Profil alterné » (repos 4 min)\n3× Essai sur « Projet » : voie 5b en dévers (5c si feu vert) · 3 essais max (repos 10 min)\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance"
  },
  {
   "semaine": 4,
-  "phase": "C1 · Profil et drop knee",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Trois points d'appui »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 3 (repos 2 min)\n1× 15 min en dévers niveau 3 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
+  "phase": "B1 · S3-4 Dévers",
+  "jour": "Jeudi",
+  "activite": "Maison",
+  "contenu": "> Routine du jeudi"
  },
  {
   "semaine": 4,
-  "phase": "C1 · Profil et drop knee",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n4× 3 min course + 1 min 30 marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 30 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "phase": "B1 · S3-4 Dévers",
+  "jour": "Vendredi",
+  "activite": "Bloc",
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n5× Essai sur « Projet » : bloc 5 en dévers · 5 essais max (repos 4 min)\n3× Essai sur « Projet » : bloc 5 vertical (6 si feu vert) (repos 4 min)\n2× « Traversée dévers aller-retour » (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 4,
-  "phase": "C1 · Profil et drop knee",
+  "phase": "B1 · S3-4 Dévers",
+  "jour": "Samedi",
+  "activite": "Course",
+  "contenu": "! Séance facultative : footing très facile ou randonnée, selon l'envie.\n1× 25 min de course très facile · « Allure conversation »\n> Course · après"
+ },
+ {
+  "semaine": 4,
+  "phase": "B1 · S3-4 Dévers",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Trois points d'appui »\n4× Bloc niveau 3 (repos 2 min)\n3× Bloc niveau 4 (repos 2 min)\n2× Bloc niveau 5\n1× 30 min en dévers niveau 3-4 · « Profil alterné » · « Drop knee »\n! Quand le dévers niveau 3 passe facilement, passe au niveau 4.\n5× « Désescalade » d'un bloc facile (repos 2 min)\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Thème : lecture. Avant chaque bloc, annonce mains, pieds et positions de repos.\n6× Bloc niveau 4 · « Lecture à voix haute » (repos 2 min)\n4× Bloc niveau 5 · « Les trois prises » (repos 3 min)\n> Coudes après la séance"
  },
  {
   "semaine": 5,
-  "phase": "C1 · Gainage et pieds actifs",
+  "phase": "B1 · S5-6 Endurance",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n4× 5 min course + 1 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 35 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "contenu": "> Course · avant\n1× 40 min de course · « Allure conversation » · « Foulée courte et légère »\n! Tu dois pouvoir parler en phrases complètes. Essoufflé : ralentis ou marche.\n> Course · après"
  },
  {
   "semaine": 5,
-  "phase": "C1 · Gainage et pieds actifs",
+  "phase": "B1 · S5-6 Endurance",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Silence total »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n2× Voie en 4 puis 5a enchaînées · endurance (repos 10 min)\n2× Voie en 5b en dévers · « Pieds qui tirent » · « Bras tendus »\n! Objectif : moins de « sec » que la fois précédente.\n1× Voie en 5c · « Travail au point »\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Objectif : endurance spécifique. Accumuler de la fatigue sans s'épuiser.\n! Circuit : enchaîne les 4 voies avec seulement le temps de t'encorder entre elles (environ 2 minutes).\n1× « Circuit » de 4 voies : 5a, 5b, 5a, 5b [effort] (repos 5 min)\n1× Voie en 5b (5c si feu vert) · « Repos bras tendu » [effort] (repos 5 min)\n! Pendant la voie, cherche des positions de repos debout.\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance"
  },
  {
   "semaine": 5,
-  "phase": "C1 · Gainage et pieds actifs",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Silence total »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 3 (repos 2 min)\n1× 15 min en dévers niveau 3 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
+  "phase": "B1 · S5-6 Endurance",
+  "jour": "Jeudi",
+  "activite": "Maison",
+  "contenu": "> Routine du jeudi"
  },
  {
   "semaine": 5,
-  "phase": "C1 · Gainage et pieds actifs",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n3× 5 min course + 1 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 30 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "phase": "B1 · S5-6 Endurance",
+  "jour": "Vendredi",
+  "activite": "Bloc",
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n4× Bloc niveau 5 (repos 3 min)\n6× Essai sur « Projet » : bloc 5 en dévers, ou bloc 6 si feu vert · 6 essais max (repos 4 min)\n2× « Traversée dévers aller-retour » (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 5,
-  "phase": "C1 · Gainage et pieds actifs",
+  "phase": "B1 · S5-6 Endurance",
+  "jour": "Samedi",
+  "activite": "Course",
+  "contenu": "! Séance facultative : footing très facile ou randonnée, selon l'envie.\n1× 30 min de course très facile · « Allure conversation »\n> Course · après"
+ },
+ {
+  "semaine": 5,
+  "phase": "B1 · S5-6 Endurance",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Silence total »\n3× Série de 3 blocs faciles enchaînés · « Circuit » (repos 5 min)\n1× 35 min en dévers niveau 4 · « Ne jamais lâcher les pieds » · « Crochet de pointe »\n! Quand le dévers niveau 3 passe facilement, passe au niveau 4.\n3× Essai sur un bloc projet niveau 5 (repos 4 min)\n! 3 essais maximum par mouvement.\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Volume sans chercher la performance (« Volume »).\n7× Bloc niveau 4 · « Aucun repositionnement » (repos 2 min)\n4× Bloc niveau 5 (repos 3 min)\n1× « ARC » · 10 min en continu, intensité 4/10 [facile]\n> Coudes après la séance"
  },
  {
   "semaine": 6,
-  "phase": "C1 · Gainage et pieds actifs",
+  "phase": "B1 · S5-6 Endurance",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n4× 5 min course + 1 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 35 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "contenu": "> Course · avant\n1× 40 min de course · « Allure conversation » · « Foulée courte et légère »\n! Tu dois pouvoir parler en phrases complètes. Essoufflé : ralentis ou marche.\n> Course · après"
  },
  {
   "semaine": 6,
-  "phase": "C1 · Gainage et pieds actifs",
+  "phase": "B1 · S5-6 Endurance",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Arrêt sur image »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n2× Voie en 4 puis 5a enchaînées · endurance (repos 10 min)\n2× Voie en 5b en dévers · « Pieds qui tirent » · « Bras tendus »\n! Objectif : moins de « sec » que la fois précédente.\n1× Voie en 5c · « Travail au point »\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Objectif : endurance spécifique. Accumuler de la fatigue sans s'épuiser.\n! Circuit : enchaîne les 4 voies avec seulement le temps de t'encorder entre elles (environ 2 minutes).\n1× « Circuit » de 4 voies : 5a, 5b, 5a, 5b [effort] (repos 5 min)\n1× Voie en 5b (5c si feu vert) · « Repos bras tendu » [effort] (repos 5 min)\n! Pendant la voie, cherche des positions de repos debout.\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance"
  },
  {
   "semaine": 6,
-  "phase": "C1 · Gainage et pieds actifs",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Arrêt sur image »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 3 (repos 2 min)\n1× 15 min en dévers niveau 3 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
+  "phase": "B1 · S5-6 Endurance",
+  "jour": "Jeudi",
+  "activite": "Maison",
+  "contenu": "> Routine du jeudi"
  },
  {
   "semaine": 6,
-  "phase": "C1 · Gainage et pieds actifs",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n3× 5 min course + 1 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 30 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "phase": "B1 · S5-6 Endurance",
+  "jour": "Vendredi",
+  "activite": "Bloc",
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n4× Bloc niveau 5 (repos 3 min)\n6× Essai sur « Projet » : bloc 5 en dévers, ou bloc 6 si feu vert · 6 essais max (repos 4 min)\n2× « Traversée dévers aller-retour » (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 6,
-  "phase": "C1 · Gainage et pieds actifs",
+  "phase": "B1 · S5-6 Endurance",
+  "jour": "Samedi",
+  "activite": "Course",
+  "contenu": "! Séance facultative : footing très facile ou randonnée, selon l'envie.\n1× 30 min de course très facile · « Allure conversation »\n> Course · après"
+ },
+ {
+  "semaine": 6,
+  "phase": "B1 · S5-6 Endurance",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Arrêt sur image »\n3× Série de 3 blocs faciles enchaînés · « Circuit » (repos 5 min)\n1× 35 min en dévers niveau 4 · « Ne jamais lâcher les pieds » · « Crochet de pointe »\n! Quand le dévers niveau 3 passe facilement, passe au niveau 4.\n3× Essai sur un bloc projet niveau 5 (repos 4 min)\n! 3 essais maximum par mouvement.\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Volume sans chercher la performance (« Volume »).\n7× Bloc niveau 4 · « Aucun repositionnement » (repos 2 min)\n4× Bloc niveau 5 (repos 3 min)\n1× « ARC » · 10 min en continu, intensité 4/10 [facile]\n> Coudes après la séance"
  },
  {
   "semaine": 7,
-  "phase": "C1 · Projets",
+  "phase": "B1 · S7 Réalisation",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n2× 10 min course + 2 min marche\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 35 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "contenu": "> Course · avant\n1× 45 min de course · « Allure conversation » · « Foulée courte et légère »\n! Tu dois pouvoir parler en phrases complètes. Essoufflé : ralentis ou marche.\n> Course · après"
  },
  {
   "semaine": 7,
-  "phase": "C1 · Projets",
+  "phase": "B1 · S7 Réalisation",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Face puis profil »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n3× « Essai d'enchaînement » 5b en dévers (repos 10 min)\n1× Voie en 5c · « Travail au point »\n3× Voie en 4 ou 5a, grimpée proprement\n! Arrête dès que la qualité baisse.\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Objectif : réalisation. Teste tes meilleures voies, frais.\n2× Voie en 5b · proprement (repos 5 min)\n4× « Essai d'enchaînement » : voie 5c (6a si feu vert) · 4 essais max (repos 10 min)\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance"
  },
  {
   "semaine": 7,
-  "phase": "C1 · Projets",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Face puis profil »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 3 (repos 2 min)\n1× 15 min en dévers niveau 3 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
+  "phase": "B1 · S7 Réalisation",
+  "jour": "Jeudi",
+  "activite": "Maison",
+  "contenu": "> Routine du jeudi"
  },
  {
   "semaine": 7,
-  "phase": "C1 · Projets",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 20 min de course continue très lente\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 30 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "phase": "B1 · S7 Réalisation",
+  "jour": "Vendredi",
+  "activite": "Bloc",
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n8× Essai sur « Projet » : ton meilleur niveau, proprement (6 si feu vert) · 8 essais max (repos 4 min)\n! Les projets s'arrêtent dès que le mouvement devient aléatoire.\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 7,
-  "phase": "C1 · Projets",
+  "phase": "B1 · S7 Réalisation",
+  "jour": "Samedi",
+  "activite": "Course",
+  "contenu": "! Séance facultative : footing très facile ou randonnée, selon l'envie.\n1× 30 min de course très facile · « Allure conversation »\n> Course · après"
+ },
+ {
+  "semaine": 7,
+  "phase": "B1 · S7 Réalisation",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Face puis profil »\n4× Essai sur « Projet » vertical niveau 5 (repos 4 min)\n4× Essai sur « Projet » en dévers niveau 4 (repos 4 min)\n! Arrête dès que la qualité baisse.\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Très léger : aucune fatigue.\n5× Bloc niveau 3 ou 4 · plaisir (repos 2 min)\n> Coudes après la séance"
  },
  {
   "semaine": 8,
-  "phase": "C1 · Allègement et bilan",
+  "phase": "B1 · S8 Décharge",
   "jour": "Mardi",
   "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 20 min de course continue facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 30 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
+  "contenu": "> Course · avant\n1× 30 min de course · « Allure conversation » · « Foulée courte et légère »\n! Tu dois pouvoir parler en phrases complètes. Essoufflé : ralentis ou marche.\n> Course · après"
  },
  {
   "semaine": 8,
-  "phase": "C1 · Allègement et bilan",
+  "phase": "B1 · S8 Décharge",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Pieds imposés »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n! Semaine d'allègement (« Séance allégée ») : volume réduit d'un tiers.\n1× Voie en 5b en dévers des semaines 1-2 · compte les « sec »\n2× Voie en 4 ou 5a, tranquille\n! Remplis le Bilan (semaine 8) dans l'Excel.\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Semaine d'allègement (« Séance allégée ») : volume divisé par deux, pas de 5c, pas de projet.\n3× Voie en 4 ou 5a · « Grimpe fluide » (repos 3 min)\n1× Voie en 5b déjà réussie, proprement (repos 5 min)\n> Coudes après la séance"
  },
  {
   "semaine": 8,
-  "phase": "C1 · Allègement et bilan",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Pieds imposés »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n4× Bloc facile niveau 3 (repos 2 min)\n1× 10 min en dévers niveau 3 · « Hanches collées » · « Profil alterné »\n1× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
+  "phase": "B1 · S8 Décharge",
+  "jour": "Jeudi",
+  "activite": "Maison",
+  "contenu": "> Routine du jeudi\n! Semaine d'allègement : la routine reste la même, elle fait partie de la récupération."
  },
  {
   "semaine": 8,
-  "phase": "C1 · Allègement et bilan",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "> Course · avant\n1× Facultatif : 30 min de marche rapide\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
+  "phase": "B1 · S8 Décharge",
+  "jour": "Vendredi",
+  "activite": "Bloc",
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Semaine d'allègement : blocs 4 et 5 faciles uniquement, aucun projet.\n6× Bloc niveau 4 (repos 2 min)\n3× Bloc niveau 5 facile (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 8,
-  "phase": "C1 · Allègement et bilan",
+  "phase": "B1 · S8 Décharge",
+  "jour": "Samedi",
+  "activite": "Course",
+  "contenu": "! Séance facultative : footing très facile ou randonnée, selon l'envie.\n1× 30 min de course très facile · « Allure conversation »\n> Course · après"
+ },
+ {
+  "semaine": 8,
+  "phase": "B1 · S8 Décharge",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Pieds imposés »\n! Semaine d'allègement (« Séance allégée ») : volume réduit d'un tiers.\n1× Refaire les blocs en dévers des semaines 1-2\n6× Bloc facile niveau 3-4 (repos 2 min)\n! Remplis le Bilan (semaine 8) dans l'Excel.\n> Retour au calme salle"
- },
- {
-  "semaine": 9,
-  "phase": "Repos actif entre cycles",
-  "jour": "Mardi",
-  "activite": "Repos actif",
-  "contenu": "1× 30 à 45 min de marche, vélo tranquille ou étirements doux\n! Semaine sans escalade ni renforcement : les tendons se consolident."
- },
- {
-  "semaine": 9,
-  "phase": "Repos actif entre cycles",
-  "jour": "Samedi",
-  "activite": "Repos actif",
-  "contenu": "1× 30 à 45 min de marche, vélo tranquille ou étirements doux\n! Semaine sans escalade ni renforcement : les tendons se consolident.\n! Pense à réserver une séance avec un moniteur pour la semaine suivante."
- },
- {
-  "semaine": 10,
-  "phase": "C2 · Mois 3, semaine 1 (reprise)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 25 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 40 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 10,
-  "phase": "C2 · Mois 3, semaine 1 (reprise)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Changement de main »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n1× Séance avec un moniteur, si réservée : hanches, pieds, dévers\n1× Voie en 4 · « Pieds silencieux »\n1× Voie en 5a · « Bras tendus »\n1× Voie en 5b verticale, sans chercher l'enchaînement\n1× Voie en 5b en dévers, sans chercher l'enchaînement\n! Pas de projet dur cette semaine.\n1× Technique du mois : « Crochet de talon », en douceur\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 10,
-  "phase": "C2 · Mois 3, semaine 1 (reprise)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Changement de main »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 3-4 (repos 2 min)\n1× 15 min en dévers niveau 3-4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 10,
-  "phase": "C2 · Mois 3, semaine 1 (reprise)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 15 à 20 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 30 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 10,
-  "phase": "C2 · Mois 3, semaine 1 (reprise)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Changement de main »\n8× Bloc facile niveau 3-4 (repos 2 min)\n1× 25 min en dévers niveau 4\n! Pas de projet dur cette semaine.\n1× Technique du mois : « Crochet de talon », en douceur\n> Retour au calme salle"
- },
- {
-  "semaine": 11,
-  "phase": "C2 · Mois 3, semaine 2 (progression)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 25 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 40 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 11,
-  "phase": "C2 · Mois 3, semaine 2 (progression)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Main qui plane »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n2× Voie en 4 ou 5a · « Main qui plane »\n2× « Essai d'enchaînement » sur une 5b, vertical puis dévers\n2× Voie en 5c · « Travail au point »\n2× Voie en 5a puis 5b enchaînées · endurance (repos 10 min)\n1× Technique du mois : « Crochet de talon », en douceur\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 11,
-  "phase": "C2 · Mois 3, semaine 2 (progression)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Main qui plane »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 3-4 (repos 2 min)\n1× 15 min en dévers niveau 3-4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 11,
-  "phase": "C2 · Mois 3, semaine 2 (progression)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 15 à 20 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 30 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 11,
-  "phase": "C2 · Mois 3, semaine 2 (progression)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Main qui plane »\n1× 40 min en dévers niveau 4\n3× Bloc « Projet » niveau 5, dont un en dévers\n3× Série de 3 blocs faciles enchaînés · « Circuit » (repos 5 min)\n1× Technique du mois : « Crochet de talon », en douceur\n> Retour au calme salle"
- },
- {
-  "semaine": 12,
-  "phase": "C2 · Mois 3, semaine 3 (pic)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 25 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 40 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 12,
-  "phase": "C2 · Mois 3, semaine 3 (pic)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Grimpe au ralenti »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n3× Essai sur ton « Projet » du mois, 5b en dévers ou 5c verticale (repos 10 min)\n1× Voie en 5c · « Travail au point »\n2× Voie en 4 ou 5a, grimpée proprement\n! Arrête dès que la qualité baisse.\n1× Technique du mois : « Crochet de talon », en douceur\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 12,
-  "phase": "C2 · Mois 3, semaine 3 (pic)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Grimpe au ralenti »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 3-4 (repos 2 min)\n1× 15 min en dévers niveau 3-4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 12,
-  "phase": "C2 · Mois 3, semaine 3 (pic)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 15 à 20 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 30 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 12,
-  "phase": "C2 · Mois 3, semaine 3 (pic)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Grimpe au ralenti »\n6× Essai sur « Projet » niveau 5, dont un en dévers (repos 4 min)\n! 3 essais maximum par mouvement.\n1× Technique du mois : « Crochet de talon », en douceur\n> Retour au calme salle"
- },
- {
-  "semaine": 13,
-  "phase": "C2 · Mois 3, semaine 4 (allègement)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 15 min de course continue facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 30 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 13,
-  "phase": "C2 · Mois 3, semaine 4 (allègement)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Pieds silencieux »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n! Semaine d'allègement (« Séance allégée ») : volume réduit d'un tiers.\n1× Refaire ta voie en dévers suivie · compte les « sec »\n2× Voie du mois, tranquille\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 13,
-  "phase": "C2 · Mois 3, semaine 4 (allègement)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Pieds silencieux »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n4× Bloc facile niveau 3-4 (repos 2 min)\n1× 10 min en dévers niveau 3-4 · « Hanches collées » · « Profil alterné »\n1× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 13,
-  "phase": "C2 · Mois 3, semaine 4 (allègement)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "> Course · avant\n1× Facultatif : 30 min de marche rapide\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
- },
- {
-  "semaine": 13,
-  "phase": "C2 · Mois 3, semaine 4 (allègement)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Pieds silencieux »\n! Semaine d'allègement (« Séance allégée ») : volume réduit d'un tiers.\n1× Refaire les blocs du mois\n6× Bloc facile niveau 3-4 (repos 2 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 14,
-  "phase": "C2 · Mois 4, semaine 1 (reprise)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 30 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 14,
-  "phase": "C2 · Mois 4, semaine 1 (reprise)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Regarder le pied jusqu'à la pose »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n1× Voie en 4 · « Pieds silencieux »\n1× Voie en 5a · « Bras tendus »\n1× Voie en 5b verticale, sans chercher l'enchaînement\n1× Voie en 5b en dévers, sans chercher l'enchaînement\n! Pas de projet dur cette semaine.\n1× Technique du mois : « Changement de pied » et « Opposition »\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 14,
-  "phase": "C2 · Mois 4, semaine 1 (reprise)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Regarder le pied jusqu'à la pose »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 3-4 (repos 2 min)\n1× 15 min en dévers niveau 3-4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 14,
-  "phase": "C2 · Mois 4, semaine 1 (reprise)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 20 à 25 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 40 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 14,
-  "phase": "C2 · Mois 4, semaine 1 (reprise)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Regarder le pied jusqu'à la pose »\n8× Bloc facile niveau 3-4 (repos 2 min)\n1× 25 min en dévers niveau 4\n! Pas de projet dur cette semaine.\n1× Technique du mois : « Changement de pied » et « Opposition »\n> Retour au calme salle"
- },
- {
-  "semaine": 15,
-  "phase": "C2 · Mois 4, semaine 2 (progression)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 30 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 15,
-  "phase": "C2 · Mois 4, semaine 2 (progression)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Pied qui plane »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n2× Voie en 4 ou 5a · « Main qui plane »\n2× « Essai d'enchaînement » sur une 5b, vertical puis dévers\n2× Voie en 5c en dévers · « Travail au point »\n2× Voie en 5a puis 5b enchaînées · endurance (repos 10 min)\n! Option : cours de grimpe en tête si la salle en propose. Sinon, moulinette.\n1× Technique du mois : « Changement de pied » et « Opposition »\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 15,
-  "phase": "C2 · Mois 4, semaine 2 (progression)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Pied qui plane »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 3-4 (repos 2 min)\n1× 15 min en dévers niveau 3-4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 15,
-  "phase": "C2 · Mois 4, semaine 2 (progression)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 20 à 25 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 40 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 15,
-  "phase": "C2 · Mois 4, semaine 2 (progression)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Pied qui plane »\n1× 40 min en dévers niveau 4\n3× Bloc « Projet » niveau 5, dont un en dévers\n3× Série de 3 blocs faciles enchaînés · « Circuit » (repos 5 min)\n1× Technique du mois : « Changement de pied » et « Opposition »\n> Retour au calme salle"
- },
- {
-  "semaine": 16,
-  "phase": "C2 · Mois 4, semaine 3 (pic)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 30 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 16,
-  "phase": "C2 · Mois 4, semaine 3 (pic)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Trois points d'appui »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n3× Essai sur ton « Projet » du mois, 5b en dévers ou 5c verticale (repos 10 min)\n1× Voie en 5c · « Travail au point »\n2× Voie en 4 ou 5a, grimpée proprement\n! Arrête dès que la qualité baisse.\n1× Technique du mois : « Changement de pied » et « Opposition »\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 16,
-  "phase": "C2 · Mois 4, semaine 3 (pic)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Trois points d'appui »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 3-4 (repos 2 min)\n1× 15 min en dévers niveau 3-4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 16,
-  "phase": "C2 · Mois 4, semaine 3 (pic)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 20 à 25 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 40 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 16,
-  "phase": "C2 · Mois 4, semaine 3 (pic)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Trois points d'appui »\n6× Essai sur « Projet » niveau 5, dont un en dévers (repos 4 min)\n! 3 essais maximum par mouvement.\n1× Technique du mois : « Changement de pied » et « Opposition »\n> Retour au calme salle"
- },
- {
-  "semaine": 17,
-  "phase": "C2 · Mois 4, semaine 4 (allègement)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 20 min de course continue facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 30 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 17,
-  "phase": "C2 · Mois 4, semaine 4 (allègement)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Silence total »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n! Semaine d'allègement (« Séance allégée ») : volume réduit d'un tiers.\n1× Refaire ta voie en dévers suivie · compte les « sec »\n2× Voie du mois, tranquille\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 17,
-  "phase": "C2 · Mois 4, semaine 4 (allègement)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Silence total »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n4× Bloc facile niveau 3-4 (repos 2 min)\n1× 10 min en dévers niveau 3-4 · « Hanches collées » · « Profil alterné »\n1× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 17,
-  "phase": "C2 · Mois 4, semaine 4 (allègement)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "> Course · avant\n1× Facultatif : 30 min de marche rapide\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
- },
- {
-  "semaine": 17,
-  "phase": "C2 · Mois 4, semaine 4 (allègement)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Silence total »\n! Semaine d'allègement (« Séance allégée ») : volume réduit d'un tiers.\n1× Refaire les blocs du mois\n6× Bloc facile niveau 3-4 (repos 2 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 18,
-  "phase": "C2 · Mois 5, semaine 1 (reprise)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 35 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 45 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 50 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 18,
-  "phase": "C2 · Mois 5, semaine 1 (reprise)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Arrêt sur image »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n1× Voie en 4 · « Pieds silencieux »\n1× Voie en 5a · « Bras tendus »\n1× Voie en 5b verticale, sans chercher l'enchaînement\n1× Voie en 5b en dévers, sans chercher l'enchaînement\n! Pas de projet dur cette semaine.\n1× Technique du mois : « Repos bras tendu » dans une voie\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 18,
-  "phase": "C2 · Mois 5, semaine 1 (reprise)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Arrêt sur image »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 3-4 (repos 2 min)\n1× 15 min en dévers niveau 3-4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 18,
-  "phase": "C2 · Mois 5, semaine 1 (reprise)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 25 à 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 18,
-  "phase": "C2 · Mois 5, semaine 1 (reprise)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Arrêt sur image »\n8× Bloc facile niveau 3-4 (repos 2 min)\n1× 25 min en dévers niveau 4\n! Pas de projet dur cette semaine.\n1× Technique du mois : « Repos bras tendu » dans une voie\n> Retour au calme salle"
- },
- {
-  "semaine": 19,
-  "phase": "C2 · Mois 5, semaine 2 (progression)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 35 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 45 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 50 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 19,
-  "phase": "C2 · Mois 5, semaine 2 (progression)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Face puis profil »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n2× Voie en 4 ou 5a · « Main qui plane »\n2× « Essai d'enchaînement » sur une 5b, vertical puis dévers\n2× Voie en 5c en dévers · « Travail au point »\n2× Voie en 5a puis 5b enchaînées · endurance (repos 10 min)\n! Option : cours de grimpe en tête si la salle en propose. Sinon, moulinette.\n1× Technique du mois : « Repos bras tendu » dans une voie\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 19,
-  "phase": "C2 · Mois 5, semaine 2 (progression)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Face puis profil »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 3-4 (repos 2 min)\n1× 15 min en dévers niveau 3-4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 19,
-  "phase": "C2 · Mois 5, semaine 2 (progression)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 25 à 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 19,
-  "phase": "C2 · Mois 5, semaine 2 (progression)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Face puis profil »\n1× 40 min en dévers niveau 4\n3× Bloc « Projet » niveau 5, dont un en dévers\n3× Série de 3 blocs faciles enchaînés · « Circuit » (repos 5 min)\n1× Technique du mois : « Repos bras tendu » dans une voie\n> Retour au calme salle"
- },
- {
-  "semaine": 20,
-  "phase": "C2 · Mois 5, semaine 3 (pic)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 35 min de course continue\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 45 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 50 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 20,
-  "phase": "C2 · Mois 5, semaine 3 (pic)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Pieds imposés »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n3× Essai sur ton « Projet » du mois, 5b en dévers ou 5c verticale (repos 10 min)\n1× Voie en 5c · « Travail au point »\n2× Voie en 4 ou 5a, grimpée proprement\n! Arrête dès que la qualité baisse.\n1× Technique du mois : « Repos bras tendu » dans une voie\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 20,
-  "phase": "C2 · Mois 5, semaine 3 (pic)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Pieds imposés »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 3-4 (repos 2 min)\n1× 15 min en dévers niveau 3-4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 20,
-  "phase": "C2 · Mois 5, semaine 3 (pic)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 25 à 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 20,
-  "phase": "C2 · Mois 5, semaine 3 (pic)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Pieds imposés »\n6× Essai sur « Projet » niveau 5, dont un en dévers (repos 4 min)\n! 3 essais maximum par mouvement.\n1× Technique du mois : « Repos bras tendu » dans une voie\n> Retour au calme salle"
- },
- {
-  "semaine": 21,
-  "phase": "C2 · Mois 5, semaine 4 (allègement)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 25 min de course continue facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 40 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 21,
-  "phase": "C2 · Mois 5, semaine 4 (allègement)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Mains ouvertes uniquement »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n! Semaine d'allègement (« Séance allégée ») : volume réduit d'un tiers.\n1× Refaire ta voie en dévers suivie · compte les « sec »\n2× Voie du mois, tranquille\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 21,
-  "phase": "C2 · Mois 5, semaine 4 (allègement)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Mains ouvertes uniquement »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n4× Bloc facile niveau 3-4 (repos 2 min)\n1× 10 min en dévers niveau 3-4 · « Hanches collées » · « Profil alterné »\n1× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 21,
-  "phase": "C2 · Mois 5, semaine 4 (allègement)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "> Course · avant\n1× Facultatif : 30 min de marche rapide\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
- },
- {
-  "semaine": 21,
-  "phase": "C2 · Mois 5, semaine 4 (allègement)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Mains ouvertes uniquement »\n! Semaine d'allègement (« Séance allégée ») : volume réduit d'un tiers.\n1× Refaire les blocs du mois\n6× Bloc facile niveau 3-4 (repos 2 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 22,
-  "phase": "Repos actif entre cycles",
-  "jour": "Mardi",
-  "activite": "Repos actif",
-  "contenu": "1× 30 à 45 min de marche, vélo tranquille ou étirements doux\n! Semaine sans escalade ni renforcement : les tendons se consolident."
- },
- {
-  "semaine": 22,
-  "phase": "Repos actif entre cycles",
-  "jour": "Samedi",
-  "activite": "Repos actif",
-  "contenu": "1× 30 à 45 min de marche, vélo tranquille ou étirements doux\n! Semaine sans escalade ni renforcement : les tendons se consolident."
- },
- {
-  "semaine": 23,
-  "phase": "C3 · Mois 6, semaine 1 (reprise)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 35 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 45 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 50 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 23,
-  "phase": "C3 · Mois 6, semaine 1 (reprise)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Main qui plane »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n3× Voie en 5b, en « Volume »\n1× Voie en 5c en dévers, sans pression\n1× Technique du mois : « Crochet de talon en dévers »\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 23,
-  "phase": "C3 · Mois 6, semaine 1 (reprise)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Main qui plane »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 4 (repos 2 min)\n1× 20 min en dévers niveau 4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 23,
-  "phase": "C3 · Mois 6, semaine 1 (reprise)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 25 à 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 23,
-  "phase": "C3 · Mois 6, semaine 1 (reprise)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Main qui plane »\n8× Bloc niveau 4 (repos 2 min)\n1× 30 min en dévers niveau 4\n1× Technique du mois : « Crochet de talon en dévers »\n> Retour au calme salle"
- },
- {
-  "semaine": 24,
-  "phase": "C3 · Mois 6, semaine 2 (progression)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 35 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 45 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 50 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 24,
-  "phase": "C3 · Mois 6, semaine 2 (progression)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Grimpe au ralenti »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n2× Voie en 5b, en « Volume »\n3× « Essai d'enchaînement » 5c en dévers (repos 10 min)\n2× Voie en 6a · « Travail au point »\n! Si cours de tête fait : tête uniquement dans les 4 et 5a, avec un assureur expérimenté.\n1× Technique du mois : « Crochet de talon en dévers »\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 24,
-  "phase": "C3 · Mois 6, semaine 2 (progression)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Grimpe au ralenti »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 4 (repos 2 min)\n1× 20 min en dévers niveau 4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 24,
-  "phase": "C3 · Mois 6, semaine 2 (progression)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 25 à 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 24,
-  "phase": "C3 · Mois 6, semaine 2 (progression)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Grimpe au ralenti »\n1× 40 min en dévers niveau 4-5\n4× Essai sur « Projet » niveau 5 en dévers (repos 4 min)\n1× « Déplacement dynamique contrôlé » sur blocs faciles\n! Pieds toujours au mur, jamais de jeté.\n1× Technique du mois : « Crochet de talon en dévers »\n> Retour au calme salle"
- },
- {
-  "semaine": 25,
-  "phase": "C3 · Mois 6, semaine 3 (pic)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 35 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 45 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 50 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 25,
-  "phase": "C3 · Mois 6, semaine 3 (pic)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Pieds silencieux »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n3× Essai sur ton projet 5c en dévers (repos 10 min)\n1× Voie en 6a · « Travail au point »\n1× Technique du mois : « Crochet de talon en dévers »\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 25,
-  "phase": "C3 · Mois 6, semaine 3 (pic)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Pieds silencieux »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 4 (repos 2 min)\n1× 20 min en dévers niveau 4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 25,
-  "phase": "C3 · Mois 6, semaine 3 (pic)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 25 à 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 25,
-  "phase": "C3 · Mois 6, semaine 3 (pic)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Pieds silencieux »\n6× Essai sur « Projet » niveau 5 en dévers (repos 4 min)\n1× Technique du mois : « Crochet de talon en dévers »\n> Retour au calme salle"
- },
- {
-  "semaine": 26,
-  "phase": "C3 · Mois 6, semaine 4 (allègement)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 25 min de course continue facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 40 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 26,
-  "phase": "C3 · Mois 6, semaine 4 (allègement)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Regarder le pied jusqu'à la pose »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n! Semaine d'allègement (« Séance allégée ») : volume réduit d'un tiers.\n1× Refaire ta 5c en dévers · compte les « sec »\n2× Voie en 5b, tranquille\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 26,
-  "phase": "C3 · Mois 6, semaine 4 (allègement)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Regarder le pied jusqu'à la pose »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n4× Bloc facile niveau 4 (repos 2 min)\n1× 10 min en dévers niveau 4 · « Hanches collées » · « Profil alterné »\n1× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 26,
-  "phase": "C3 · Mois 6, semaine 4 (allègement)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "> Course · avant\n1× Facultatif : 30 min de marche rapide\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
- },
- {
-  "semaine": 26,
-  "phase": "C3 · Mois 6, semaine 4 (allègement)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Regarder le pied jusqu'à la pose »\n! Semaine d'allègement (« Séance allégée ») : volume réduit d'un tiers.\n1× Refaire les blocs du mois\n6× Bloc facile (repos 2 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 27,
-  "phase": "C3 · Mois 7, semaine 1 (reprise)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 40 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 50 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 60 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 27,
-  "phase": "C3 · Mois 7, semaine 1 (reprise)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Pied qui plane »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n3× Voie en 5b, en « Volume »\n1× Voie en 5c en dévers, sans pression\n1× Technique du mois : enchaîner plusieurs mouvements en gardant le gainage\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 27,
-  "phase": "C3 · Mois 7, semaine 1 (reprise)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Pied qui plane »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 4 (repos 2 min)\n1× 20 min en dévers niveau 4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 27,
-  "phase": "C3 · Mois 7, semaine 1 (reprise)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 27,
-  "phase": "C3 · Mois 7, semaine 1 (reprise)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Pied qui plane »\n8× Bloc niveau 4 (repos 2 min)\n1× 30 min en dévers niveau 4\n1× Technique du mois : enchaîner plusieurs mouvements en gardant le gainage\n> Retour au calme salle"
- },
- {
-  "semaine": 28,
-  "phase": "C3 · Mois 7, semaine 2 (progression)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 40 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 50 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 60 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 28,
-  "phase": "C3 · Mois 7, semaine 2 (progression)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Trois points d'appui »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n2× Voie en 5b, en « Volume »\n3× « Essai d'enchaînement » 5c en dévers (repos 10 min)\n2× Voie en 6a · « Travail au point »\n! Si cours de tête fait : tête uniquement dans les 4 et 5a, avec un assureur expérimenté.\n1× Technique du mois : enchaîner plusieurs mouvements en gardant le gainage\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 28,
-  "phase": "C3 · Mois 7, semaine 2 (progression)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Trois points d'appui »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 4 (repos 2 min)\n1× 20 min en dévers niveau 4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 28,
-  "phase": "C3 · Mois 7, semaine 2 (progression)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 28,
-  "phase": "C3 · Mois 7, semaine 2 (progression)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Trois points d'appui »\n1× 40 min en dévers niveau 4-5\n4× Essai sur « Projet » niveau 5 en dévers (repos 4 min)\n1× « Déplacement dynamique contrôlé » sur blocs faciles\n! Pieds toujours au mur, jamais de jeté.\n1× Technique du mois : enchaîner plusieurs mouvements en gardant le gainage\n> Retour au calme salle"
- },
- {
-  "semaine": 29,
-  "phase": "C3 · Mois 7, semaine 3 (pic)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 40 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 50 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 60 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 29,
-  "phase": "C3 · Mois 7, semaine 3 (pic)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Silence total »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n3× Essai sur ton projet 5c en dévers (repos 10 min)\n1× Voie en 6a · « Travail au point »\n1× Technique du mois : enchaîner plusieurs mouvements en gardant le gainage\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 29,
-  "phase": "C3 · Mois 7, semaine 3 (pic)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Silence total »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 4 (repos 2 min)\n1× 20 min en dévers niveau 4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 29,
-  "phase": "C3 · Mois 7, semaine 3 (pic)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 29,
-  "phase": "C3 · Mois 7, semaine 3 (pic)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Silence total »\n6× Essai sur « Projet » niveau 5 en dévers (repos 4 min)\n1× Technique du mois : enchaîner plusieurs mouvements en gardant le gainage\n> Retour au calme salle"
- },
- {
-  "semaine": 30,
-  "phase": "C3 · Mois 7, semaine 4 (allègement)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 25 min de course continue facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 40 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 30,
-  "phase": "C3 · Mois 7, semaine 4 (allègement)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Arrêt sur image »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n! Semaine d'allègement (« Séance allégée ») : volume réduit d'un tiers.\n1× Refaire ta 5c en dévers · compte les « sec »\n2× Voie en 5b, tranquille\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 30,
-  "phase": "C3 · Mois 7, semaine 4 (allègement)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Arrêt sur image »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n4× Bloc facile niveau 4 (repos 2 min)\n1× 10 min en dévers niveau 4 · « Hanches collées » · « Profil alterné »\n1× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 30,
-  "phase": "C3 · Mois 7, semaine 4 (allègement)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "> Course · avant\n1× Facultatif : 30 min de marche rapide\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
- },
- {
-  "semaine": 30,
-  "phase": "C3 · Mois 7, semaine 4 (allègement)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Arrêt sur image »\n! Semaine d'allègement (« Séance allégée ») : volume réduit d'un tiers.\n1× Refaire les blocs du mois\n6× Bloc facile (repos 2 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 31,
-  "phase": "C3 · Mois 8, semaine 1 (reprise)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 40 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 50 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 60 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 31,
-  "phase": "C3 · Mois 8, semaine 1 (reprise)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Face puis profil »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n3× Voie en 5b, en « Volume »\n1× Voie en 5c en dévers, sans pression\n1× Technique du mois : « Lecture avant de grimper » de toute la voie, repos compris\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 31,
-  "phase": "C3 · Mois 8, semaine 1 (reprise)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Face puis profil »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 4 (repos 2 min)\n1× 20 min en dévers niveau 4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 31,
-  "phase": "C3 · Mois 8, semaine 1 (reprise)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 31,
-  "phase": "C3 · Mois 8, semaine 1 (reprise)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Face puis profil »\n8× Bloc niveau 4 (repos 2 min)\n1× 30 min en dévers niveau 4\n1× Technique du mois : « Lecture avant de grimper » de toute la voie, repos compris\n> Retour au calme salle"
- },
- {
-  "semaine": 32,
-  "phase": "C3 · Mois 8, semaine 2 (progression)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 40 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 50 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 60 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 32,
-  "phase": "C3 · Mois 8, semaine 2 (progression)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Pieds imposés »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n2× Voie en 5b, en « Volume »\n3× « Essai d'enchaînement » 5c en dévers (repos 10 min)\n2× Voie en 6a · « Travail au point »\n! Si cours de tête fait : tête uniquement dans les 4 et 5a, avec un assureur expérimenté.\n1× Technique du mois : « Lecture avant de grimper » de toute la voie, repos compris\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 32,
-  "phase": "C3 · Mois 8, semaine 2 (progression)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Pieds imposés »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 4 (repos 2 min)\n1× 20 min en dévers niveau 4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 32,
-  "phase": "C3 · Mois 8, semaine 2 (progression)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 32,
-  "phase": "C3 · Mois 8, semaine 2 (progression)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Pieds imposés »\n1× 40 min en dévers niveau 4-5\n4× Essai sur « Projet » niveau 5 en dévers (repos 4 min)\n1× « Déplacement dynamique contrôlé » sur blocs faciles\n! Pieds toujours au mur, jamais de jeté.\n1× Technique du mois : « Lecture avant de grimper » de toute la voie, repos compris\n> Retour au calme salle"
- },
- {
-  "semaine": 33,
-  "phase": "C3 · Mois 8, semaine 3 (pic)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 40 min de course continue (ou vélo / natation si les articulations le demandent)\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 50 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 60 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 33,
-  "phase": "C3 · Mois 8, semaine 3 (pic)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Mains ouvertes uniquement »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n3× Essai sur ton projet 5c en dévers (repos 10 min)\n1× Voie en 6a · « Travail au point »\n1× Technique du mois : « Lecture avant de grimper » de toute la voie, repos compris\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 33,
-  "phase": "C3 · Mois 8, semaine 3 (pic)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Mains ouvertes uniquement »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n6× Bloc facile niveau 4 (repos 2 min)\n1× 20 min en dévers niveau 4 · « Hanches collées » · « Profil alterné »\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 33,
-  "phase": "C3 · Mois 8, semaine 3 (pic)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "! Sortie facultative : la semaine est réussie dès qu'une des deux sorties est faite.\n## Course\n> Course · avant\n1× 30 min de course continue, très facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 40 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 45 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 33,
-  "phase": "C3 · Mois 8, semaine 3 (pic)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle C (hanches)\n! Consigne de la semaine sur tous les passages faciles : « Mains ouvertes uniquement »\n6× Essai sur « Projet » niveau 5 en dévers (repos 4 min)\n1× Technique du mois : « Lecture avant de grimper » de toute la voie, repos compris\n> Retour au calme salle"
- },
- {
-  "semaine": 34,
-  "phase": "C3 · Mois 8, semaine 4 (allègement)",
-  "jour": "Mardi",
-  "activite": "Course",
-  "contenu": "## Course\n> Course · avant\n1× 25 min de course continue facile\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après\n## Marche rapide\n1× 30 min de marche rapide\n! Allure soutenue : tu sens ton souffle, sans être essoufflé.\n## Vélo\n1× 40 min de vélo tranquille\n! Allure facile, terrain plat de préférence."
- },
- {
-  "semaine": 34,
-  "phase": "C3 · Mois 8, semaine 4 (allègement)",
-  "jour": "Mercredi",
-  "activite": "Voie",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Changement de main »\n## Voie\n> Vérifications croisées\n! À refaire avant chaque voie, pour toi et ton partenaire.\n! Semaine d'allègement (« Séance allégée ») : volume réduit d'un tiers.\n1× Refaire ta 5c en dévers · compte les « sec »\n2× Voie en 5b, tranquille\n> Retour au calme salle\n## Remplacement bloc (pas de partenaire)\n3× « Circuit » de 4 blocs faciles enchaînés · endurance (repos 5 min)\n2× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n1× « Jeu des mouvements ajoutés », si quelqu'un est disponible\n! Même consigne de la semaine sur tous les blocs faciles.\n> Retour au calme salle"
- },
- {
-  "semaine": 34,
-  "phase": "C3 · Mois 8, semaine 4 (allègement)",
-  "jour": "Vendredi",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle B (traversée)\n! Consigne de la semaine sur tous les passages faciles : « Changement de main »\n! Séance légère : effort visé 5 à 6 sur 10, aucun projet dur. En cas de fatigue ou de douleur aux doigts, c'est cette séance qui saute en premier.\n4× Bloc facile niveau 4 (repos 2 min)\n1× 10 min en dévers niveau 4 · « Hanches collées » · « Profil alterné »\n1× « Traversée basse » · 3 min sans poser pied (repos 3 min)\n> Retour au calme salle"
- },
- {
-  "semaine": 34,
-  "phase": "C3 · Mois 8, semaine 4 (allègement)",
-  "jour": "Samedi",
-  "activite": "Course",
-  "contenu": "> Course · avant\n1× Facultatif : 30 min de marche rapide\n! Allure conversation : si tu ne peux pas parler, ralentis ou marche.\n! Douleur au talon ou au tibia : reviens au palier précédent.\n> Course · après"
- },
- {
-  "semaine": 34,
-  "phase": "C3 · Mois 8, semaine 4 (allègement)",
-  "jour": "Dimanche",
-  "activite": "Bloc",
-  "contenu": "> Échauffement salle A (classique)\n! Consigne de la semaine sur tous les passages faciles : « Changement de main »\n! Semaine d'allègement (« Séance allégée ») : volume réduit d'un tiers.\n1× Refaire les blocs du mois\n6× Bloc facile (repos 2 min)\n> Retour au calme salle"
+  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Semaine d'allègement : plaisir uniquement.\n6× Bloc niveau 3 ou 4 (repos 2 min)\n> Coudes après la séance"
  }
 ];
 
@@ -1330,6 +543,138 @@ const ROUTINES = [
   "etape": "3. Planche latérale",
   "duree": "1 min",
   "quoi": "20 s par côté, bassin haut (genoux au sol si besoin)."
+ },
+ {
+  "routine": "Contrôle des doigts",
+  "etape": "1. Poing fermé",
+  "duree": "—",
+  "quoi": "Ferme le poing complètement et serre 3 secondes, une main puis l'autre."
+ },
+ {
+  "routine": "Contrôle des doigts",
+  "etape": "2. Main ouverte",
+  "duree": "—",
+  "quoi": "Ouvre la main, doigts tendus, puis pousse-les doucement en arrière avec l'autre main."
+ },
+ {
+  "routine": "Contrôle des doigts",
+  "etape": "3. Verdict",
+  "duree": "—",
+  "quoi": "Aucune gêne : feu vert. Petite douleur localisée : pas de projet aujourd'hui, volume et technique seulement. Douleur nette : pas d'escalade dure."
+ },
+ {
+  "routine": "Échauffement voie",
+  "etape": "1. Mobilité articulaire",
+  "duree": "5 min",
+  "quoi": "Rotations des épaules × 20, des poignets × 20, des chevilles × 20, sans forcer."
+ },
+ {
+  "routine": "Échauffement voie",
+  "etape": "2. Voie en 3",
+  "duree": "4 min",
+  "quoi": "Montée lente et calme, en respirant. Puis 2 min de repos."
+ },
+ {
+  "routine": "Échauffement voie",
+  "etape": "3. Voie en 4",
+  "duree": "5 min",
+  "quoi": "Toujours facile, pieds précis. Puis 2 min de repos."
+ },
+ {
+  "routine": "Échauffement voie",
+  "etape": "4. Voie en 5a",
+  "duree": "6 min",
+  "quoi": "Fluide, sans forcer. Tu dois finir frais."
+ },
+ {
+  "routine": "Échauffement bloc",
+  "etape": "1. Mobilité articulaire",
+  "duree": "5 min",
+  "quoi": "Rotations des épaules × 20, des poignets × 20, des chevilles × 20, sans forcer."
+ },
+ {
+  "routine": "Échauffement bloc",
+  "etape": "2. Deux blocs niveau 3",
+  "duree": "7 min",
+  "quoi": "Montée et désescalade, en douceur."
+ },
+ {
+  "routine": "Échauffement bloc",
+  "etape": "3. Deux blocs niveau 4",
+  "duree": "8 min",
+  "quoi": "Pieds précis, aucune précipitation."
+ },
+ {
+  "routine": "Coudes après la séance",
+  "etape": "1. Extensions des doigts",
+  "duree": "2 min",
+  "quoi": "Élastique autour des doigts : 3 × 20 ouvertures lentes."
+ },
+ {
+  "routine": "Coudes après la séance",
+  "etape": "2. Extension du poignet",
+  "duree": "2 min",
+  "quoi": "Haltère de 2 à 4 kg, avant-bras posé, paume vers le bas : 2 × 15 lentes."
+ },
+ {
+  "routine": "Coudes après la séance",
+  "etape": "3. Flexion du poignet",
+  "duree": "1 min",
+  "quoi": "Même position, paume vers le haut : 2 × 15 lentes."
+ },
+ {
+  "routine": "Pieds après le vendredi",
+  "etape": "1. Étirement des mollets",
+  "duree": "2 min",
+  "quoi": "Mains au mur, jambe tendue derrière, talon au sol : 2 × 45 s par côté."
+ },
+ {
+  "routine": "Pieds après le vendredi",
+  "etape": "2. Mobilisation des orteils",
+  "duree": "1 min",
+  "quoi": "Écarte, plie et étire les orteils, pieds nus."
+ },
+ {
+  "routine": "Pieds après le vendredi",
+  "etape": "3. Balle sous la voûte plantaire",
+  "duree": "2 min",
+  "quoi": "Fais rouler une balle de tennis sous chaque pied, 1 min par pied."
+ },
+ {
+  "routine": "Routine du jeudi",
+  "etape": "1. Rotation externe à l'élastique",
+  "duree": "3 min",
+  "quoi": "Coude au corps, plié à 90° : 3 × 15 lentes."
+ },
+ {
+  "routine": "Routine du jeudi",
+  "etape": "2. Face pull",
+  "duree": "3 min",
+  "quoi": "Élastique à hauteur de visage, tire vers le front en écartant les coudes : 3 × 15."
+ },
+ {
+  "routine": "Routine du jeudi",
+  "etape": "3. Poignets",
+  "duree": "3 min",
+  "quoi": "Extension puis flexion du poignet avec l'haltère : 2 × 15 chacune."
+ },
+ {
+  "routine": "Routine du jeudi",
+  "etape": "4. 90/90 des hanches",
+  "duree": "4 min",
+  "quoi": "2 min par côté, dos droit."
+ },
+ {
+  "routine": "Routine du jeudi",
+  "etape": "5. Couch stretch",
+  "duree": "2 min",
+  "quoi": "Genou contre un mur derrière toi, 1 min par côté."
+ },
+ {
+  "routine": "Routine du jeudi",
+  "etape": "6. Genou contre le mur",
+  "duree": "2 min",
+  "quoi": "2 × 10 par côté, talon au sol."
  }
 ];
 
@@ -1778,6 +1123,71 @@ const EXERCICES = [
  },
  {
   "categorie": "Apprendre",
+  "nom": "Aucun repositionnement",
+  "comment": "Avant de saisir une prise, choisis l'endroit exact où poser les doigts.\nUne fois la prise tenue, interdiction de la replacer.\nSi la prise est mal tenue, continue quand même ou redescends.\nCompte mentalement les repositionnements qui t'échappent.",
+  "cle": "Sur des voies ou blocs faciles uniquement.",
+  "depuis": "Semaine 1",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Prendre les prises juste du premier coup, pour économiser les avant-bras.",
+  "erreurs": "Tâtonner sur la prise ; regarder la prise trop tard.",
+  "facile": "Autorise un repositionnement par voie au début."
+ },
+ {
+  "categorie": "Apprendre",
+  "nom": "Les trois prises",
+  "comment": "Arrêté sur une bonne position, repère les 3 prochaines prises de main.\nRepère aussi les 3 prochaines prises de pied.\nSeulement ensuite, enchaîne les mouvements prévus.",
+  "cle": "Aucun risque particulier.",
+  "depuis": "Semaine 1",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Planifier avant de bouger, comme en voie.",
+  "erreurs": "Partir avant d'avoir repéré les pieds.",
+  "facile": "Deux prises au lieu de trois."
+ },
+ {
+  "categorie": "Apprendre",
+  "nom": "Lecture à voix haute",
+  "comment": "Avant un bloc, annonce à voix haute la séquence des mains.\nAnnonce ensuite les pieds importants et les positions de repos.\nGrimpe, puis compare avec ce que tu avais annoncé.",
+  "cle": "Aucun risque particulier.",
+  "depuis": "Semaine 1",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Apprendre à lire un passage avant de le grimper.",
+  "erreurs": "Annoncer seulement les mains.",
+  "facile": "Annonce seulement les 4 premiers mouvements."
+ },
+ {
+  "categorie": "Apprendre",
+  "nom": "Sans regarder les mains",
+  "comment": "Sur un bloc ou une voie facile, regarde uniquement tes pieds et la section suivante.\nNe regarde jamais la prise que ta main va saisir : trouve-la au toucher.",
+  "cle": "Seulement sur de grosses prises faciles.",
+  "depuis": "Semaine 3",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 3,
+  "but": "Forcer la précision des pieds et la mémoire des prises.",
+  "erreurs": "Jeter un coup d'œil « juste une fois ».",
+  "facile": "Autorise un regard sur les prises difficiles."
+ },
+ {
+  "categorie": "Apprendre",
+  "nom": "Sans certaines couleurs",
+  "comment": "Choisis un bloc facile.\nInterdis-toi une couleur de prise (par exemple toutes les bleues).\nTrouve une autre solution pour monter.",
+  "cle": "Reste sur des blocs faciles : la solution doit rester raisonnable.",
+  "depuis": "Semaine 3",
+  "discipline": "Voie et bloc",
+  "niveau": "Débutant",
+  "semaine": 3,
+  "but": "Développer la créativité et la lecture.",
+  "erreurs": "Choisir un bloc trop dur.",
+  "facile": "Interdis seulement une prise précise."
+ },
+ {
+  "categorie": "Apprendre",
   "nom": "Se filmer",
   "comment": "Fais-toi filmer sur une voie ou un bloc.\nRegarde la vidéo en t'attachant à trois points : hanches, pieds, bras pliés inutilement.\nNote une seule chose à corriger la prochaine fois.",
   "cle": "Demande l'accord des personnes qui apparaissent à l'image.",
@@ -1801,6 +1211,19 @@ const EXERCICES = [
   "but": "Découvrir de nouvelles façons de bouger.",
   "erreurs": "Copier un mouvement trop dur ou trop dynamique pour toi.",
   "facile": "Demande-lui simplement de t'expliquer sa méthode."
+ },
+ {
+  "categorie": "Endurance",
+  "nom": "ARC",
+  "comment": "Grimpe en continu sur des prises faciles : monte, traverse, redescends, remonte.\nNe descends pas au sol.\nIntensité 4/10 : tu pourrais parler en grimpant.\n10 min les premières fois, puis 15, puis 20 min sur plusieurs semaines.",
+  "cle": "Les avant-bras peuvent être légèrement chargés, jamais « explosés ». Arrête si une douleur apparaît.",
+  "depuis": "Semaine 5",
+  "discipline": "Voie et bloc",
+  "niveau": "Intermédiaire",
+  "semaine": 5,
+  "but": "Développer l'endurance des avant-bras sans les épuiser.",
+  "erreurs": "Monter l'intensité : ça devient de la résistance.",
+  "facile": "5 min, puis repos, deux fois."
  },
  {
   "categorie": "Méthode",
@@ -1833,10 +1256,10 @@ const EXERCICES = [
   "nom": "Repos bras tendu",
   "comment": "Sur une bonne prise, pends bras tendu, pieds bien posés.\nSecoue l'autre bras le long du corps quelques secondes.\nChange de bras.\nRepars quand les avant-bras sont moins durs.",
   "cle": "Prévois tes repos pendant la lecture de la voie.",
-  "depuis": "Mois 5",
+  "depuis": "Semaine 5",
   "discipline": "Voie",
-  "niveau": "Intermédiaire",
-  "semaine": 18,
+  "niveau": "Débutant",
+  "semaine": 5,
   "but": "Récupérer en cours de voie.",
   "erreurs": "Se reposer bras plié.",
   "facile": "Repose-toi sur la plus grosse prise de la voie."
@@ -1872,10 +1295,10 @@ const EXERCICES = [
   "nom": "Grimpe fluide",
   "comment": "Sur une voie facile, ne t'arrête jamais plus de 3 secondes.\nNe t'arrête que sur les repos que tu as prévus.",
   "cle": "Aucun risque particulier.",
-  "depuis": "Mois 10",
+  "depuis": "Semaine 1",
   "discipline": "Voie",
-  "niveau": "Avancé",
-  "semaine": 39,
+  "niveau": "Débutant",
+  "semaine": 1,
   "but": "Améliorer le rythme et économiser l'énergie.",
   "erreurs": "Confondre fluide et rapide.",
   "facile": "Fais-le sur une voie que tu connais déjà."
@@ -1963,10 +1386,10 @@ const EXERCICES = [
   "nom": "Traversée basse",
   "comment": "Traverse le mur horizontalement, à moins d'un mètre du sol.\nTiens 3 à 5 minutes sans poser pied à terre.\nChange de sens à chaque passage.",
   "cle": "Peu de risque : idéal en échauffement ou en fin de séance.",
-  "depuis": "Semaine 3",
+  "depuis": "Semaine 1",
   "discipline": "Bloc",
   "niveau": "Débutant",
-  "semaine": 3,
+  "semaine": 1,
   "but": "Endurance et précision des pieds, avec peu de risque.",
   "erreurs": "Monter trop haut au fil de la traversée.",
   "facile": "1 à 2 minutes, sur de grosses prises."
@@ -1983,6 +1406,32 @@ const EXERCICES = [
   "but": "Mémoire, lecture et endurance, en jouant.",
   "erreurs": "Ajouter des mouvements trop durs.",
   "facile": "Seules les prises de main comptent, pieds libres."
+ },
+ {
+  "categorie": "Jeux et endurance",
+  "nom": "Traversée dévers aller-retour",
+  "comment": "Sur un mur légèrement déversant, choisis environ 10 prises de main faciles.\nFais l'aller-retour sans descendre.\nRepos 3 min, puis recommence (2 à 4 séries).\nConcentre-toi sur le bassin collé au mur, pas sur les bras.",
+  "cle": "Uniquement en léger dévers et sur grosses prises. Arrête dès que tu tires bras pliés en permanence.",
+  "depuis": "Semaine 3",
+  "discipline": "Bloc",
+  "niveau": "Intermédiaire",
+  "semaine": 3,
+  "but": "Tenir le bassin et les pieds en dévers sur la durée.",
+  "erreurs": "Laisser partir les pieds ; tirer avec les bras.",
+  "facile": "Aller simple, 2 séries."
+ },
+ {
+  "categorie": "Jeux et endurance",
+  "nom": "Circuit 100 mouvements",
+  "comment": "Crée une traversée facile.\nVise 40 mouvements sans tomber, puis 60, 80 et enfin 100 au fil des semaines.\nPas de pause longue.",
+  "cle": "Prises faciles uniquement. Arrête si la qualité des mouvements baisse.",
+  "depuis": "Semaine 9",
+  "discipline": "Bloc",
+  "niveau": "Intermédiaire",
+  "semaine": 9,
+  "but": "Préparer la continuité des voies longues.",
+  "erreurs": "Augmenter trop vite le nombre de mouvements.",
+  "facile": "Commence à 30 mouvements."
  },
  {
   "categorie": "Dynamique",
@@ -2271,6 +1720,58 @@ const EXERCICES = [
   "facile": "Sans élastique, juste le mouvement."
  },
  {
+  "categorie": "Prévention",
+  "nom": "Face pull",
+  "comment": "Attache un élastique à hauteur de visage.\nTire les mains vers le front en écartant les coudes.\nRapproche les omoplates, puis reviens lentement.",
+  "cle": "Élastique léger, mouvement lent, sans douleur à l'épaule.",
+  "depuis": "Semaine 1",
+  "discipline": "Muscu",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Renforcer l'arrière des épaules, souvent faible chez les grimpeurs.",
+  "erreurs": "Hausser les épaules ; tirer avec le dos cambré.",
+  "facile": "Élastique plus léger, 2 × 10."
+ },
+ {
+  "categorie": "Prévention",
+  "nom": "Scapular push-up",
+  "comment": "En position de pompe (ou sur les genoux), bras tendus.\nLaisse descendre la poitrine entre les omoplates sans plier les bras.\nPuis pousse le sol pour écarter les omoplates.",
+  "cle": "Arrête si l'épaule fait mal.",
+  "depuis": "Semaine 1",
+  "discipline": "Muscu",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Contrôler les omoplates, base d'une épaule stable.",
+  "erreurs": "Plier les coudes : ce n'est pas une pompe.",
+  "facile": "Mains contre un mur."
+ },
+ {
+  "categorie": "Prévention",
+  "nom": "Extension du poignet",
+  "comment": "Avant-bras posé sur la cuisse, paume vers le bas, haltère de 2 à 4 kg.\nMonte le dos de la main lentement.\nRedescends en 3 secondes.",
+  "cle": "Charge légère : c'est de la prévention, pas de la force.",
+  "depuis": "Semaine 1",
+  "discipline": "Muscu",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Protéger le coude (épicondyle) en renforçant les extenseurs.",
+  "erreurs": "Charge trop lourde ; mouvement rapide.",
+  "facile": "Sans haltère, ou bouteille d'eau."
+ },
+ {
+  "categorie": "Prévention",
+  "nom": "Flexion du poignet",
+  "comment": "Avant-bras posé sur la cuisse, paume vers le haut, haltère de 2 à 4 kg.\nMonte le poignet lentement.\nRedescends en 3 secondes.",
+  "cle": "Charge légère, sans douleur.",
+  "depuis": "Semaine 1",
+  "discipline": "Muscu",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Équilibrer les muscles de l'avant-bras et protéger le coude.",
+  "erreurs": "Bouger tout l'avant-bras.",
+  "facile": "Sans haltère."
+ },
+ {
   "categorie": "Allure et technique",
   "nom": "Allure conversation",
   "comment": "Cours assez lentement pour pouvoir parler en phrases complètes.\nSi tu es essoufflé, ralentis ou marche.\nGarde cette allure toute la sortie.",
@@ -2360,6 +1861,136 @@ const EXERCICES = [
   "but": "Mobilité des hanches dans les deux sens de rotation.",
   "erreurs": "S'aider des mains en forçant.",
   "facile": "Mains au sol derrière toi pour t'aider."
+ },
+ {
+  "categorie": "Hanches",
+  "nom": "Genou contre le mur",
+  "comment": "Face au mur, pied à quelques centimètres.\nAvance le genou jusqu'au mur sans décoller le talon.\nRecule le pied petit à petit.",
+  "cle": "Sans forcer sur le tendon d'Achille.",
+  "depuis": "Semaine 1",
+  "discipline": "Mobilité",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Gagner de la souplesse de cheville, utile pour les petits pieds et les pieds hauts.",
+  "erreurs": "Décoller le talon.",
+  "facile": "Pied plus proche du mur."
+ },
+ {
+  "categorie": "Hanches",
+  "nom": "Cossack squat",
+  "comment": "Pieds très écartés.\nDescends sur une jambe en gardant l'autre tendue, pointe vers le haut.\nReviens au centre, puis change de côté.",
+  "cle": "Descends seulement jusqu'où le genou reste confortable.",
+  "depuis": "Semaine 1",
+  "discipline": "Mobilité",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Ouvrir les adducteurs pour les écarts et les pieds hauts.",
+  "erreurs": "Décoller le talon de la jambe pliée.",
+  "facile": "Mains sur une chaise, amplitude réduite."
+ },
+ {
+  "categorie": "Hanches",
+  "nom": "Couch stretch",
+  "comment": "Genou au sol contre un mur, pied remonté contre le mur derrière toi.\nAutre pied devant, buste droit.\nTiens 1 min par côté en respirant.",
+  "cle": "Coussin sous le genou. Sans douleur dans le genou.",
+  "depuis": "Semaine 1",
+  "discipline": "Mobilité",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Assouplir l'avant de la hanche pour coller le bassin au mur.",
+  "erreurs": "Cambrer le bas du dos.",
+  "facile": "Genou plus loin du mur."
+ },
+ {
+  "categorie": "Hanches",
+  "nom": "Balle sous la voûte plantaire",
+  "comment": "Assis ou debout, pose le pied sur une balle de tennis.\nFais-la rouler du talon aux orteils, 1 min par pied.",
+  "cle": "Pression agréable, jamais douloureuse.",
+  "depuis": "Semaine 1",
+  "discipline": "Mobilité",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Détendre les pieds après de longues heures en chaussons.",
+  "erreurs": "Appuyer trop fort.",
+  "facile": "Assis, pression légère."
+ },
+ {
+  "categorie": "Épaules et dos",
+  "nom": "Open book",
+  "comment": "Allongé sur le côté, genoux pliés, bras tendus devant toi.\nOuvre le bras du dessus vers l'arrière en suivant la main des yeux.\nReviens lentement.",
+  "cle": "Mouvement doux, sans forcer.",
+  "depuis": "Semaine 1",
+  "discipline": "Mobilité",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Mobiliser le haut du dos.",
+  "erreurs": "Laisser les genoux se séparer.",
+  "facile": "Amplitude réduite."
+ },
+ {
+  "categorie": "Épaules et dos",
+  "nom": "Band dislocations",
+  "comment": "Tiens un élastique très écarté, bras tendus devant toi.\nPasse-le au-dessus de la tête jusque derrière toi, puis reviens.",
+  "cle": "Écarte suffisamment les mains : aucune douleur à l'épaule. À éviter si l'épaule est sensible.",
+  "depuis": "Semaine 1",
+  "discipline": "Mobilité",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Entretenir la mobilité des épaules.",
+  "erreurs": "Mains trop rapprochées ; plier les coudes.",
+  "facile": "Bâton ou serviette, mains très écartées."
+ },
+ {
+  "categorie": "Épaules et dos",
+  "nom": "Extension passive des poignets",
+  "comment": "Bras tendu, paume vers l'avant.\nAvec l'autre main, tire doucement les doigts vers toi.\nTiens 30 s, puis change de côté.",
+  "cle": "Étirement doux, jamais douloureux.",
+  "depuis": "Semaine 1",
+  "discipline": "Mobilité",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Détendre les fléchisseurs de l'avant-bras après la grimpe.",
+  "erreurs": "Tirer trop fort.",
+  "facile": "15 s seulement."
+ },
+ {
+  "categorie": "Tests",
+  "nom": "Tests de mobilité",
+  "comment": "Tous les 3 mois, note dans les mesures :\nGenou contre le mur : distance du pied au mur (objectif 12 cm, talon au sol).\n90/90 : tenue en secondes par côté (objectif 90 s).\nSquat profond : tenue en secondes, talons au sol (objectif 30 s).\nMains derrière le dos : aucune gêne, ou gêne.",
+  "cle": "Sans forcer : on mesure, on ne cherche pas à battre un record.",
+  "depuis": "Semaine 1",
+  "discipline": "Mobilité",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Suivre ta mobilité dans le temps.",
+  "erreurs": "Faire les tests à froid : échauffe-toi 5 min avant.",
+  "facile": "Fais seulement les tests confortables."
+ },
+ {
+  "categorie": "Peau",
+  "nom": "Soin des durillons",
+  "comment": "Après la séance : lave les mains à l'eau tiède et au savon doux, puis sèche bien les plis.\nLe soir des séances : crème (jamais dans les 2 à 3 h avant de grimper).\nLe dimanche soir : inspecte tes mains et lime seulement les bosses et les surépaisseurs, après une douche chaude.\nUne fissure : crème le soir, pansement la nuit.",
+  "cle": "Ne jamais creuser, tout enlever ou faire saigner. Fissure profonde, zone chaude ou rouge, début d'arrachement : réduis ou arrête la séance et protège la zone.",
+  "depuis": "Semaine 1",
+  "discipline": "Soins",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Garder des durillons fins, plats et souples, qui ne s'arrachent pas.",
+  "erreurs": "Laisser épaissir la corne ; trop de magnésie ; crème juste avant de grimper.",
+  "facile": "Seulement la crème du soir."
+ },
+ {
+  "categorie": "Peau",
+  "nom": "Bons et mauvais durillons",
+  "comment": "Bons durillons : plats, souples, peu épais, répartis, non douloureux. À garder.\nMauvais durillons : épais, bombés, fissurés, blanchâtres, qui accrochent les prises. À limer doucement.\nUne grosse corne est souvent plus fragile qu'un durillon fin.",
+  "cle": "Une douleur à la fermeture de la main ou une zone chaude persistante n'est pas un problème de peau : signale-la.",
+  "depuis": "Semaine 1",
+  "discipline": "Soins",
+  "niveau": "Débutant",
+  "semaine": 1,
+  "but": "Savoir reconnaître ce qu'il faut entretenir.",
+  "erreurs": "Vouloir des mains lisses : un peu de corne protège.",
+  "facile": "Commence par observer, sans limer."
  }
 ];
 
