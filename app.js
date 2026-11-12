@@ -9,12 +9,13 @@
 // =====================================================================
 // 1. RÉGLAGES DU PROGRAMME (modifiables dans le code)
 // =====================================================================
-const APP_VERSION = "3.5";
+const APP_VERSION = "4.0";
 const REPOS_DEFAUT = { Voie: 300, Bloc: 180, Maison: 90 };   // secondes, si la ligne n'indique rien
 const COTATIONS = { Voie: ["3","4","4c","5a","5b","5c","6a","6b","6c"], Bloc: ["2","3","4","5","6","7"] };
 COTATIONS["Escalade extérieur"] = COTATIONS.Voie;               // se note comme une voie
 const ACTIVITES_LIBRES = ["Voie","Bloc","Maison","Course","Escalade extérieur","Autre sport"];
 const JOURS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const URL_GUIDE = "https://claude.ai/artifact/1oFtL5gzb5YTDYjYvQ8vdj";   // guide d'utilisation (❓ Aide)
 const DUREE_MAX = 240;                                           // minutes : au-delà, l'écran n'est plus maintenu allumé
 const DUREES_CALENDRIER = { Voie: 120, Bloc: 120, Maison: 25, Course: 40, "Repos actif": 45 };
 
@@ -120,6 +121,9 @@ function analyser(lignes) {
     let n = 1, repos = null;
     const m = l.match(/^(\d+)\s*[×x]\s*/);
     if (m) { n = Number(m[1]); l = l.slice(m[0].length); }
+    let force = null;                                                // « [effort] » ou « [facile] » : type d'étape imposé
+    const fm = l.match(/\[(effort|facile)\]/i);
+    if (fm) { force = fm[1].toLowerCase(); l = l.replace(fm[0], "").trim(); }
     let dureePrevue = null;                                          // « (durée 15 min) » : durée prévue fixée à la main
     const dp = l.match(/\(durée\s+(\d+)\s*(min|s)\)/);
     if (dp) { dureePrevue = Number(dp[1]) * (dp[2] === "min" ? 60 : 1); l = l.replace(dp[0], "").trim(); }
@@ -134,7 +138,7 @@ function analyser(lignes) {
       if (tous.length) { const x = tous[tous.length - 1]; travail = Number(x[1]) * (x[2] === "min" ? 60 : 1); }
     }
     const sm = l.match(/(\d+)\s+(blocs|voies)\b/i);                  // « Circuit de 4 blocs » : 4 résultats par série
-    return { type: "action", texte: l, n, repos, travail, intervalle, cotes: /par côté/.test(l), serie: sm && Number(sm[1]) > 1 ? Number(sm[1]) : 0, dureePrevue };
+    return { type: "action", texte: l, n, repos, travail, intervalle, cotes: /par côté/.test(l), serie: sm && Number(sm[1]) > 1 ? Number(sm[1]) : 0, dureePrevue, force };
   });
 }
 const versionsDe = s => decouper(s.contenu).versions;
@@ -316,61 +320,98 @@ const etapesRoutine = nom => ROUTINES.filter(r => r.routine === nom);
 const minutesEtape = r => { const m = String(r.duree || "").match(/^(\d+) min$/); return m ? Number(m[1]) : 0; };
 const routineGuidable = nom => etapesRoutine(nom).some(r => minutesEtape(r) > 0);
 const titreAction = e => sansGuillemets(e.texte);
+// Type d'une étape, pour sa couleur : échauffement, sécurité, facile, effort, récupération
+const TYPES_ETAPE = { echauffement: "Échauffement", securite: "Sécurité", facile: "Facile", effort: "Effort", recup: "Récupération" };
+function typeEtape(e) {
+  if (e.type === "routine") {
+    if (/^Vérif/i.test(e.nom)) return "securite";
+    if (/Retour au calme|Mobilité|après/i.test(e.nom)) return "recup";
+    if (/Gainage/i.test(e.nom)) return "facile";
+    return "echauffement";
+  }
+  if (e.force) return e.force;
+  if (/retour au calme|étirement|récupération/i.test(e.texte)) return "recup";
+  if (/projet|essai|au point|dévers|enchaînement|tractions|pinces/i.test(e.texte)) return "effort";
+  return "facile";
+}
 
 function afficherSeance() {
   const s = courant(), d = lire(s), act = s.activite;
   $("titre-date").textContent = `${s.jour.slice(0, 3)}. ${jourMois(dateSeance(s))} · sem. ${s.semaine}`;
   const versions = versionsDe(s), elements = elementsDe(s, d), k = prochain(s, d);
-  let h = `<h1>${esc(act)}</h1><p class="phase">${esc(s.phase)}</p>`;
-  h += carteMaintenant(s, d, elements, k);
-  h += avertissements(s) + ligneDerniereFois(s);
+  const etapes = etapesDe(elements), enCours = d.debut && !d.fin, sautee = d.fait === "Sautée";
+  const faite = (e, i) => e.type === "routine" ? routineOk(d, i) : e.type === "action" && compte(d, i) >= e.n;
 
-  // --- État de la séance ---
-  if (d.fait === "Sautée") h += `<p class="petit">Séance marquée comme sautée · <button class="lien" data-action="desauter">annuler</button></p>`;
-  else if (!d.debut) h += `<button class="gros go" data-action="demarrer">▶ Démarrer la séance</button>
-    <p class="petit centre">Elle démarre aussi toute seule au premier passage · <button class="lien" data-action="sauter">séance sautée</button></p>`;
-  else if (!d.fin) h += `<div class="carte"><b>En cours</b> · <span id="chrono">${minutes(d.debut)} min</span>
-    <p></p><button class="gros go" data-action="terminer">■ Terminer la séance</button></div>`;
-  else h += `<p class="petit">Terminée · ${d.duree} min${!vide(d.effort) ? " · effort " + d.effort : ""}${Number(d.douleur) > 0 ? " · douleur " + d.douleur : ""}
-    · <button class="lien" data-action="bilan">modifier</button> · <button class="lien" data-action="reprendre">reprendre</button></p>`;
+  // --- Bandeau dans la couleur de l'activité ---
+  const sousTitre = d.fin ? `✓ Faite en ${hm((d.fin - d.debut) / 1000)} · prévu ≈ ${hm(dureeTotale(s, d))}`
+    : sautee ? "Séance sautée" : `≈ ${hm(dureeTotale(s, d))} · ${etapes.length} étape${etapes.length > 1 ? "s" : ""}`;
+  let h = `<div class="bandeau-seance"><h1>${esc(act)}</h1><div class="phase">${esc(s.phase)}</div><div class="sous-titre">${sousTitre}</div></div>`;
+  h += carteMaintenant(s, d, elements, k);
+  h += avertissements(s);
+
+  // --- Séance terminée : résumé ---
+  if (d.fin) {
+    const ok = (d.voies || []).filter(v => v.res === "Enchaînée" || v.res === "Réussi").length;
+    h += `<div class="carte resume">
+      <div class="resume-ligne"><span>Effort</span>${pastilleEchelle(d.effort)}</div>
+      <div class="resume-ligne"><span>Douleur</span>${pastilleEchelle(d.douleur, d.zone)}</div>
+      ${(d.voies || []).length ? `<div class="resume-ligne"><span>${estVoie(actReleve(s, d)) ? "Voies réussies" : "Blocs réussis"}</span><b>${ok} sur ${d.voies.length}</b></div>` : ""}
+      ${d.notes ? `<p class="petit">« ${esc(d.notes)} »</p>` : ""}
+      <div class="liens"><button class="lien" data-action="bilan">Modifier le bilan</button> · <button class="lien" data-action="reprendre">Reprendre la séance</button></div></div>`;
+  }
+  if (sautee) h += `<p class="petit centre">Cette séance est marquée comme sautée · <button class="lien" data-action="desauter">annuler</button></p>`;
+  h += ligneDerniereFois(s);
 
   // --- Version : repliée une fois la séance commencée ---
-  if (versions.length > 1) {
+  if (versions.length > 1 && !d.fin) {
     if (d.debut && !ouverts.has("versions"))
       h += `<p class="petit">Version : <b>${esc(nomVersion(s, d))}</b> · <button class="lien" data-plier="versions">changer</button></p>`;
     else h += `<div class="carte"><h2>Version</h2><div class="choix">${versions.map((v, n) =>
       `<button data-version="${n}" class="${(d.version || 0) === n ? "choisi" : ""}">${esc(v.nom)}</button>`).join("")}</div></div>`;
   }
 
-  // --- Programme ---
-  h += `<div class="carte">`;
+  // --- Étapes : faites repliées pendant la séance, toutes repliées une fois terminée ---
+  const numeros = {}; etapes.forEach((x, n) => numeros[x.i] = n + 1);
+  const repliables = d.fin ? etapes.map(x => x.i)
+    : enCours && k > 0 ? elements.map((e, i) => i).filter(i => i < k && elements[i].type !== "info" && faite(elements[i], i)) : [];
+  h += `<div class="liste-etapes">`;
   if (s.libre && !elements.length) h += `<p class="petit">Séance libre : pas de programme, note simplement ce que tu fais.</p>`;
-  const numeros = {}; etapesDe(elements).forEach((x, n) => numeros[x.i] = n + 1);
-  const faite = (e, i) => e.type === "routine" ? routineOk(d, i) : e.type === "action" && compte(d, i) >= e.n;
-  // Étapes faites repliées : toutes les étapes terminées avant l'étape en cours
-  const repliables = d.debut && !d.fin && k > 0 ? elements.map((e, i) => i).filter(i => i < k && elements[i].type !== "info" && faite(elements[i], i)) : [];
-  if (repliables.length) h += `<button class="ligne-pliee" data-plier="faites">${ouverts.has("faites") ? "▾" : "▸"} ${repliables.length} étape${repliables.length > 1 ? "s" : ""} faite${repliables.length > 1 ? "s" : ""}</button>`;
+  if (repliables.length) h += `<button class="ligne-pliee" data-plier="faites">${ouverts.has("faites") ? "▾" : "▸"} ${repliables.length} étape${repliables.length > 1 ? "s" : ""} ${d.fin ? "" : "faite" + (repliables.length > 1 ? "s" : "")}</button>`;
   elements.forEach((e, i) => {
     if (repliables.includes(i) && !ouverts.has("faites")) return;
-    const num = numeros[i] ? { n: numeros[i], etat: i === k ? "▶" : faite(e, i) ? "✓" : "○", duree: dureeElement(s, d, e) } : null;
+    if (d.fin && e.type === "info" && !ouverts.has("faites")) return;
+    const num = numeros[i] ? { n: numeros[i], etat: i === k && !d.fin ? "▶" : faite(e, i) ? "✓" : "○", duree: dureeElement(s, d, e), type: typeEtape(e) } : null;
     if (e.type === "info") h += `<div class="ligne info">${lier(e.texte, i)}${explication(i)}</div>`;
-    if (e.type === "routine") h += ligneRoutine(e, i, d, i === k, num);
-    if (e.type === "action") h += ligneAction(s, d, e, i, i === k, num);
+    if (e.type === "routine") h += ligneRoutine(e, i, d, i === k && !d.fin, num);
+    if (e.type === "action") h += ligneAction(s, d, e, i, i === k && !d.fin, num);
   });
   h += `</div>`;
 
-  if (COTATIONS[actReleve(s, d)]) h += carteReleve(d, actReleve(s, d));
+  // --- Avant le démarrage : un seul bouton plein ---
+  if (!d.debut && !sautee) h += `<button class="gros go" data-action="demarrer">▶ Commencer</button>
+    <p class="petit centre"><button class="lien" data-action="sauter">Séance sautée</button></p>`;
+  if (COTATIONS[actReleve(s, d)] && (d.debut || (d.voies || []).length)) h += carteReleve(d, actReleve(s, d));
   if (LISTE.map(x => x.semaine).lastIndexOf(s.semaine) === index)
-    h += `<button class="gros" data-action="mesures">Mesures de la semaine ${s.semaine} ▸</button><p></p>`;
-  if (s.libre) h += `<button class="gros" data-action="supprimer-libre">Supprimer cette séance</button>`;
+    h += `<button class="gros contour" data-action="mesures">Mesures de la semaine ${s.semaine} ▸</button>`;
+  if (s.libre) h += `<button class="gros contour danger" data-action="supprimer-libre">Supprimer cette séance</button>`;
   $("ecran").innerHTML = h;
+}
+// Échelle « terre » de 1 à 10 (effort, douleur)
+const TERRE = ["#F6EEDC", "#EEDFC0", "#E2CBA0", "#D4B582", "#C29E66", "#AC864E", "#936E3B", "#7A582C", "#61431F", "#4A3219"];
+const couleurEchelle = n => TERRE[Math.max(0, Math.min(9, Number(n) - 1))];
+const texteEchelle = n => Number(n) >= 6 ? "#ffffff" : "#4A3219";
+function pastilleEchelle(n, zone) {
+  if (vide(n) || (Number(n) === 0 && !zone)) return `<span class="petit">${Number(n) === 0 ? "aucune" : "—"}</span>`;
+  return `<span class="pastille-echelle" style="background:${Number(n) ? couleurEchelle(n) : "transparent"};color:${texteEchelle(n)}">${n}/10${zone ? " · " + esc(zone) : ""}</span>`;
 }
 
 // Carte « Maintenant » : l'étape en cours, fixée en haut, avec un gros bouton ✓ Fait
 function carteMaintenant(s, d, els, k) {
   if (d.fin || d.fait === "Sautée") return "";
-  if (k === -1) return d.debut ? `<div class="maintenant"><b>Tout est fait ✓</b><p></p>
-    <button class="gros go" data-action="terminer">■ Terminer la séance</button></div>` : "";
+  if (!d.debut) return "";                                          // la carte apparaît au démarrage
+  if (k === -1) return `<div class="maintenant"><div class="maintenant-titre">Tout est fait ✓</div>
+    <div class="choix"><button class="sur-couleur" data-action="douleur" aria-label="Signaler une douleur">⚠</button>
+    <button class="blanc" data-action="terminer">■ Terminer la séance</button></div></div>`;
   const e = els[k], etapes = etapesDe(els), rang = etapes.findIndex(x => x.i === k) + 1;
   const prevu = dureeElement(s, d, e), passe = d.debut ? tempsEtapeEnCours(d) : 0;
   const barre = `<div class="barre-seance">${etapes.map(x => {
@@ -382,27 +423,27 @@ function carteMaintenant(s, d, els, k) {
   let titre, sous, boutons = "";
   if (e.type === "routine") {
     titre = e.nom; sous = "Routine";
-    if (routineGuidable(e.nom)) boutons += `<button class="gros" data-guide="${k}">▶ Guidé</button>`;
+    if (routineGuidable(e.nom)) boutons += `<button class="sur-couleur" data-guide="${k}">▶ Guidé</button>`;
   } else {
     titre = titreAction(e); sous = `Passage ${compte(d, k) + 1} sur ${e.n}`;
-    if (e.intervalle || e.travail) boutons += `<button class="gros" data-chrono="${k}">▶ Chrono</button>`;
+    if (e.intervalle || e.travail) boutons += `<button class="sur-couleur" data-chrono="${k}">▶ Chrono</button>`;
   }
-  return `<div class="maintenant ${animer.etape ? "nouvelle" : ""}"><div class="petit">Étape ${rang} sur ${etapes.length} · ${esc(sous)} · ${temps}</div>${barre}
+  return `<div class="maintenant ${animer.etape ? "nouvelle" : ""}"><div class="maintenant-haut"><span>Étape ${rang} sur ${etapes.length} · ${esc(sous)}</span><span>${temps}</span></div>${barre}
     <div class="maintenant-titre">${esc(titre)}</div>
-    ${suivante ? `<div class="petit">Ensuite : ${esc(suivante.e.type === "routine" ? suivante.e.nom : titreAction(suivante.e))}</div>` : ""}
-    <div class="choix">${boutons}<button class="gros go" data-fait="${k}">✓ Fait</button></div></div>`;
+    ${suivante ? `<div class="maintenant-suite">Ensuite : ${esc(suivante.e.type === "routine" ? suivante.e.nom : titreAction(suivante.e))}</div>` : ""}
+    <div class="choix"><button class="sur-couleur" data-action="douleur" aria-label="Signaler une douleur">⚠</button>${boutons}<button class="blanc" data-fait="${k}">✓ Fait</button></div></div>`;
 }
 
 // Numéro, état (✓ ▶ ○) et durée prévue d'une étape
-const entete = num => num ? `<div class="num-etape"><span class="etat">${num.etat}</span> ${num.n}.<span class="duree-prevue">≈ ${hm(num.duree)}</span></div>` : "";
+const entete = num => num ? `<div class="num-etape"><span class="etat">${num.etat}</span> <span class="type-nom">${TYPES_ETAPE[num.type]}</span> · ${num.n}.<span class="duree-prevue">≈ ${hm(num.duree)}</span></div>` : "";
 function ligneRoutine(e, i, d, actuelle, num) {
   const ok = routineOk(d, i), etapes = etapesRoutine(e.nom);
   const durees = etapes.map(r => r.duree).filter(x => x && x !== "—");
   const total = durees.length && durees.every(x => /^\d+ min$/.test(x)) ? durees.reduce((t, x) => t + parseInt(x), 0) + " min" : durees.join(" + ");
-  return `<div class="ligne ${ok ? "finie" : ""} ${actuelle ? "actuelle" : ""}" data-el="${i}">
+  return `<div class="ligne etape type-${num ? num.type : "facile"} ${ok ? "finie" : ""} ${actuelle ? "actuelle" : ""}" data-el="${i}">
     <button class="case ${ok ? "ok" : ""}" data-routine="${i}">✓</button>
     <div class="txt">${entete(num)}<button class="lien" data-detail="${i}">${esc(e.nom)}${total ? " · " + esc(total) : ""} ▸</button>
-    ${routineGuidable(e.nom) && !ok ? `<div class="outils"><button data-guide="${i}">▶ Guidé</button></div>` : ""}
+    ${routineGuidable(e.nom) && !ok && !actuelle ? `<div class="outils"><button data-guide="${i}">▶ Guidé</button></div>` : ""}
     ${ouverts.has("d" + i) ? `<div class="detail">${etapes.map(r =>
       `<p><b>${esc(r.etape)}</b>${r.duree && r.duree !== "—" ? " (" + esc(r.duree) + ")" : ""} : ${esc(r.quoi)}</p>`).join("")}</div>` : ""}
     </div></div>`;
@@ -419,9 +460,14 @@ function ligneAction(s, d, e, i, actuelle, num) {
   if (e.intervalle) outils += `<button data-chrono="${i}">▶ ${mmss(e.intervalle.course)} / ${mmss(e.intervalle.marche)}</button>`;
   else if (e.travail) outils += `<button data-chrono="${i}">▶ ${duree(e.travail)}${e.cotes ? " × 2 côtés" : ""}</button>`;
   if (repos) outils += `<button data-repos="${i}">⏱ repos ${duree(repos)}</button>`;
-  return `<div class="ligne ${c >= e.n ? "finie" : ""} ${actuelle ? "actuelle" : ""}" data-action-ligne="${i}" data-el="${i}">
-    <div class="txt">${entete(num)}${lier(e.texte, i)}${e.serie ? ` <span class="petit">(série de ${e.serie})</span>` : ""}${outils ? `<div class="outils">${outils}</div>` : ""}${historique(e)}
-    ${note ? `<div class="note">📝 ${esc(note)}</div>` : ""}${avant && !note ? `<div class="note ancienne">📝 La dernière fois : ${esc(avant)}</div>` : ""}${explication(i)}</div>
+  // Historique et note précédente : affichés seulement au toucher (« Dernière fois ▸ »)
+  const hist = historique(e), detailsAvant = hist || (avant && !note);
+  const ouvert = ouverts.has("h" + i);
+  return `<div class="ligne etape type-${num ? num.type : "facile"} ${c >= e.n ? "finie" : ""} ${actuelle ? "actuelle" : ""}" data-action-ligne="${i}" data-el="${i}">
+    <div class="txt">${entete(num)}${lier(e.texte, i)}${e.serie ? ` <span class="petit">(série de ${e.serie})</span>` : ""}${outils ? `<div class="outils">${outils}</div>` : ""}
+    ${note ? `<div class="note">📝 ${esc(note)}</div>` : ""}
+    ${detailsAvant ? `<button class="lien petit" data-plier="h${i}">Dernière fois ${ouvert ? "▾" : "▸"}</button>` : ""}
+    ${detailsAvant && ouvert ? `${hist}${avant && !note ? `<div class="note ancienne">📝 ${esc(avant)}</div>` : ""}` : ""}${explication(i)}</div>
     <div class="ronds">${marques}</div></div>`;
 }
 
@@ -498,17 +544,22 @@ function carteReleve(d, act) {
     h += `<div class="voie"><button class="lien" data-editer="${k}"><b>${esc(v.cot)}</b> · ${v.profil} · ${res} ✎</button><button data-suppr="${k}">✕</button></div>`;
   });
   if (ouverts.has("releve") && liste.length) h += `<p class="petit">Touche un résultat pour le corriger.</p>`;
-  if (formVoie) h += formulaireResultat(formVoie, act, "form") + `<p></p><div class="choix"><button data-form="annuler">Annuler</button>
-    <button data-form="ajouter" class="choisi" ${formVoie.cot && formVoie.res ? "" : "disabled"}>Ajouter</button></div>`;
+  if (formVoie) h += formulaireResultat(formVoie, act, "form") + `<div class="actions"><button data-form="annuler">Annuler</button>
+    <button data-form="ajouter" class="principal" ${formVoie.cot && formVoie.res ? "" : "disabled"}>Ajouter</button></div>`;
   return h + `</div>`;
 }
 // Formulaire commun : cotation, profil, résultat (et nombre de « sec »)
 function formulaireResultat(f, act, attr) {
   const choix = (champ, liste) => `<div class="choix">${liste.map(v =>
     `<button data-${attr}="${champ}" data-valeur="${v}" class="${String(f[champ]) === String(v) ? "choisi" : ""}">${v}</button>`).join("")}</div>`;
+  const segment = (champ, liste) => `<div class="segment">${liste.map(v =>
+    `<button data-${attr}="${champ}" data-valeur="${v}" class="${String(f[champ]) === String(v) ? "choisi" : ""}">${v}</button>`).join("")}</div>`;
+  const CLASSE = { "Enchaînée": "res-ok", "Réussi": "res-ok", "Avec sec": "res-sec", "Pas finie": "res-non", "Pas réussi": "res-non" };
+  const resultats = `<div class="resultats">${(estVoie(act) ? ["Enchaînée", "Avec sec", "Pas finie"] : ["Réussi", "Pas réussi"]).map(v =>
+    `<button data-${attr}="res" data-valeur="${v}" class="${CLASSE[v]} ${f.res === v ? "choisi" : ""}">${v === "Enchaînée" || v === "Réussi" ? "✓ " : ""}${v === "Avec sec" ? "Avec « sec »" : v}</button>`).join("")}</div>`;
   return `<label class="champ">Cotation</label>${choix("cot", COTATIONS[act])}
-    <label class="champ">Profil</label>${choix("profil", ["Vertical", "Dévers"])}
-    <label class="champ">Résultat</label>${choix("res", estVoie(act) ? ["Enchaînée", "Avec sec", "Pas finie"] : ["Réussi", "Pas réussi"])}
+    <label class="champ">Profil</label>${segment("profil", ["Vertical", "Dévers"])}
+    <label class="champ">Résultat</label>${resultats}
     ${f.res === "Avec sec" ? `<label class="champ">Nombre de « sec »</label><div class="compteur">
       <button data-${attr}="sec" data-pas="-1">−</button><span>${f.sec}</span><button data-${attr}="sec" data-pas="1">+</button></div>` : ""}`;
 }
@@ -538,6 +589,7 @@ $("ecran").addEventListener("click", e => {
   if (appuiLong) { appuiLong = false; return; }                  // un appui long ne compte pas comme un passage
   const b = e.target.closest("button"), t = b ? b.dataset : {};
   if (b && t.action === "menu") return ouvrirModal({ type: "menu" });
+  if (b && t.action === "douleur") return ouvrirModal({ type: "douleur" });
   if (b && t.plus !== undefined) {                                // un passage en plus du programme
     const i = Number(t.plus), s = courant(), d = lire(s);
     d.extra = d.extra || {}; d.extra[ck(d, i)] = (d.extra[ck(d, i)] || 0) + 1; ecrire(s, d);
@@ -749,34 +801,44 @@ function afficherModal() {
     `<button data-m="${champ}" data-valeur="${v}" class="${String(M[champ]) === String(v) ? "choisi" : ""}">${v}</button>`).join("")}</div>`;
   const serie = (a, b) => Array.from({ length: b - a + 1 }, (_, n) => a + n);
   const zones = ZONES.filter(z => z !== "Aucune");
+  // Échelle « terre » : toutes les valeurs visibles, atténuées ; la valeur choisie en pleine couleur
+  const echelle = (champ, a) => `<div class="echelle">${serie(a, 10).map(v => {
+    const ch = String(M[champ]) === String(v);
+    return `<button data-m="${champ}" data-valeur="${v}" class="${ch ? "choisi" : ""}" style="background:${v ? couleurEchelle(v) : "var(--carte)"};color:${v ? texteEchelle(v) : "var(--texte)"}">${v}</button>`;
+  }).join("")}</div>`;
   let h = "";
   if (M.type === "fin") h = `<h2>${esc(M.titre)}</h2>${bilanTemps()}
-      <label class="champ">Effort (1 à 10)</label>${choix("effort", serie(1, 10))}
-      <label class="champ">Douleur max (0 à 10)</label>${choix("douleur", serie(0, 10))}
+      <label class="champ">Effort (1 à 10)</label>${echelle("effort", 1)}
+      <label class="champ">Douleur max (0 à 10)</label>${echelle("douleur", 0)}
       ${M.douleur > 0 ? `<label class="champ">Zone</label>${choix("zone", zones)}` : ""}
       ${M.douleur >= 5 ? `<div class="alerte">5 ou plus : repos, glace, et consulte si ça dure.</div>` : ""}
       <label class="champ">Durée (min)</label><input type="number" inputmode="numeric" id="m-duree" value="${esc(M.duree)}">
       <label class="champ">Notes (facultatif)</label><textarea id="m-notes" placeholder="Le micro du clavier permet de dicter">${esc(M.notes)}</textarea>
-      <p></p><div class="choix"><button data-m="fermer">Plus tard</button><button data-m="ok" class="choisi">Enregistrer</button></div>`;
+      <div class="actions"><button data-m="fermer">Plus tard</button><button data-m="ok" class="principal">Enregistrer</button></div>`;
   if (M.type === "resultat") h = `<h2>${M.edit !== undefined ? "Corriger ce résultat" : "Résultat de ce passage"}</h2>` + formulaireResultat(M, M.act, "m") +
       `<p class="petit">Touche le résultat pour l'enregistrer directement.</p>
-       <div class="choix"><button data-m="fermer">Passer</button>
-       ${M.res === "Avec sec" || !M.cot ? `<button data-m="ok" class="choisi" ${M.cot && M.res ? "" : "disabled"}>Enregistrer</button>` : ""}</div>`;
+       <div class="actions"><button data-m="fermer">Passer</button>
+       ${M.res === "Avec sec" || !M.cot ? `<button data-m="ok" class="principal" ${M.cot && M.res ? "" : "disabled"}>Enregistrer</button>` : ""}</div>`;
   if (M.type === "douleur") h = `<h2>Signaler une douleur</h2><p class="petit">Séance : ${esc(courant().jour)} ${esc(courant().activite)}</p>
       <label class="champ">Zone</label>${choix("zone", zones)}
-      <label class="champ">Niveau</label>${choix("niv", serie(1, 10))}
+      <label class="champ">Niveau</label>${echelle("niv", 1)}
       ${M.niv >= 5 ? `<div class="alerte">5 ou plus : arrête l'exercice maintenant.</div>` : ""}
-      <p></p><div class="choix"><button data-m="fermer">Annuler</button>
-      <button data-m="ok" class="choisi" ${M.zone && M.niv ? "" : "disabled"}>Enregistrer</button></div>`;
+      <div class="actions"><button data-m="fermer">Annuler</button>
+      <button data-m="ok" class="principal" ${M.zone && M.niv ? "" : "disabled"}>Enregistrer</button></div>`;
   if (M.type === "menu") {
     const k = cle(courant()), pile = JSON.parse(localStorage.getItem("annuler-" + k) || '{"etats":[]}').etats;
+    const d = lire(courant()), ligne = (m, icone, texte, sous = "", cl = "") =>
+      `<button class="ligne-menu ${cl}" data-m="${m}"><span class="icone">${icone}</span><span><span class="titre-menu">${texte}</span>${sous ? `<span class="sous-menu">${sous}</span>` : ""}</span></button>`;
     h = `<h2>Séance</h2><div class="menu-liste">
-      <button class="gros" data-m="annuler" ${pile.length ? "" : "disabled"}>↶ Annuler le dernier geste${pile.length ? ` <span class="petit">(${pile.length} possible${pile.length > 1 ? "s" : ""})</span>` : ""}</button>
-      <button class="gros" data-m="ajout">+ Ajouter un exercice à cette séance</button>
-      <button class="gros" data-m="note-etape">📝 Note sur l'étape en cours</button>
-      <button class="gros danger" data-m="reinit">Réinitialiser la séance</button>
-      <button class="gros" data-m="fermer">Fermer</button></div>
-      <p class="petit">Astuce : un appui long sur une ligne permet aussi d'y attacher une note.</p>`;
+      ${d.debut && !d.fin ? ligne("terminer", "■", "Terminer la séance", "même si toutes les étapes ne sont pas faites") : ""}
+      ${pile.length ? ligne("annuler", "↶", "Annuler le dernier geste", `${pile.length} possible${pile.length > 1 ? "s" : ""}`) : ""}
+      ${ligne("exos", "📖", "Exercices de cette séance")}
+      ${ligne("ajout", "+", "Ajouter un exercice à cette séance")}
+      ${ligne("note-etape", "📝", "Note sur l'étape en cours", "ou appui long sur une ligne")}
+      ${ligne("douleur", "⚠", "Signaler une douleur")}
+      <div class="separateur"></div>
+      ${ligne("reinit", "⟲", "Réinitialiser la séance", "", "danger")}</div>
+      <div class="actions"><button data-m="fermer">Fermer</button></div>`;
   }
   if (M.type === "circuit") {
     const res = estVoie(M.act) ? ["Enchaînée", "Pas finie"] : ["Réussi", "Raté"];
@@ -784,8 +846,8 @@ function afficherModal() {
       <label class="champ">Profil</label>${choix("profil", ["Vertical", "Dévers"])}
       ${M.items.map((it, j) => `<div class="circuit-ligne"><b>${estVoie(M.act) ? "Voie" : "Bloc"} ${j + 1}</b>
         <div class="choix compact">${COTATIONS[M.act].map(c => `<button data-m="ccot" data-j="${j}" data-valeur="${c}" class="${String(it.cot) === c ? "choisi" : ""}">${c}</button>`).join("")}</div>
-        <div class="choix compact">${res.map((r, n) => `<button data-m="cok" data-j="${j}" data-valeur="${n === 0}" class="${it.ok === (n === 0) ? "choisi" : ""}">${n === 0 ? "✓ " : "✗ "}${r}</button>`).join("")}</div></div>`).join("")}
-      <p></p><div class="choix"><button data-m="fermer">Passer</button><button data-m="tout">Tout réussi</button><button data-m="ok" class="choisi">Enregistrer</button></div>`;
+        <div class="choix compact">${res.map((r, n) => `<button data-m="cok" data-j="${j}" data-valeur="${n === 0}" class="${n === 0 ? "res-ok" : "res-non"} ${it.ok === (n === 0) ? "choisi" : ""}">${n === 0 ? "✓ " : "✗ "}${r}</button>`).join("")}</div></div>`).join("")}
+      <div class="actions"><button data-m="fermer">Passer</button><button data-m="tout">Tout réussi</button><button data-m="ok" class="principal">Enregistrer</button></div>`;
   }
   if (M.type === "ajout") {
     h = `<h2>Ajouter un exercice à cette séance</h2>
@@ -796,14 +858,14 @@ function afficherModal() {
       <label class="champ">Repos</label>${choix("repos", [0, 30, 60, 90, 180, 300])}
       <label class="champ">Durée prévue (min)</label>${choix("dureeAj", [0, 5, 10, 15, 20, 30])}
       <p class="petit">0 = repos par défaut de la séance, ou durée estimée automatiquement. L'exercice s'ajoute à la fin de la séance du jour.</p>
-      <div class="choix"><button data-m="fermer">Annuler</button><button data-m="ok" class="choisi" ${M.exo ? "" : "disabled"}>Ajouter</button></div>`;
+      <div class="actions"><button data-m="fermer">Annuler</button><button data-m="ok" class="principal" ${M.exo ? "" : "disabled"}>Ajouter</button></div>`;
   }
   if (M.type === "note") {
     const e = elementsDe(courant(), lire(courant()))[M.ligne];
     h = `<h2>Note sur cette ligne</h2><p class="petit">${esc(e ? (e.type === "routine" ? e.nom : sansGuillemets(e.texte)) : "")}</p>
       <textarea id="m-note" placeholder="ex. prise rouge glissante · méthode : pied gauche haut">${esc(M.texte)}</textarea>
       <p class="petit">La note réapparaîtra sur la même ligne la prochaine fois. Laisse vide pour l'effacer.</p>
-      <div class="choix"><button data-m="fermer">Annuler</button><button data-m="ok" class="choisi">Enregistrer</button></div>`;
+      <div class="actions"><button data-m="fermer">Annuler</button><button data-m="ok" class="principal">Enregistrer</button></div>`;
   }
   if (M.type === "hier") {
     const s = LISTE[M.k], d = lire(s);
@@ -812,7 +874,7 @@ function afficherModal() {
       ${new Date(d.debut).toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })} mais jamais terminée.</p>
       <label class="champ">Durée réelle (min)</label><input type="number" inputmode="numeric" id="m-duree-hier" value="${M.duree}">
       <p class="petit">Durée estimée d'après ta dernière saisie. Corrige-la si besoin.</p>
-      <div class="choix"><button data-m="fermer">Plus tard</button><button data-m="ok" class="choisi">Terminer cette séance</button></div>`;
+      <div class="actions"><button data-m="fermer">Plus tard</button><button data-m="ok" class="principal">Terminer cette séance</button></div>`;
   }
   if (M.type === "mesures") {
     const m = lireMesures(M.sem), a = autoSemaine(M.sem);
@@ -820,7 +882,7 @@ function afficherModal() {
       `<label class="champ">${lab}</label><input type="${type}" ${type === "number" ? 'inputmode="numeric"' : ""}
         data-mesure="${c}" value="${esc(m[c])}" placeholder="${!vide(a[c]) ? "Auto : " + esc(a[c]) : ""}">`).join("") +
       `<p class="petit">Les valeurs « Auto » viennent de ton relevé ; ce que tu tapes a la priorité.</p>
-       <div class="choix"><button data-m="fermer" class="choisi">Fermer</button></div>`;
+       <div class="actions"><button data-m="fermer" class="principal">Fermer</button></div>`;
   }
   $("modal").innerHTML = h;
 }
@@ -917,6 +979,9 @@ function actionMenu(a) {
     derniereAction = null; $("toast").style.display = "none"; libererEcran();
     fermerModal(); ouverts = new Set(); return afficher();
   }
+  if (a === "terminer") { fermerModal(); return terminer(); }
+  if (a === "douleur") return ouvrirModal({ type: "douleur" });
+  if (a === "exos") { fermerModal(); return ouvrirBiblio({ ecran: "liste", filtre: "seance" }); }
   if (a === "ajout") return ouvrirModal({ type: "ajout", exo: "", series: 3, detail: "", repos: 0, dureeAj: 0 });
   if (a === "note-etape") {
     const d = lire(s), i = prochain(s, d), els = elementsDe(s, d);
@@ -939,7 +1004,7 @@ $("ecran").addEventListener("pointerdown", e => {
 $("ecran").addEventListener("pointermove", e => {
   if (departAppui && Math.hypot(e.clientX - departAppui.x, e.clientY - departAppui.y) > 10) clearTimeout(minuterieAppui);
 });
-$("btn-douleur").onclick = () => courant() ? ouvrirModal({ type: "douleur" }) : alert("Ouvre d'abord une séance.");
+
 
 // =====================================================================
 // 10. MINUTEUR : repos, exercices en durée, fractions de course, échauffement guidé
@@ -1020,6 +1085,7 @@ function majMinuteur() {
     if (bt.textContent !== txt) bt.textContent = txt;
     bt.dataset.i = k; bt.style.display = "block";
   } else bt.style.display = "none";
+  m.classList.toggle("phase-repos", !T.fini && T.phases[T.k].type !== "travail");   // bleu pendant le repos, couleur de l'activité pendant l'effort
   if (T.fini) { m.classList.add("fini"); m.classList.remove("bientot");
     $("mn-temps").textContent = "Terminé ✓"; $("mn-label").textContent = ""; $("mn-suivant").textContent = T.suivant || ""; return; }
   const ph = T.phases[T.k], ms = T.pause !== null ? T.pause : T.fin - Date.now();
@@ -1064,8 +1130,8 @@ function finPhase(silencieux = false) {
 }
 
 // Boutons du minuteur ; toucher le temps = plein écran
-document.querySelector("#mn-ctrl").addEventListener("click", e => {
-  const b = e.target.closest("button"); if (!b || !T) return;
+$("minuteur").addEventListener("click", e => {           // boutons du minuteur (rangée et coins)
+  const b = e.target.closest("button[data-mn]"); if (!b || !T) return;
   const a = b.dataset.mn, enPause = T.pause !== null;
   if (a === "moins") enPause ? T.pause = Math.max(1000, T.pause - 30000) : T.fin = Math.max(Date.now() + 1000, T.fin - 30000);
   if (a === "plus") { if (T.fini) { T.fini = false; T.k = T.phases.length - 1; T.fin = Date.now(); }
@@ -1232,74 +1298,132 @@ function lignesCreees() {      // lignes du modèle + exercices ajoutés (avant 
   return [...l.slice(0, fin), ...ajouts, ...l.slice(fin)];
 }
 
-function ouvrirSemaine(sem) { vue = "semaine"; semaineVue = Math.max(1, sem); F = null; afficher(); }
+// Description courte de chaque modèle (cartes de la création de séance)
+const DESC_MODELES = {
+  "Bloc technique léger": "Technique sans forcer, effort 5 à 6",
+  "Bloc projets": "Blocs plus durs, avec du dévers",
+  "Bloc endurance": "Circuits de blocs faciles enchaînés",
+  "Voie volume": "Beaucoup de voies faciles avec une consigne",
+  "Voie projets": "Essais d'enchaînement sur une voie dure",
+  "Fractionné": "Alternance course et marche",
+  "Course continue": "Une durée de course à allure conversation",
+  "Marche rapide": "Endurance douce, sans courir",
+  "Vélo": "Endurance douce, sans impact",
+  "Muscu complète": "Gainage et haut du corps, 25 min",
+  "Muscu courte": "L'essentiel en 12 min",
+  "Muscu express": "Planche et doigts, 6 min",
+  "Gainage express": "4 minutes de gainage",
+  "Séance libre (sans programme)": "Une séance vide : tu notes ce que tu fais",
+};
+const ACT_TYPE = { Escalade: "Voie", Course: "Course", Muscu: "Maison", Libre: "" };   // couleur des tuiles
+const activiteModele = (m, p) => typeof m.activite === "function" ? m.activite(p) : m.activite;
+function dureeModele(m, p, lignes) {          // durée estimée d'un modèle (secondes)
+  const s = { activite: activiteModele(m, p), contenu: (lignes || m.lignes(p)).join("\n"), semaine: 1, jour: "Lundi" };
+  return dureeTotale(s, {});
+}
+
+// ---------- Onglet Semaine ----------
+function ouvrirSemaine(sem) { vue = "semaine"; semaineVue = Math.max(1, sem); afficher(); }
+function bornesSemaine(sem) {
+  const lundi = new Date(debutProgramme() + "T12:00:00"); lundi.setDate(lundi.getDate() + (sem - 1) * 7);
+  const dimanche = new Date(lundi); dimanche.setDate(lundi.getDate() + 6);
+  const mois = d => d.toLocaleDateString("fr-BE", { month: "short" });
+  return lundi.getMonth() === dimanche.getMonth() ? `${lundi.getDate()}-${dimanche.getDate()} ${mois(dimanche)}`
+    : `${lundi.getDate()} ${mois(lundi)} - ${dimanche.getDate()} ${mois(dimanche)}`;
+}
 function afficherSemaine() {
-  $("titre-date").textContent = `Semaine ${semaineVue}`;
-  const etat = d => d.fait === "Oui" ? "✓" : (d.fait === "Non" || d.fait === "Sautée") ? "✗" : (d.debut && !d.fin) ? "●" : "○";
-  let h = `<div class="carte">`;
-  const items = LISTE.map((s, k) => ({ s, k })).filter(x => x.s.semaine === semaineVue);
-  if (!items.length) h += `<p class="petit">Aucune séance cette semaine. Crée-en une avec « + Créer une séance ».</p>`;
-  items.forEach(({ s, k }) => {
-    const d = lire(s), v = nomVersion(s, d), titre = s.libre && s.phase !== "Séance libre" ? s.phase.replace("Séance créée · ", "") : s.activite;
-    const auj = isoDate(dateSeance(s)) === isoDate(new Date());
-    h += `<button class="gros semaine-item ${auj ? "aujourdhui" : ""}" data-act="${esc(s.activite)}" data-ouvrir="${k}">${auj ? `<span class="petit-etiquette">Aujourd'hui</span><br>` : ""}${etat(d)} &nbsp;${esc(s.jour)} ${jourMois(dateSeance(s))} · ${esc(titre)}${s.libre ? " (créée)" : ""}${d.fait === "Oui" && v ? `<br><span class="petit">${esc(v)}</span>` : ""}</button>`;
+  $("titre-date").textContent = `Semaine ${semaineVue} · ${bornesSemaine(semaineVue)}`;
+  const items = LISTE.map((s, k) => ({ s, k, d: lire(s) })).filter(x => x.s.semaine === semaineVue);
+  const prevues = items.filter(x => !/facultati/i.test(x.s.contenu) || x.d.fait === "Oui");
+  const faites = items.filter(x => x.d.fait === "Oui");
+  const minutesFaites = faites.reduce((t, x) => t + (x.d.fin && x.d.debut ? (x.d.fin - x.d.debut) / 1000 : (Number(x.d.duree) || 0) * 60), 0);
+  let h = `<div class="bilan-semaine">${faites.length} séance${faites.length > 1 ? "s" : ""} faite${faites.length > 1 ? "s" : ""} sur ${prevues.length}${minutesFaites ? " · " + hm(minutesFaites) : ""}</div>`;
+  if (!items.length) h += `<p class="petit centre">Aucune séance cette semaine.</p>`;
+  const auj = isoDate(new Date());
+  items.forEach(({ s, k, d }) => {
+    const estAuj = isoDate(dateSeance(s)) === auj, v = nomVersion(s, d);
+    const titre = s.libre && s.phase !== "Séance libre" ? s.phase.replace("Séance créée · ", "") : s.activite;
+    const etat = d.fait === "Oui" ? `<span class="etat-seance fait">✓</span>` : d.fait === "Sautée" || d.fait === "Non" ? `<span class="etat-seance saute">✗</span>`
+      : d.debut && !d.fin ? `<span class="etat-seance encours">●</span>` : `<span class="etat-seance">○</span>`;
+    const duree = d.fait === "Oui" ? `Faite en ${hm(d.fin && d.debut ? (d.fin - d.debut) / 1000 : (Number(d.duree) || 0) * 60)}`
+      : d.fait === "Sautée" ? "Sautée" : `≈ ${hm(dureeTotale(s, d))}${/facultati/i.test(s.contenu) ? " · facultative" : ""}`;
+    h += `<button class="carte-seance ${estAuj ? "aujourdhui" : ""}" data-act="${esc(s.activite)}" data-ouvrir="${k}">
+      <div class="cs-texte">${estAuj ? `<span class="petit-etiquette">Aujourd'hui</span>` : ""}
+        <div class="cs-jour">${esc(s.jour)} ${jourMois(dateSeance(s))}</div>
+        <div class="cs-titre">${esc(titre)}${s.libre ? ` <span class="petit">· créée</span>` : ""}${v && d.fait === "Oui" ? ` <span class="petit">· ${esc(v)}</span>` : ""}</div>
+        <div class="cs-duree">${duree}</div></div>${etat}</button>`;
   });
-  h += `<p class="petit">✓ faite · ✗ non faite ou sautée · ● en cours · ○ à faire</p></div>`;
-  h += F ? formulaireCreation() : `<button class="gros" data-cree="ouvrir">+ Créer une séance</button><p></p>`;
-  if (LISTE.length) h += `<button class="gros go" data-cree="aujourdhui">Séance du jour</button>`;
+  h += `<button class="gros go" data-cree="ouvrir">+ Créer une séance</button>`;
   $("ecran").innerHTML = h;
 }
-function formulaireCreation() {
-  const m = MODELES[F.modele];
+$("ecran").addEventListener("click", e => {
+  if (vue !== "semaine") return;
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.ouvrir !== undefined) return changer(Number(b.dataset.ouvrir));
+  if (b.dataset.cree === "ouvrir") return ouvrirCreation();
+});
+
+// ---------- Création de séance (plein écran, 3 étapes) ----------
+function ouvrirCreation(ajouts) {
+  F = null; F = nouveauFormulaire(); if (ajouts) F.ajouts = ajouts;
+  vue = "creation"; afficher();
+}
+function apercuLignes(lignes, act) {          // aperçu présenté comme une séance
+  const s = { activite: act, contenu: lignes.join("\n"), semaine: 1, jour: "Lundi" }, els = analyser(lignes);
+  let n = 0;
+  return els.map(e => {
+    if (e.type === "info") return `<div class="ligne info">${esc(sansGuillemets(e.texte))}</div>`;
+    const t = typeEtape(e); n++;
+    return `<div class="ligne etape type-${t}"><div class="txt"><div class="num-etape"><span class="type-nom">${TYPES_ETAPE[t]}</span> · ${n}.<span class="duree-prevue">≈ ${hm(dureeElement(s, {}, e))}</span></div>
+      ${esc(e.type === "routine" ? e.nom : (e.n > 1 ? e.n + "× " : "") + sansGuillemets(e.texte))}</div></div>`;
+  }).join("") || `<p class="petit">Séance vide : tu noteras simplement ce que tu fais.</p>`;
+}
+function afficherCreation() {
+  $("titre-date").textContent = "Nouvelle séance";
+  const m = MODELES[F.modele], act = activiteModele(m, F.p), lignes = lignesCreees();
   const puces = (attr, liste, actuel) => `<div class="choix">${liste.map(([v, t]) =>
     `<button ${attr} data-valeur="${esc(v)}" class="${String(actuel) === String(v) ? "choisi" : ""}">${esc(t)}</button>`).join("")}</div>`;
-  const reglages = m.reglages.map(r => `<label class="champ">${esc(r.label)}</label>` + (r.choix
-    ? puces(`data-reg="${r.cle}"`, r.choix.map(c => [c, c]), F.p[r.cle])
-    : `<div class="compteur"><button data-reg="${r.cle}" data-pas="-1">−</button><span>${F.p[r.cle]}${esc(r.unite)}</span>
-       <button data-reg="${r.cle}" data-pas="1">+</button></div>`)).join("");
-  let cat = "";
-  const options = EXERCICES.map(x => { let o = "";
-    const g = `${x.discipline} · ${x.categorie}`;                     // rangé par discipline, comme l'écran Exercices
-    if (g !== cat) { o += (cat ? "</optgroup>" : "") + `<optgroup label="${esc(g)}">`; cat = g; }
-    return o + `<option ${F.exo === x.nom ? "selected" : ""}>${esc(x.nom)}</option>`; }).join("") + "</optgroup>";
-  const apercu = lignesCreees().map(l => l.startsWith(">") ? "▸ <b>" + esc(l.slice(1).trim()) + "</b>"
-      : l.startsWith("!") ? "<i>" + esc(sansGuillemets(l.slice(1).trim())) + "</i>" : "• " + esc(sansGuillemets(l))).join("<br>")
-    || "Séance vide : tu noteras simplement ce que tu fais.";
-  const titres = ["Type et modèle", "Réglages", "Exercices et aperçu"];
-  let corps = "", boutons = "";
+  let h = `<div class="etapes-creation">${[1, 2, 3].map(n => `<span class="${n <= F.etape ? "fait" : ""}"></span>`).join("")}</div>`;
   if (F.etape === 1) {
-    corps = `<label class="champ">Date</label><input type="date" id="cree-date" value="${F.date}">
-      <label class="champ">Type</label>${puces('data-cree="type"', TYPES.map(t => [t, t]), F.type)}
-      <label class="champ">Modèle</label>${puces('data-cree="modele"', MODELES.map((x, k) => [k, x.nom]).filter(([k]) => MODELES[k].type === F.type), F.modele)}`;
-    boutons = `<button data-cree="annuler">Annuler</button><button data-cree="suivant" class="choisi">Suivant ›</button>`;
+    h += `<label class="champ">Date</label><input type="date" id="cree-date" value="${F.date}">
+      <label class="champ">Type de séance</label>
+      <div class="tuiles">${TYPES.map(t => `<button class="tuile ${F.type === t ? "choisi" : ""}" data-act="${ACT_TYPE[t]}" data-cree="type" data-valeur="${t}">
+        <span class="tuile-ic">${{ Escalade: "▲", Course: "➜", Muscu: "◆", Libre: "○" }[t]}</span>${t}</button>`).join("")}</div>
+      <label class="champ">Modèle</label>
+      ${MODELES.map((x, k) => [x, k]).filter(([x]) => x.type === F.type).map(([x, k]) => {
+        const p = {}; x.reglages.forEach(r => p[r.cle] = r.val);
+        return `<button class="carte-modele ${F.modele === k ? "choisi" : ""}" data-act="${esc(activiteModele(x, p))}" data-cree="modele" data-valeur="${k}">
+          <span class="cm-nom">${esc(x.nom)}</span><span class="cm-desc">${esc(DESC_MODELES[x.nom] || "")}</span>
+          ${x.type !== "Libre" ? `<span class="cm-duree">≈ ${hm(dureeModele(x, p))}</span>` : ""}</button>`; }).join("")}`;
   } else if (F.etape === 2) {
-    corps = reglages || `<p class="petit">Ce modèle n'a pas de réglage.</p>`;
-    boutons = `<button data-cree="retour">‹ Retour</button><button data-cree="suivant" class="choisi">Suivant ›</button>`;
+    h += `<h2>${esc(m.nom)}</h2>` + (m.reglages.map(r => `<label class="champ">${esc(r.label)}</label>` + (r.choix
+      ? puces(`data-reg="${r.cle}"`, r.choix.map(c => [c, c]), F.p[r.cle])
+      : `<div class="compteur"><button data-reg="${r.cle}" data-pas="-1">−</button><span>${F.p[r.cle]}${esc(r.unite)}</span>
+         <button data-reg="${r.cle}" data-pas="1">+</button></div>`)).join("") || `<p class="petit">Ce modèle n'a pas de réglage.</p>`)
+      + `<div class="total-creation">Durée totale ≈ ${hm(dureeModele(m, F.p, lignes))}</div>`;
   } else {
-    corps = `<details ${F.exo || F.ajouts.length ? "open" : ""}><summary>Ajouter un exercice (facultatif)</summary>
-      <select id="cree-exo"><option value="">Choisir un exercice…</option>${options}</select>
+    h += `<h2>${esc(m.nom)} · ≈ ${hm(dureeModele(m, F.p, lignes))}</h2>
+      <div class="liste-etapes">${apercuLignes(lignes, act)}</div>
+      <details class="ajout-exo" ${F.exo ? "open" : ""}><summary>+ Ajouter un exercice (facultatif)</summary>
+      <select id="cree-exo"><option value="">Choisir un exercice…</option>${optionsExercices(F.exo)}</select>
       <label class="champ">Séries ou passages</label>
       <div class="compteur"><button data-cree="series" data-pas="-1">−</button><span>${F.series}</span><button data-cree="series" data-pas="1">+</button></div>
       <label class="champ">Détail (facultatif)</label><input type="text" id="cree-detail" value="${esc(F.detail)}" placeholder="ex. 30 s · 8 · 15 par côté">
       <label class="champ">Repos</label>${puces('data-cree="repos"', [[0, "Par défaut"], [30, "30 s"], [60, "1 min"], [90, "1 min 30"], [180, "3 min"], [300, "5 min"]], F.repos)}
       <label class="champ">Durée prévue</label>${puces('data-cree="duree"', [[0, "Estimée"], [5, "5 min"], [10, "10 min"], [15, "15 min"], [20, "20 min"], [30, "30 min"]], F.dureeAj || 0)}
-      <p></p><button class="gros" data-cree="ajouter" ${F.exo ? "" : "disabled"}>+ Ajouter cet exercice</button></details>
-      ${F.ajouts.map((a, k) => `<div class="voie"><span>${a.series}× ${esc(a.exo)}${a.detail ? " · " + esc(a.detail) : ""}</span><button data-cree="retirer" data-valeur="${k}">✕</button></div>`).join("")}
-      <label class="champ">Aperçu</label><div class="explic">${apercu}</div>`;
-    boutons = `<button data-cree="retour">‹ Retour</button><button data-cree="creer" class="choisi">Créer la séance</button>`;
+      <p></p><button class="gros contour" data-cree="ajouter" ${F.exo ? "" : "disabled"}>+ Ajouter cet exercice</button></details>
+      ${F.ajouts.map((a, k) => `<div class="voie"><span>${a.series}× ${esc(a.exo)}${a.detail ? " · " + esc(a.detail) : ""}</span><button data-cree="retirer" data-valeur="${k}">✕</button></div>`).join("")}`;
   }
-  return `<div class="carte"><h2>Créer une séance · étape ${F.etape}/3</h2><p class="petit">${titres[F.etape - 1]} · ${esc(m.nom)}</p>
-    ${corps}<p></p><div class="choix">${boutons}</div></div>`;
+  const gauche = F.etape === 1 ? `<button data-cree="annuler">Annuler</button>` : `<button data-cree="retour">‹ Retour</button>`;
+  const droite = F.etape < 3 ? `<button class="principal" data-cree="suivant">Suivant ›</button>` : `<button class="principal" data-cree="creer">Créer la séance</button>`;
+  $("ecran").innerHTML = h + `<div class="actions">${gauche}${droite}</div>`;
 }
 $("ecran").addEventListener("click", e => {
-  if (vue !== "semaine") return;
+  if (vue !== "creation") return;
   const b = e.target.closest("button"); if (!b) return;
   const t = b.dataset;
-  if (t.ouvrir !== undefined) return changer(Number(t.ouvrir));
-  if (t.cree === "aujourdhui") return changer(indexAujourdhui());
-  if (t.cree === "ouvrir") F = nouveauFormulaire();
-  else if (t.cree === "annuler") F = null;
-  else if (t.cree === "suivant") F.etape = Math.min(3, F.etape + 1);
+  if (t.cree === "annuler") { F = null; return ouvrirSemaine(semaineVue); }
+  if (t.cree === "suivant") F.etape = Math.min(3, F.etape + 1);
   else if (t.cree === "retour") F.etape = Math.max(1, F.etape - 1);
   else if (t.cree === "type") { F = nouveauFormulaire(t.valeur); }
   else if (t.cree === "modele") { F = nouveauFormulaire(F.type, Number(t.valeur)); }
@@ -1315,46 +1439,39 @@ $("ecran").addEventListener("click", e => {
   else if (t.cree === "creer") {
     const date = new Date(F.date + "T12:00:00"), m = MODELES[F.modele];
     const semaine = semaineDe(date), jour = JOURS[(date.getDay() + 6) % 7];
-    if (semaine < 1) { alert("Cette date est avant la date de début du programme (réglable dans Exercices → Programme)."); return; }
-    const libre = { id: Date.now(), semaine, jour,
-      activite: typeof m.activite === "function" ? m.activite(F.p) : m.activite,
-      phase: m.type === "Libre" ? "Séance libre" : "Séance créée · " + m.nom,
-      contenu: lignesCreees().join("\n") };
+    if (semaine < 1) { alert("Cette date est avant la date de début du programme (Plus → Réglages → Programme)."); return; }
+    const libre = { id: Date.now(), semaine, jour, activite: activiteModele(m, F.p),
+      phase: m.type === "Libre" ? "Séance libre" : "Séance créée · " + m.nom, contenu: lignesCreees().join("\n") };
     localStorage.setItem("libres", JSON.stringify([...lireLibres(), libre]));
     F = null; reconstruire();
     return changer(LISTE.findIndex(s => s.libre && s.id === libre.id));
   }
-  const y = window.scrollY; afficherSemaine(); window.scrollTo(0, y);
+  const y = window.scrollY; afficherCreation(); window.scrollTo(0, t.cree === "suivant" || t.cree === "retour" ? 0 : y);
 });
 $("ecran").addEventListener("input", e => {          // champs du formulaire, sans réafficher (garde le clavier)
-  if (vue !== "semaine" || !F) return;
+  if (vue !== "creation" || !F) return;
   if (e.target.id === "cree-date") F.date = e.target.value || F.date;
   if (e.target.id === "cree-detail") F.detail = e.target.value;
 });
 $("ecran").addEventListener("change", e => {
-  if (vue !== "semaine" || !F || e.target.id !== "cree-exo") return;
-  F.exo = e.target.value; const y = window.scrollY; afficherSemaine(); window.scrollTo(0, y);
+  if (vue !== "creation" || !F || e.target.id !== "cree-exo") return;
+  F.exo = e.target.value; const y = window.scrollY; afficherCreation(); window.scrollTo(0, y);
 });
 
 // =====================================================================
-// 14. ÉCRANS EXERCICES (menus déroulants) ET RÉGLAGES (panneaux)
+// 14. ONGLET PLUS : bibliothèque d'exercices, exporter, sauvegarde, réglages, aide
 // =====================================================================
-// --- Écran Exercices : une rangée de disciplines, des sous-menus, des fiches complètes ---
 const DISCIPLINES = ["Voie et bloc", "Voie", "Bloc", "Méthodes", "Muscu", "Course", "Mobilité"];
-let filtreEx = null;            // bouton choisi dans la rangée (null = choix automatique)
-let toutAfficher = false;       // false : les exercices prévus plus tard sont grisés
+const ACT_DISCIPLINE = { Voie: "Voie", Bloc: "Bloc", Course: "Course", Muscu: "Maison" };   // tuiles colorées
 const lireFavoris = () => JSON.parse(localStorage.getItem("favoris") || "[]");
 const estFavori = nom => lireFavoris().includes(nom);
 const nomsCites = contenu => [...contenu.matchAll(/«\s*(.+?)\s*»/g)].map(m => m[1].toLowerCase());
 const semaineActuelle = () => Math.max(1, semaineDe(new Date()));
+const groupeRoutine = nom => /^Échauffement/.test(nom) ? "Échauffements" : /^Vérifications/.test(nom) ? "Sécurité"
+  : /^Course/.test(nom) ? "Course" : /^Gainage/.test(nom) ? "Gainage" : "Retour au calme";
+const ABREG = { Lundi: "lun.", Mardi: "mar.", Mercredi: "mer.", Jeudi: "jeu.", Vendredi: "ven.", Samedi: "sam.", Dimanche: "dim." };
 
-// Exercices cités dans la séance du jour (toutes ses versions)
-function exercicesDuJour() {
-  const auj = isoDate(new Date());
-  const noms = new Set(LISTE.filter(s => isoDate(dateSeance(s)) === auj).flatMap(s => nomsCites(s.contenu)));
-  return EXERCICES.filter(x => noms.has(x.nom.toLowerCase()));
-}
-// Où l'exercice apparaît dans le programme (pour la fiche)
+// Où l'exercice apparaît dans le programme
 let usageCache = null;
 function usage(nom) {
   if (!usageCache) {
@@ -1377,90 +1494,145 @@ function derniereFoisExo(nom) {
   }
   return "";
 }
-const ABREG = { Lundi: "lun.", Mardi: "mar.", Mercredi: "mer.", Jeudi: "jeu.", Vendredi: "ven.", Samedi: "sam.", Dimanche: "dim." };
-function ficheExercice(x) {
-  const k = EXERCICES.indexOf(x), plusTard = !toutAfficher && x.semaine > semaineActuelle();
-  const u = usage(x.nom), df = derniereFoisExo(x.nom);
-  const prevu = x.depuis ? (x.semaine >= 999 ? x.depuis.toLowerCase() : "à partir de : " + x.depuis.toLowerCase()) : "";
-  const utilise = u.length ? u.slice(0, 6).map(s => `sem. ${s.semaine} (${ABREG[s.jour] || s.jour})`).join(", ") + (u.length > 6 ? ` et ${u.length - 6} autres` : "") : "";
-  return `<details class="item ${plusTard ? "verrou" : ""}" data-nom="${esc(x.nom)}" data-t="${esc(sansAccents([x.discipline, x.categorie, x.nom, x.but, x.comment, x.erreurs, x.facile, x.cle].join(" ")))}">
-    <summary>${estFavori(x.nom) ? "★ " : ""}${esc(x.nom)}${plusTard ? ` <span class="petit">· ${esc(prevu)}</span>` : ""}</summary>
-    <p><span class="badge">${esc(x.niveau || "—")}</span> <span class="petit">${esc(x.discipline)} · ${esc(x.categorie)}${prevu && !plusTard ? " · " + esc(prevu) : ""}</span></p>
-    ${plusTard ? `<div class="avert">Prévu plus tard dans ta progression. Attends ce stade, ou demande conseil à un moniteur avant de l'essayer.</div>` : ""}
-    ${corpsFiche(x)}
-    ${utilise ? `<p class="petit"><b>Dans ton programme :</b> ${esc(utilise)}</p>` : ""}
-    <p class="petit"><b>Dernière fois :</b> ${df ? esc(df) : "pas encore fait"}</p>
-    <div class="choix"><button data-favori="${k}">${estFavori(x.nom) ? "★ Retirer des favoris" : "☆ Ajouter aux favoris"}</button>
-      <button data-ajouter-exo="${k}">+ Ajouter à une séance</button></div></details>`;
-}
-const groupeRoutine = nom => /^Échauffement/.test(nom) ? "Échauffements" : /^Vérifications/.test(nom) ? "Sécurité"
-  : /^Course/.test(nom) ? "Course" : /^Gainage/.test(nom) ? "Gainage" : "Retour au calme";
 
-function afficherExercices() {
-  $("titre-date").textContent = "Exercices";
-  const jour = exercicesDuJour();
-  if (filtreEx === null) filtreEx = jour.length ? "jour" : "Voie et bloc";
-  const boutons = [["favoris", "★ Favoris"], ["jour", "Séance du jour"], ...DISCIPLINES.map(d => [d, d]), ["routines", "Routines"]];
-  const q = $("recherche") ? $("recherche").value : "";
-  let h = `<input type="search" id="recherche" placeholder="Rechercher dans tous les exercices…" value="${esc(q)}">
-    <div class="rangee">${boutons.map(([v, t]) => `<button data-filtre="${esc(v)}" class="${filtreEx === v ? "choisi" : ""}">${esc(t)}</button>`).join("")}</div>
-    <label class="interrupteur"><input type="checkbox" id="tout-afficher" ${toutAfficher ? "checked" : ""}> Afficher aussi les exercices prévus plus tard</label>
-    <div id="liste-exos">`;
-  // Regroupe une liste d'exercices en sous-menus (discipline · sous-catégorie)
-  const enGroupes = (liste, avecDiscipline) => {
-    const g = [];
-    liste.forEach(x => { const t = avecDiscipline ? `${x.discipline} · ${x.categorie}` : x.categorie;
-      let e = g.find(y => y.t === t); if (!e) g.push(e = { t, items: [] }); e.items.push(x); });
-    return g.map((e, n) => `<details class="groupe" data-g="${esc(e.t)}" ${g.length === 1 || q || filtreEx === "jour" || filtreEx === "favoris" ? "open" : ""}><summary>${esc(e.t)} <span class="petit">(${e.items.length})</span></summary>
-      ${e.items.map(ficheExercice).join("")}</details>`).join("");
-  };
-  if (q.trim()) {
-    const m = sansAccents(q.trim());
-    const trouves = EXERCICES.filter(x => sansAccents([x.discipline, x.categorie, x.nom, x.but, x.comment, x.erreurs, x.facile, x.cle].join(" ")).includes(m));
-    h += trouves.length ? enGroupes(trouves, true) : `<p class="petit">Aucun exercice ne contient « ${esc(q)} ».</p>`;
-  } else if (filtreEx === "routines") {
-    const g = {};
-    [...new Set(ROUTINES.map(r => r.routine))].forEach(nom => (g[groupeRoutine(nom)] = g[groupeRoutine(nom)] || []).push(nom));
-    h += Object.entries(g).map(([t, noms]) => `<details class="groupe"><summary>${esc(t)} <span class="petit">(${noms.length})</span></summary>
-      ${noms.map(nom => `<details class="item"><summary>${esc(nom)}</summary>${etapesRoutine(nom).map(r =>
-        `<p><b>${esc(r.etape)}</b>${r.duree && r.duree !== "—" ? " (" + esc(r.duree) + ")" : ""} : ${esc(r.quoi)}</p>`).join("")}</details>`).join("")}</details>`).join("");
-  } else if (filtreEx === "jour") {
-    h += jour.length ? `<p class="petit">Les exercices cités dans ta séance du jour :</p>` + enGroupes(jour, true)
-      : `<p class="petit">Aucun exercice cité dans une séance aujourd'hui.</p>`;
-  } else if (filtreEx === "favoris") {
-    const fav = EXERCICES.filter(x => estFavori(x.nom));
-    h += fav.length ? enGroupes(fav, true) : `<p class="petit">Aucun favori. Ouvre un exercice et touche « ☆ Ajouter aux favoris ».</p>`;
-  } else h += enGroupes(EXERCICES.filter(x => x.discipline === filtreEx), false);
-  $("ecran").innerHTML = h + `</div>`;
-  $("recherche").addEventListener("input", () => {           // recherche : réaffiche sans perdre le clavier
-    const champ = $("recherche"), pos = champ.selectionStart;
-    afficherExercices(); const c = $("recherche"); c.focus(); c.setSelectionRange(pos, pos);
+// ---------- Bibliothèque : tuiles → liste → fiche ----------
+let B = { ecran: "tuiles" };          // écran de la bibliothèque
+let toutAfficher = false;              // false : les exercices prévus plus tard sont grisés
+function ouvrirBiblio(etat) { vue = "biblio"; B = { ecran: "tuiles", q: "", ...etat }; afficher(); }
+const TITRES_FILTRE = { favoris: "★ Favoris", seance: "Exercices de cette séance", routines: "Routines", recherche: "Recherche" };
+function exercicesFiltres() {
+  if (B.filtre === "favoris") return EXERCICES.filter(x => estFavori(x.nom));
+  if (B.filtre === "seance") { const n = new Set(courant() ? nomsCites(courant().contenu) : []); return EXERCICES.filter(x => n.has(x.nom.toLowerCase())); }
+  if (B.filtre === "recherche") { const m = sansAccents(B.q.trim());
+    return EXERCICES.filter(x => sansAccents([x.discipline, x.categorie, x.nom, x.but, x.comment, x.erreurs, x.facile, x.cle].join(" ")).includes(m)); }
+  return EXERCICES.filter(x => x.discipline === B.filtre);
+}
+function afficherBiblio() {
+  const recherche = `<input type="search" id="recherche" placeholder="Rechercher un exercice…" value="${esc(B.q || "")}">`;
+  if (B.ecran === "tuiles") {
+    $("titre-date").textContent = "Exercices et méthodes";
+    const tuile = (filtre, titre, n, act = "") => `<button class="tuile" data-act="${act}" data-filtre="${esc(filtre)}"><span class="tuile-nom">${esc(titre)}</span><span class="tuile-n">${n}</span></button>`;
+    $("ecran").innerHTML = `<button class="retour" data-b="plus">‹ Plus</button>${recherche}
+      <div class="tuiles">${tuile("favoris", "★ Favoris", lireFavoris().length)}
+      ${DISCIPLINES.map(d => tuile(d, d, EXERCICES.filter(x => x.discipline === d).length, ACT_DISCIPLINE[d] || "")).join("")}
+      ${tuile("routines", "Routines", new Set(ROUTINES.map(r => r.routine)).size)}</div>`;
+  } else if (B.ecran === "liste") {
+    $("titre-date").textContent = TITRES_FILTRE[B.filtre] || B.filtre;
+    let h = `<button class="retour" data-b="tuiles">‹ Exercices</button>${recherche}`;
+    if (B.filtre === "routines") {
+      const g = {};
+      [...new Set(ROUTINES.map(r => r.routine))].forEach(nom => (g[groupeRoutine(nom)] = g[groupeRoutine(nom)] || []).push(nom));
+      h += Object.entries(g).map(([t, noms]) => `<h3 class="sous-cat">${esc(t)}</h3>` + noms.map(nom =>
+        `<button class="ligne-exo" data-routine-fiche="${esc(nom)}"><span>${esc(nom)}</span><span class="petit">${etapesRoutine(nom).length} étapes ›</span></button>`).join("")).join("");
+    } else {
+      const liste = exercicesFiltres(), groupes = {};
+      liste.forEach(x => { const t = B.filtre === "recherche" || B.filtre === "favoris" || B.filtre === "seance" ? `${x.discipline} · ${x.categorie}` : x.categorie; (groupes[t] = groupes[t] || []).push(x); });
+      h += Object.entries(groupes).map(([t, xs]) => `<h3 class="sous-cat">${esc(t)}</h3>` + xs.map(x => {
+        const plusTard = !toutAfficher && x.semaine > semaineActuelle();
+        const prevu = x.semaine >= 999 ? x.depuis.toLowerCase() : "à partir de : " + x.depuis.toLowerCase();
+        return `<button class="ligne-exo ${plusTard ? "verrou" : ""}" data-fiche="${EXERCICES.indexOf(x)}">
+          <span>${estFavori(x.nom) ? "★ " : ""}${plusTard ? "🔒 " : ""}${esc(x.nom)}${plusTard ? `<span class="petit"> · ${esc(prevu)}</span>` : ""}</span>
+          <span class="badge">${esc(x.niveau || "")}</span></button>`; }).join("")).join("")
+        || `<p class="petit centre">${B.filtre === "favoris" ? "Aucun favori. Ouvre un exercice et touche « ☆ Favori »." : B.filtre === "seance" ? "Aucun exercice cité dans cette séance." : "Aucun exercice trouvé."}</p>`;
+      if (!["favoris", "seance"].includes(B.filtre)) h += `<label class="interrupteur"><input type="checkbox" id="tout-afficher" ${toutAfficher ? "checked" : ""}> Afficher normalement les exercices prévus plus tard</label>`;
+    }
+    $("ecran").innerHTML = h;
+    if ($("tout-afficher")) $("tout-afficher").onchange = e => { toutAfficher = e.target.checked; afficherBiblio(); };
+  } else if (B.ecran === "fiche" && B.routine) {
+    $("titre-date").textContent = "Routine";
+    $("ecran").innerHTML = `<button class="retour" data-b="liste">‹ Routines</button><h2 class="titre-fiche">${esc(B.routine)}</h2>
+      <ol class="etapes">${etapesRoutine(B.routine).map(r => `<li><b>${esc(r.etape)}</b>${r.duree && r.duree !== "—" ? " (" + esc(r.duree) + ")" : ""} : ${esc(r.quoi)}</li>`).join("")}</ol>`;
+  } else {
+    const x = EXERCICES[B.fiche], u = usage(x.nom), df = derniereFoisExo(x.nom);
+    const plusTard = x.semaine > semaineActuelle();
+    $("titre-date").textContent = "Fiche";
+    $("ecran").innerHTML = `<button class="retour" data-b="liste">‹ ${esc(TITRES_FILTRE[B.filtre] || B.filtre)}</button>
+      <h2 class="titre-fiche">${esc(x.nom)}</h2>
+      <p><span class="badge">${esc(x.niveau || "—")}</span> <span class="petit">${esc(x.discipline)} · ${esc(x.categorie)}${x.depuis ? " · " + esc(x.semaine >= 999 ? x.depuis : "à partir de : " + x.depuis.toLowerCase()) : ""}</span></p>
+      ${plusTard ? `<div class="avert">Prévu plus tard dans ta progression. Attends ce stade, ou demande conseil à un moniteur avant de l'essayer.</div>` : ""}
+      ${u.length ? `<p class="petit"><b>Dans ton programme :</b> ${esc(u.slice(0, 6).map(s => `sem. ${s.semaine} (${ABREG[s.jour] || s.jour})`).join(", ") + (u.length > 6 ? ` et ${u.length - 6} autres` : ""))}</p>` : ""}
+      <div class="carte fiche">${corpsFiche(x)}</div>
+      <p class="petit"><b>Dernière fois :</b> ${df ? esc(df) : "pas encore fait"}</p>
+      <div class="actions"><button data-favori="${B.fiche}">${estFavori(x.nom) ? "★ Retirer" : "☆ Favori"}</button>
+        <button class="principal" data-ajouter-exo="${B.fiche}">+ Ajouter à une séance</button></div>`;
+  }
+  if ($("recherche")) $("recherche").addEventListener("input", () => {     // recherche : réaffiche sans perdre le clavier
+    const pos = $("recherche").selectionStart; B.q = $("recherche").value;
+    if (B.q.trim()) { B.ecran = "liste"; B.filtre = "recherche"; } else if (B.filtre === "recherche") B.ecran = "tuiles";
+    afficherBiblio(); const c = $("recherche"); c.focus(); c.setSelectionRange(pos, pos);
   });
-  $("tout-afficher").onchange = e => { toutAfficher = e.target.checked; afficherExercices(); };
 }
 $("ecran").addEventListener("click", e => {
-  if (vue !== "exercices") return;
+  if (vue !== "biblio") return;
   const b = e.target.closest("button"); if (!b) return;
-  const t = b.dataset, y = window.scrollY;
-  const ouverts_ = [...document.querySelectorAll("#liste-exos details[open]")].map(d => d.dataset.nom || d.dataset.g);
-  if (t.filtre) { filtreEx = t.filtre; $("recherche").value = ""; afficherExercices(); return; }
+  const t = b.dataset;
+  if (t.b === "plus") return ouvrirPlus();
+  if (t.b === "tuiles") { B = { ecran: "tuiles", q: "" }; return afficherBiblio(); }
+  if (t.b === "liste") { B.ecran = "liste"; delete B.routine; return afficherBiblio(); }
+  if (t.filtre) { B = { ecran: "liste", filtre: t.filtre, q: "" }; window.scrollTo(0, 0); return afficherBiblio(); }
+  if (t.fiche !== undefined) { B.ecran = "fiche"; B.fiche = Number(t.fiche); window.scrollTo(0, 0); return afficherBiblio(); }
+  if (t.routineFiche) { B.ecran = "fiche"; B.routine = t.routineFiche; window.scrollTo(0, 0); return afficherBiblio(); }
   if (t.favori !== undefined) {
     const nom = EXERCICES[Number(t.favori)].nom, f = lireFavoris();
     localStorage.setItem("favoris", JSON.stringify(f.includes(nom) ? f.filter(n => n !== nom) : [...f, nom]));
-    afficherExercices();
-    document.querySelectorAll("#liste-exos details").forEach(d => { if (ouverts_.includes(d.dataset.nom || d.dataset.g)) d.open = true; });
-    window.scrollTo(0, y); return;
+    return afficherBiblio();
   }
-  if (t.ajouterExo !== undefined) {                          // ouvre la création de séance avec cet exercice
+  if (t.ajouterExo !== undefined) {                     // création de séance avec cet exercice déjà ajouté
     const x = EXERCICES[Number(t.ajouterExo)];
-    vue = "semaine"; semaineVue = semaineActuelle();
-    F = null; F = nouveauFormulaire();
-    F.ajouts = [{ exo: x.nom, series: 3, detail: "", repos: 0 }];
-    afficher();
-    const f = document.querySelector("[data-cree='suivant']"); if (f) f.scrollIntoView({ block: "center" });
+    semaineVue = semaineActuelle();
+    return ouvrirCreation([{ exo: x.nom, series: 3, detail: "", repos: 0, duree: 0 }]);
   }
 });
 
+// ---------- Onglet Plus ----------
+function ouvrirPlus() { vue = "plus"; afficher(); }
+function texteExport() {
+  const t = Number(localStorage.getItem("dernier-export"));
+  const saisies = Object.keys(localStorage).some(k => k.startsWith("seance-") || k.startsWith("libre-"));
+  const jours = t ? Math.floor((Date.now() - t) / 86400000) : null;
+  return { texte: t ? `Dernier export : ${jours === 0 ? "aujourd'hui" : `il y a ${jours} jour${jours > 1 ? "s" : ""}`}` : saisies ? "Jamais exporté" : "Rien à exporter pour l'instant",
+           retard: saisies && (!t || jours > 7) };
+}
+function afficherPlus() {
+  $("titre-date").textContent = "Plus";
+  const ex = texteExport(), vp = typeof VERSION_PROGRAMME === "undefined" ? "?" : VERSION_PROGRAMME;
+  const ligne = (a, icone, titre, sous, cl = "") => `<button class="ligne-menu grande ${cl}" data-plus="${a}"><span class="icone">${icone}</span>
+    <span><span class="titre-menu">${titre}</span><span class="sous-menu">${sous}</span></span><span class="chevron">›</span></button>`;
+  $("ecran").innerHTML = `<div class="menu-liste">
+    ${ligne("biblio", "📖", "Exercices et méthodes", `${EXERCICES.length} fiches · favoris · recherche`)}
+    ${ligne("exporter", "⬆", "Exporter", ex.texte, ex.retard ? "en-retard" : "")}
+    ${ligne("sauvegarde", "💾", "Sauvegarde", "Restaurer tes saisies")}
+    ${ligne("reglages", "⚙", "Réglages", "Programme, minuteur, son, rappels")}
+    ${ligne("aide", "❓", "Aide", "Le guide d'utilisation (connexion requise)")}
+    </div><p class="petit centre version">App ${APP_VERSION} · programme du ${esc(vp)}</p>`;
+}
+function afficherSauvegarde() {
+  $("titre-date").textContent = "Sauvegarde";
+  const ex = texteExport();
+  $("ecran").innerHTML = `<button class="retour" data-plus="retour">‹ Plus</button>
+    <div class="carte"><h2>Exporter</h2><p class="petit ${ex.retard ? "retard" : ""}">${ex.texte}</p>
+    <p class="petit">Crée la sauvegarde (.json) et le fichier pour l'Excel (.csv). Exporte au moins une fois par semaine.</p>
+    <button class="gros contour" data-plus="exporter">⬆ Exporter maintenant</button></div>
+    <div class="carte"><h2>Restaurer</h2>
+    <p class="petit">Nouveau téléphone ou app réinstallée : choisis le fichier <b>sauvegarde-escalade-….json</b> le plus récent.</p>
+    <button class="gros contour" data-plus="restaurer">Restaurer une sauvegarde</button>
+    <input type="file" id="fichier" accept=".json,application/json" hidden></div>`;
+  $("fichier").onchange = restaurer;
+}
+$("ecran").addEventListener("click", e => {
+  if (!["plus", "sauvegarde"].includes(vue)) return;
+  const b = e.target.closest("button"); if (!b) return;
+  const a = b.dataset.plus;
+  if (a === "retour") return ouvrirPlus();
+  if (a === "biblio") return ouvrirBiblio();
+  if (a === "exporter") { exporter(); return afficher(false); }
+  if (a === "sauvegarde") { vue = "sauvegarde"; return afficher(); }
+  if (a === "restaurer") return $("fichier").click();
+  if (a === "reglages") { vue = "reglages"; return afficher(); }
+  if (a === "aide") return window.open(URL_GUIDE, "_blank");
+});
+
+// ---------- Réglages (Plus → Réglages) ----------
 let panneau = null;   // panneau de réglages ouvert
 function afficherReglages() {
   $("titre-date").textContent = "Réglages";
@@ -1495,26 +1667,20 @@ function afficherReglages() {
       <p class="petit">Crée un fichier avec toutes les séances à venir et un rappel pour chacune. Ouvre-le et choisis « Ajouter tout », de préférence dans un calendrier « Escalade » dédié.</p>
       ${Object.keys(R.heures).map(a => `<label class="champ">Heure : ${esc(a)}</label><input type="time" data-heure="${esc(a)}" value="${R.heures[a]}">`).join("")}
       <label class="champ">Rappel</label>${choix("avance", [[15, "15 min avant"], [30, "30 min"], [60, "1 h"], [120, "2 h"]])}
-      <p></p><button class="gros" data-test="calendrier">Créer le fichier calendrier</button>`],
-    ["sauvegarde", "💾 Sauvegarde", `
-      <p class="petit">Pour récupérer tes saisies (nouveau téléphone, app réinstallée) : choisis un fichier
-      <b>sauvegarde-escalade-….json</b> créé par Exporter.</p>
-      <button class="gros" data-test="restaurer">Restaurer une sauvegarde</button>
-      <input type="file" id="fichier" accept=".json,application/json" hidden>`]];
-  $("ecran").innerHTML = panneaux.map(([id, titre, corps]) =>
+      <p></p><button class="gros" data-test="calendrier">Créer le fichier calendrier</button>`]];
+  $("ecran").innerHTML = `<button class="retour" data-plus="retour">‹ Plus</button>` + panneaux.map(([id, titre, corps]) =>
     `<button class="gros panneau-titre ${panneau === id ? "ouvert" : ""}" data-panneau="${id}">${titre} <span>${panneau === id ? "▾" : "▸"}</span></button>
      ${panneau === id ? `<div class="carte">${corps}</div>` : `<p></p>`}`).join("") +
     `<p class="petit centre">App ${APP_VERSION} · programme du ${esc(vp)}</p>`;
-  if ($("fichier")) $("fichier").onchange = restaurer;
 }
 $("ecran").addEventListener("click", e => {
   if (vue !== "reglages") return;
   const b = e.target.closest("button"); if (!b) return;
   const t = b.dataset, y = window.scrollY;
+  if (t.plus === "retour") return ouvrirPlus();
   if (t.panneau) { panneau = panneau === t.panneau ? null : t.panneau; return afficherReglages(); }
   if (t.test === "son") { initAudio(); const s = R.son; R.son = true; bip("fin"); R.son = s; return; }
   if (t.test === "calendrier") return calendrier();
-  if (t.test === "restaurer") return $("fichier").click();
   if (t.tps) { R[t.tps] = Math.max(0.5, Math.min(15, R[t.tps] + Number(t.pas))); sauverReglages(); afficherReglages(); return window.scrollTo(0, y); }
   if (t.bascule) R[t.bascule] = !R[t.bascule];
   if (t.reglage) { const v = t.valeur; R[t.reglage] = v === "true" ? true : v === "false" ? false : isNaN(v) ? v : Number(v); }
@@ -1609,12 +1775,8 @@ function calendrier() {
 }
 
 // Rappel : depuis quand le dernier export ?
-function infoExport() {
-  const t = Number(localStorage.getItem("dernier-export")), el = $("info-export");
-  const saisies = Object.keys(localStorage).some(k => k.startsWith("seance-") || k.startsWith("libre-"));
-  const jours = t ? Math.floor((Date.now() - t) / 86400000) : null;
-  el.textContent = t ? (jours === 0 ? "aujourd'hui" : `il y a ${jours} j`) : (saisies ? "jamais" : "");
-  el.className = saisies && (!t || jours > 7) ? "retard" : "";
+function infoExport() {       // pastille orange sur l'onglet Plus si le dernier export date de plus de 7 jours
+  $("pastille-plus").style.display = texteExport().retard ? "block" : "none";
 }
 
 // =====================================================================
@@ -1649,7 +1811,7 @@ function majInfosSeance() {
     const reste = els.reduce((r, e, i) => i < k || k < 0 || (e.type === "routine" ? routineOk(d, i) : e.type === "action" && compte(d, i) >= e.n) ? r : r + dureeElement(s, d, e), 0)
                   - (k >= 0 ? Math.min(tempsEtapeEnCours(d), dureeElement(s, d, els[k])) : 0);
     const fin = new Date(Date.now() + Math.max(0, reste) * 1000);
-    t = `⏱ ${Math.floor(ecoule / 3600)}:${pad(Math.floor(ecoule / 60) % 60)} · ${t} · fin vers ${fin.toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })}`;
+    t = `⏱ ${Math.floor(ecoule / 3600)}:${pad(Math.floor(ecoule / 60) % 60)} · ≈ ${hm(total)} · fin ${fin.toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })}`;
   } else if (d.fin) t = `Séance faite en ${hm((d.fin - d.debut) / 1000)} · ${t}`;
   el.textContent = t; el.style.display = "block";
   const te = $("temps-etape");                                    // temps passé sur l'étape en cours, mis à jour en continu
@@ -1660,26 +1822,39 @@ function majInfosSeance() {
 }
 function afficher(enHaut = true) {
   if (vue === "seance" && !courant()) { vue = "semaine"; semaineVue = Math.max(1, semaineDe(new Date())); }
-  ({ seance: afficherSeance, semaine: afficherSemaine, exercices: afficherExercices, reglages: afficherReglages })[vue]();
-  $("btn-vue").textContent = vue === "exercices" ? "Séance" : "Exercices";
-  $("btn-reglages").classList.toggle("choisi", vue === "reglages");
-  const navigation = vue === "seance" || vue === "semaine";       // ◀ ▶ inutiles dans Exercices et Réglages
-  ["prec", "suiv"].forEach(id => $(id).style.visibility = navigation ? "visible" : "hidden");
-  $("btn-menu").style.display = vue === "seance" && courant() ? "" : "none";          // ⋯ : seulement sur une séance
+  ({ seance: afficherSeance, semaine: afficherSemaine, creation: afficherCreation, plus: afficherPlus,
+     biblio: afficherBiblio, reglages: afficherReglages, sauvegarde: afficherSauvegarde })[vue]();
+  // Onglet actif, flèches, menu ⋯ et ligne de temps selon l'écran
+  const onglet = { seance: "seance", semaine: "semaine", creation: "semaine" }[vue] || "plus";
+  document.querySelectorAll("#onglets button").forEach(b => b.classList.toggle("actif", b.dataset.onglet === onglet));
+  const fleches = vue === "seance" || vue === "semaine";
+  ["prec", "suiv"].forEach(id => $(id).style.visibility = fleches ? "visible" : "hidden");
+  $("btn-menu").style.display = vue === "seance" && courant() ? "" : "none";
+  document.body.dataset.activite = vue === "seance" && courant() ? (actReleve(courant(), lire(courant())) === "Bloc" ? "Bloc" : courant().activite) : "";
   infoExport(); majInfosSeance();
-  document.body.dataset.activite = vue === "seance" && courant() ? actReleve(courant(), lire(courant())) === "Bloc" && courant().activite === "Voie" ? "Bloc" : courant().activite : "";
   if (enHaut) window.scrollTo(0, 0);
 }
 function changer(i) { vue = "seance"; index = i; ouverts = new Set(); formVoie = null; afficher(); }
-$("prec").onclick = () => vue === "semaine" ? ouvrirSemaine(semaineVue - 1) : LISTE.length && changer(Math.max(0, index - 1));
-$("suiv").onclick = () => vue === "semaine" ? ouvrirSemaine(semaineVue + 1) : LISTE.length && changer(Math.min(LISTE.length - 1, index + 1));
-$("titre-date").onclick = $("btn-semaine").onclick = () => vue === "semaine"
-  ? (courant() ? changer(index) : null)
-  : ouvrirSemaine(courant() ? courant().semaine : semaineDe(new Date()));
-$("btn-vue").onclick = () => { vue = vue === "exercices" ? "seance" : "exercices"; afficher(); };
+const precedent = () => vue === "semaine" ? ouvrirSemaine(semaineVue - 1) : vue === "seance" && LISTE.length && changer(Math.max(0, index - 1));
+const suivant = () => vue === "semaine" ? ouvrirSemaine(semaineVue + 1) : vue === "seance" && LISTE.length && changer(Math.min(LISTE.length - 1, index + 1));
+$("prec").onclick = precedent;
+$("suiv").onclick = suivant;
 $("btn-menu").onclick = () => courant() && ouvrirModal({ type: "menu" });
-$("btn-reglages").onclick = () => { vue = vue === "reglages" ? "seance" : "reglages"; afficher(); };
-$("btn-export").onclick = exporter;
+// Onglets du bas
+document.querySelectorAll("#onglets button").forEach(b => b.onclick = () => {
+  const o = b.dataset.onglet;
+  if (o === "seance") { vue = "seance"; if (index < 0 || !courant()) index = indexAujourdhui(); afficher(); }
+  if (o === "semaine") ouvrirSemaine(vue === "seance" && courant() ? courant().semaine : semaineVue > 1 ? semaineVue : semaineActuelle());
+  if (o === "plus") ouvrirPlus();
+});
+// Balayage gauche/droite sur l'en-tête : séance (ou semaine) précédente / suivante
+let departBalayage = null;
+document.querySelector("header").addEventListener("touchstart", e => { departBalayage = e.touches[0].clientX; }, { passive: true });
+document.querySelector("header").addEventListener("touchend", e => {
+  if (departBalayage === null) return;
+  const dx = e.changedTouches[0].clientX - departBalayage; departBalayage = null;
+  if (Math.abs(dx) > 60) dx > 0 ? precedent() : suivant();
+});
 
 afficher();
 if (T) { if (T.fini) { T = null; sauverT(); } else boucle(); }   // reprend un minuteur en cours

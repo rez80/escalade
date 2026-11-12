@@ -1,6 +1,6 @@
 // Fichier généré par generer_app.py — tu peux aussi le modifier à la main.
 
-const VERSION_PROGRAMME = "11/11/2026 19:10";
+const VERSION_PROGRAMME = "12/11/2026 10:22";
 
 const DATE_DEBUT = "2026-10-26";
 
