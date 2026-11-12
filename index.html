@@ -17,19 +17,21 @@
 <div id="bandeau">Nouvelle version disponible · toucher pour mettre à jour</div>
 
 <header>
-  <button id="prec" aria-label="Précédent">◀</button>
-  <button id="titre-date" aria-label="Voir la semaine"></button>
-  <button id="btn-semaine" aria-label="Vue Semaine">📅</button>
+  <button id="prec" aria-label="Précédent">‹</button>
+  <div id="titre">
+    <div id="titre-date"></div>
+    <!-- Temps écoulé, durée prévue et heure de fin estimée -->
+    <div id="infos-seance"></div>
+  </div>
   <button id="btn-menu" aria-label="Menu de la séance">⋯</button>
-  <button id="suiv" aria-label="Suivant">▶</button>
-  <!-- Temps écoulé, durée prévue et heure de fin estimée -->
-  <div id="infos-seance"></div>
+  <button id="suiv" aria-label="Suivant">›</button>
 </header>
 
 <main id="ecran"></main>
 
 <!-- Minuteur : toucher le temps pour passer en plein écran -->
 <div id="minuteur">
+  <div id="mn-coins"><button data-mn="son" id="mn-son" aria-label="Son">🔊</button><button data-mn="stop" aria-label="Fermer le minuteur">✕</button></div>
   <div id="mn-haut">
     <svg id="mn-anneau" viewBox="0 0 64 64"><circle id="mn-fond" cx="32" cy="32" r="27"/><circle id="mn-arc" cx="32" cy="32" r="27"/></svg>
     <div id="mn-textes"><div id="mn-temps"></div><div id="mn-label"></div><div id="mn-suivant"></div><div id="mn-ecoule"></div></div>
@@ -39,8 +41,6 @@
     <button data-mn="pause" id="mn-pause">❚❚</button>
     <button data-mn="plus">+30</button>
     <button data-mn="passer">Passer</button>
-    <button data-mn="son" id="mn-son">🔊</button>
-    <button data-mn="stop">✕</button>
   </div>
   <!-- Valider la prochaine étape sans quitter le minuteur -->
   <button id="mn-fait"></button>
@@ -49,11 +49,11 @@
 <!-- Bandeau après chaque passage -->
 <div id="toast"><span>Passage noté</span><button id="toast-annuler">Annuler</button></div>
 
-<nav>
-  <button id="btn-vue">Exercices</button>
-  <button id="btn-douleur" aria-label="Signaler une douleur">⚠</button>
-  <button id="btn-reglages" aria-label="Réglages">⚙</button>
-  <button id="btn-export">Exporter<small id="info-export"></small></button>
+<!-- Trois onglets : Séance, Semaine, Plus -->
+<nav id="onglets">
+  <button data-onglet="seance"><span class="ic">▶</span>Séance</button>
+  <button data-onglet="semaine"><span class="ic">▦</span>Semaine</button>
+  <button data-onglet="plus"><span class="ic">≡</span>Plus<span id="pastille-plus"></span></button>
 </nav>
 
 <div id="fond-modal"><div class="carte" id="modal"></div></div>

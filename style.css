@@ -1,215 +1,280 @@
 /* =====================================================================
-   style.css — apparence de l'app Escalade
+   style.css — apparence de l'app Escalade (version 4)
+   Règle : une couleur = un sens. Les couleurs se changent ici, en haut.
    ===================================================================== */
 
-/* ---------- Couleurs (modifiables ici) ---------- */
+/* ---------- Couleurs ---------- */
 :root {
-  --fond:#EEF1F2; --carte:#FFFFFF; --texte:#1C2A33; --doux:#5E6E78;
-  --marque:#1F4E5A;   /* bleu-vert de l'Excel */
-  --prise:#F2C200;    /* jaune « prise » : ce qui est fait */
-  --alerte:#C0392B; --orange:#D9822B; --bord:#D5DCE0; --info:#E4E9EC;
-  --avert:#FBE7D3;    /* fond des encadrés d'avertissement */
+  /* Neutres */
+  --fond:#EEF1F2; --carte:#FFFFFF; --texte:#1C2A33; --doux:#5E6E78; --bord:#D5DCE0; --info:#E9EDEF;
+  --marque:#1F4E5A;                         /* couleur par défaut (hors séance) */
+  /* Activités */
+  --c-voie:#2E6FB7; --c-bloc:#C8336B; --c-course:#0E9AA7; --c-maison:#7B5EA7;
+  /* Types d'étape (bande à gauche) */
+  --t-echauffement:#85B7EB; --t-securite:#E24B4A; --t-facile:#F2D34B; --t-effort:#993C1D; --t-recup:#185FA5;
+  /* Sens */
+  --fait:#3B8C3F; --attention:#F2711C; --danger:#C0392B; --avert:#FDEBDD;
+  --repos:#185FA5;                          /* minuteur pendant le repos */
 }
 @media (prefers-color-scheme: dark) {
-  :root { --fond:#141B20; --carte:#1E282F; --texte:#E6ECEF; --doux:#9AAAB3;
-          --marque:#6FB3C2; --bord:#33424B; --info:#26323A; --avert:#3D2A1A; }
+  :root {
+    --fond:#141B20; --carte:#1E282F; --texte:#E6ECEF; --doux:#9AAAB3; --bord:#33424B; --info:#26323A;
+    --marque:#6FB3C2;
+    --c-voie:#4F8FD6; --c-bloc:#E0558A; --c-course:#2BB5C1; --c-maison:#9C80CF;
+    --t-echauffement:#85B7EB; --t-securite:#F07070; --t-facile:#F2D34B; --t-effort:#C25A35; --t-recup:#4F8FD6;
+    --fait:#5FB563; --attention:#FF8A3D; --danger:#F07070; --avert:#3D2A1A; --repos:#2E6FB7;
+  }
 }
+/* Couleur de l'activité de la séance affichée (et des tuiles, cartes de la semaine…) */
+body { --act:var(--marque); }
+body[data-activite="Voie"], [data-act="Voie"], body[data-activite="Escalade extérieur"], [data-act="Escalade extérieur"] { --act:var(--c-voie); }
+body[data-activite="Bloc"], [data-act="Bloc"] { --act:var(--c-bloc); }
+body[data-activite="Course"], [data-act="Course"] { --act:var(--c-course); }
+body[data-activite="Maison"], [data-act="Maison"] { --act:var(--c-maison); }
 
+/* ---------- Base ---------- */
 * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 body { margin:0; font-family:-apple-system, system-ui, sans-serif; font-size:17px; line-height:1.4;
        background:var(--fond); color:var(--texte);
-       padding:env(safe-area-inset-top) 0 calc(190px + env(safe-area-inset-bottom)); }
+       padding:env(safe-area-inset-top) 0 calc(200px + env(safe-area-inset-bottom)); }
 button { font:inherit; color:var(--texte); background:var(--carte); border:1px solid var(--bord); border-radius:10px; }
 button:disabled { opacity:.45; }
-
-/* ---------- En-tête ---------- */
-header { position:sticky; top:0; z-index:5; background:var(--fond); display:flex; align-items:center; gap:6px;
-         padding:8px 12px; border-bottom:1px solid var(--bord); }
-header button { font-size:22px; width:46px; height:46px; flex:none; }
-#titre-date { flex:1; width:auto; border:none; background:none; font-size:16px; }
+main { padding:12px; max-width:640px; margin:auto; }
+h1 { font-size:30px; line-height:1.1; margin:0; }
+h2 { font-size:18px; margin:0 0 8px; }
+.petit, .phase { color:var(--doux); font-size:14px; }
+.centre { text-align:center; }
+.retard { color:var(--attention); font-weight:700; }
+.carte { background:var(--carte); border:1px solid var(--bord); border-radius:14px; padding:12px 14px; margin-bottom:12px; }
+.avert { background:var(--avert); border:1px solid var(--attention); border-radius:14px; padding:10px 14px; margin-bottom:12px; font-size:15px; }
+.alerte { color:#fff; background:var(--danger); border-radius:10px; padding:10px; margin-top:10px; }
 #bandeau { display:none; background:var(--marque); color:#fff; text-align:center; padding:10px; font-weight:700; }
 
-main { padding:12px; max-width:640px; margin:auto; }
-h1 { font-size:32px; line-height:1.1; margin:4px 0 2px; color:var(--marque); }
-h2 { font-size:18px; margin:0 0 8px; }
-.phase, .petit { color:var(--doux); font-size:15px; }
-.carte { background:var(--carte); border:1px solid var(--bord); border-radius:14px; padding:12px 14px; margin-bottom:12px; }
-.avert { background:var(--avert); border:1px solid var(--orange); border-radius:14px; padding:10px 14px; margin-bottom:12px; font-size:15px; }
-.gros { width:100%; height:52px; font-weight:700; font-size:18px; }
-.gros.go { background:var(--marque); color:#fff; border-color:var(--marque); }
-.semaine-item { text-align:left; height:auto; min-height:52px; padding:10px 14px; margin-bottom:8px; font-weight:600; }
+/* ---------- Boutons : plein (principal), contour, lien ---------- */
+.gros { display:block; width:100%; min-height:52px; font-weight:700; font-size:18px; margin:8px 0; }
+.gros.go, button.principal { background:var(--act); border-color:var(--act); color:#fff; font-weight:700; }
+.gros.contour { background:transparent; border:1.5px solid var(--bord); font-weight:600; }
+.danger { color:var(--danger) !important; border-color:var(--danger) !important; }
+.lien { border:none; background:none; padding:0; text-align:left; font-weight:600; color:var(--act); }
+.lien.petit { color:var(--doux); font-weight:500; margin-top:4px; }
+.actions { display:flex; gap:8px; margin-top:14px; }
+.actions button { flex:1; min-height:50px; font-weight:600; }
+.retour { border:none; background:none; color:var(--act); font-weight:600; padding:4px 0 10px; }
 
-/* ---------- Lignes de la séance ---------- */
-.ligne { display:flex; gap:12px; align-items:center; padding:12px 0; border-bottom:1px solid var(--bord); }
-.ligne:last-child { border-bottom:none; }
-.ligne .txt { flex:1; }
+/* ---------- En-tête : ‹ date › et ⋯ ---------- */
+header { position:sticky; top:0; z-index:5; background:var(--fond); display:flex; align-items:center; gap:6px;
+         padding:6px 10px; border-bottom:1px solid var(--bord); }
+header button { width:44px; height:44px; flex:none; border:none; background:none; font-size:30px; line-height:1; color:var(--doux); }
+#btn-menu { font-size:26px; font-weight:700; color:var(--texte); }
+#titre { flex:1; text-align:center; min-width:0; }
+#titre-date { font-size:16px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#infos-seance { display:none; font-size:12px; color:var(--doux); font-variant-numeric:tabular-nums; }
+
+/* ---------- Écran Séance ---------- */
+.bandeau-seance { background:var(--act); color:#fff; border-radius:16px; padding:14px 16px; margin-bottom:12px; }
+.bandeau-seance .phase { color:rgba(255,255,255,.85); }
+.bandeau-seance .sous-titre { font-size:14px; margin-top:6px; color:#fff; font-weight:600; }
+/* Carte « Maintenant » : pleine, dans la couleur de l'activité */
+.maintenant { position:sticky; top:var(--haut-entete, 58px); z-index:4; background:var(--act); color:#fff;
+              border-radius:16px; padding:12px 14px; margin-bottom:12px; box-shadow:0 6px 18px rgba(0,0,0,.18); }
+.maintenant-haut { display:flex; justify-content:space-between; gap:8px; font-size:13px; color:rgba(255,255,255,.9); }
+.maintenant-titre { font-size:20px; font-weight:700; margin:4px 0 2px; }
+.maintenant-suite { font-size:13px; color:rgba(255,255,255,.85); }
+.maintenant .choix { margin-top:10px; flex-wrap:nowrap; }
+.maintenant button.sur-couleur { background:transparent; border:1.5px solid rgba(255,255,255,.7); color:#fff; font-weight:700; min-height:50px; flex:0 0 auto; padding:0 14px; }
+.maintenant button.blanc { background:#fff; border-color:#fff; color:var(--act); font-weight:800; font-size:18px; min-height:50px; flex:1; }
+.maintenant .retard { color:#FFE0C2; }
+.barre-seance { display:flex; gap:3px; height:8px; margin:8px 0 6px; }
+.barre-seance span { background:rgba(255,255,255,.35); border-radius:4px; min-width:4px; }
+.barre-seance span.fait { background:#9BE29F; }
+.barre-seance span.encours { background:#fff; }
+/* Résumé d'une séance terminée */
+.resume-ligne { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--bord); }
+.resume .liens { margin-top:10px; font-size:15px; }
+.pastille-echelle { display:inline-block; padding:4px 10px; border-radius:20px; font-weight:700; font-size:14px; }
+/* Étapes : bande colorée à gauche selon le type */
+.liste-etapes { margin-bottom:8px; }
+.ligne { display:flex; gap:12px; align-items:center; padding:10px 10px 10px 12px; margin-bottom:6px; background:var(--carte);
+         border:1px solid var(--bord); border-radius:0 12px 12px 0; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+.ligne .txt { flex:1; min-width:0; }
+.ligne.etape { border-left:6px solid var(--bord); }
+.type-echauffement { border-left-color:var(--t-echauffement) !important; }
+.type-securite { border-left-color:var(--t-securite) !important; }
+.type-facile { border-left-color:var(--t-facile) !important; }
+.type-effort { border-left-color:var(--t-effort) !important; }
+.type-recup { border-left-color:var(--t-recup) !important; }
 .ligne.finie .txt { color:var(--doux); }
-.ligne.info { display:block; background:var(--info); border:none; border-radius:10px; padding:8px 10px; margin:6px 0; font-size:15px; color:var(--doux); }
-.case { width:40px; height:40px; flex:none; font-size:22px; font-weight:700; color:transparent; }
-.case.ok, .rond.ok { background:var(--prise); border-color:var(--prise); color:#1C2A33; }
-.ronds { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; max-width:50%; }
-.rond { width:38px; height:38px; border-radius:50%; flex:none; }
+.ligne.actuelle { box-shadow:0 0 0 2px var(--act); }
+.ligne.info { display:block; background:var(--info); border:none; border-radius:10px; font-size:15px; color:var(--doux); }
+.num-etape { display:flex; align-items:center; gap:4px; font-size:12px; color:var(--doux); margin-bottom:2px; }
+.num-etape .etat { width:16px; text-align:center; font-weight:700; }
+.ligne.finie .num-etape .etat { color:var(--fait); }
+.ligne.actuelle .num-etape .etat { color:var(--act); }
+.num-etape .type-nom { font-weight:700; text-transform:uppercase; letter-spacing:.04em; font-size:11px; }
+.num-etape .duree-prevue { margin-left:auto; }
+.case { width:44px; height:44px; flex:none; font-size:22px; font-weight:700; color:transparent; border-radius:12px; }
+.case.ok { background:var(--fait); border-color:var(--fait); color:#fff; }
+.ronds { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; max-width:52%; }
+.rond { width:44px; height:44px; border-radius:50%; flex:none; border:2px solid var(--bord); font-size:20px; font-weight:700; }
+.rond.ok { background:var(--fait); border-color:var(--fait); color:#fff; }
+.rond.en-plus, .rond.plus { border-style:dashed; }
+.rond.plus { color:var(--act); font-size:22px; }
 .outils { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
-.outils button { height:36px; padding:0 10px; font-size:15px; font-weight:600; }
-.lien { border:none; background:none; padding:0; text-align:left; font-weight:600; color:var(--texte); }
-.exo { border:none; background:none; padding:0; color:var(--marque); font-weight:600; text-decoration:underline; text-underline-offset:3px; }
+.outils button { height:36px; padding:0 10px; font-size:14px; font-weight:600; background:transparent; }
+.exo { border:none; background:none; padding:0; color:var(--act); font-weight:600; text-decoration:underline; text-underline-offset:3px; }
 .explic, .detail { background:var(--info); border-radius:10px; padding:8px 10px; margin-top:8px; font-size:15px; }
-.compteur { display:flex; gap:8px; align-items:center; }
-.compteur button { width:48px; height:44px; font-size:22px; }
-.compteur input, .compteur span { text-align:center; width:70px; }
+.note { font-size:14px; margin-top:6px; padding:4px 8px; border-radius:8px; background:var(--avert); }
+.note.ancienne { background:var(--info); color:var(--doux); }
+.ligne-pliee { width:100%; text-align:left; padding:10px 14px; margin-bottom:8px; font-size:15px; color:var(--doux); background:transparent; }
+.entete-pliee { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.petit-bouton { height:40px; padding:0 14px; font-weight:700; background:transparent; }
+.voie { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--bord); }
+.voie button { width:40px; height:36px; }
+.voie .lien { width:auto; height:auto; color:var(--texte); font-weight:500; }
+ol.etapes { margin:6px 0; padding-left:22px; }
+ol.etapes li { margin-bottom:6px; }
 
-/* ---------- Champs ---------- */
+/* ---------- Choix, champs, interrupteurs ---------- */
 label.champ { display:block; font-weight:600; margin:14px 0 6px; }
 input[type=text], input[type=number], input[type=date], input[type=time], input[type=search], select, textarea {
   width:100%; font:inherit; padding:10px; border-radius:10px; border:1px solid var(--bord); background:var(--fond); color:var(--texte); }
 textarea { min-height:70px; }
 .choix { display:flex; flex-wrap:wrap; gap:6px; }
-.choix button { min-width:44px; min-height:44px; height:auto; flex:1 0 auto; padding:6px 10px; }
-button.choisi { background:var(--prise); border-color:var(--prise); color:#1C2A33; font-weight:700; }
-.alerte { color:#fff; background:var(--alerte); border-radius:10px; padding:10px; margin-top:10px; }
-.voie { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--bord); }
-.voie button { width:40px; height:36px; }
+.choix button { min-width:44px; min-height:44px; flex:1 0 auto; padding:6px 10px; background:transparent; }
+button.choisi { border:2px solid var(--act); color:var(--act); font-weight:700; background:var(--carte); }
+.choix.compact button { min-height:38px; min-width:38px; padding:4px 8px; font-size:15px; }
+.segment { display:flex; border:1px solid var(--bord); border-radius:10px; overflow:hidden; }
+.segment button { flex:1; border:none; border-radius:0; min-height:42px; background:transparent; }
+.segment button.choisi { background:var(--act); color:#fff; border:none; }
+.resultats { display:flex; flex-direction:column; gap:6px; }
+.resultats button { min-height:48px; font-weight:600; }
+button.res-ok { background:var(--fait); border-color:var(--fait); color:#fff; }
+button.res-sec { background:transparent; border:1.5px solid var(--bord); }
+button.res-non { background:var(--info); border-color:var(--info); color:var(--doux); }
+button.res-ok.choisi, button.res-non.choisi { box-shadow:0 0 0 3px var(--act); }
+.echelle { display:flex; gap:4px; }
+.echelle button { flex:1; min-width:0; min-height:44px; padding:0; border:none; font-weight:600; opacity:.45; }
+.echelle button.choisi { opacity:1; outline:3px solid var(--texte); outline-offset:1px; }
+.compteur { display:flex; gap:8px; align-items:center; }
+.compteur button { width:48px; height:44px; font-size:22px; background:transparent; }
+.compteur span { text-align:center; min-width:70px; font-weight:600; }
+.interrupteur { display:flex; align-items:center; gap:8px; font-size:14px; color:var(--doux); margin:12px 0; }
+.interrupteur input { width:22px; height:22px; accent-color:var(--act); }
+.badge { display:inline-block; font-size:12px; font-weight:700; padding:2px 8px; border-radius:20px; background:var(--info); color:var(--doux); }
+.circuit-ligne { border-top:1px solid var(--bord); padding:10px 0 4px; }
 
-/* ---------- Minuteur ---------- */
-#minuteur { position:fixed; left:12px; right:12px; bottom:calc(76px + env(safe-area-inset-bottom)); z-index:7;
-            display:none; flex-direction:column; gap:8px; padding:10px 12px; border-radius:16px;
-            background:var(--marque); color:#fff; box-shadow:0 4px 18px rgba(0,0,0,.25); }
-#mn-haut { display:flex; align-items:center; gap:12px; }
-#mn-anneau { width:64px; height:64px; flex:none; transform:rotate(-90deg); }
+/* ---------- Minuteur : couleur selon la phase ---------- */
+#minuteur { position:fixed; left:12px; right:12px; bottom:calc(74px + env(safe-area-inset-bottom)); z-index:7;
+            display:none; flex-direction:column; gap:8px; padding:12px 14px; border-radius:18px;
+            background:var(--act); color:#fff; box-shadow:0 6px 20px rgba(0,0,0,.28); }
+#minuteur.phase-repos { background:var(--repos); }
+#minuteur.bientot { background:var(--attention); }
+#minuteur.fini { background:var(--fait); }
+#mn-coins { position:absolute; top:6px; right:8px; display:flex; gap:2px; }
+#mn-coins button { width:34px; height:34px; border:none; background:none; color:rgba(255,255,255,.85); font-size:16px; padding:0; }
+#mn-haut { display:flex; align-items:center; gap:12px; padding-right:70px; }
+#mn-anneau { width:60px; height:60px; flex:none; transform:rotate(-90deg); }
 #mn-anneau circle { fill:none; stroke-width:8; }
-#mn-fond { stroke:rgba(255,255,255,.25); }
+#mn-fond { stroke:rgba(255,255,255,.3); }
 #mn-arc { stroke:#fff; stroke-linecap:round; transition:stroke-dashoffset .2s linear; }
 #mn-textes { flex:1; min-width:0; }
 #mn-temps { font-size:34px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1; }
-#mn-label, #mn-suivant { font-size:14px; opacity:.9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#mn-label, #mn-suivant, #mn-ecoule { font-size:13px; opacity:.9; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 #mn-ctrl { display:flex; gap:6px; }
-#mn-ctrl button { flex:1; height:44px; padding:0; background:rgba(255,255,255,.15); border-color:rgba(255,255,255,.3); color:#fff; font-weight:700; }
-#minuteur.bientot { background:var(--orange); }
-#minuteur.fini { background:var(--prise); color:#1C2A33; }
-#minuteur.fini #mn-ctrl button { color:#1C2A33; border-color:rgba(0,0,0,.2); }
-/* Plein écran : toucher le temps pour agrandir ou réduire */
-#minuteur.plein { inset:0; border-radius:0; justify-content:center; padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom)); z-index:20; }
-#minuteur.plein #mn-haut { flex-direction:column; text-align:center; }
+#mn-ctrl button { flex:1; height:42px; padding:0; background:transparent; border:1.5px solid rgba(255,255,255,.55); color:#fff; font-weight:700; }
+#mn-fait { display:none; width:100%; min-height:48px; padding:6px 10px; font-weight:800; background:#fff; color:#1C2A33; border:none; }
+#minuteur.plein { inset:0; border-radius:0; justify-content:center; z-index:20;
+                  padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom)); }
+#minuteur.plein #mn-coins { top:calc(14px + env(safe-area-inset-top)); right:14px; }
+#minuteur.plein #mn-coins button { width:48px; height:48px; font-size:22px; }
+#minuteur.plein #mn-haut { flex-direction:column; text-align:center; padding-right:0; }
 #minuteur.plein #mn-anneau { width:240px; height:240px; }
-#minuteur.plein #mn-temps { font-size:84px; }
-#minuteur.plein #mn-label, #minuteur.plein #mn-suivant { font-size:18px; white-space:normal; }
-#minuteur.plein #mn-ctrl button { height:64px; font-size:20px; }
-body.flash { animation:flash .5s 3; }
-@keyframes flash { 50% { background:var(--prise); } }
-
-/* ---------- Barre du bas ---------- */
-nav { position:fixed; bottom:0; left:0; right:0; z-index:6; display:flex; gap:8px;
-      padding:10px 12px calc(10px + env(safe-area-inset-bottom)); background:var(--fond); border-top:1px solid var(--bord); }
-nav button { flex:1; height:54px; font-weight:600; line-height:1.1; }
-nav small { display:block; font-weight:400; font-size:12px; color:var(--doux); }
-nav small.retard { color:var(--orange); font-weight:700; }
-#btn-douleur, #btn-reglages { flex:0 0 58px; font-size:22px; }
-
-/* ---------- Fenêtres (douleur, fin de séance, résultat) ---------- */
-#fond-modal { position:fixed; inset:0; z-index:10; background:rgba(0,0,0,.45); display:none; align-items:flex-end; }
-#fond-modal .carte { width:100%; margin:0; border-radius:16px 16px 0 0; padding-bottom:calc(16px + env(safe-area-inset-bottom)); max-height:88vh; overflow:auto; }
-
-/* ---------- Écran Exercices ---------- */
-.cat { color:var(--marque); font-size:20px; margin:18px 0 4px; }
-details { border-bottom:1px solid var(--bord); padding:10px 0; }
-summary { font-weight:600; }
-.reglage { margin-bottom:12px; }
 #minuteur.plein #mn-anneau circle { stroke-width:4; }
-
-/* ---------- Version 3.2 : séance plus fluide ---------- */
-.centre { text-align:center; }
-/* Carte « Maintenant » : fixée sous l'en-tête pendant la séance */
-.maintenant { position:sticky; top:63px; z-index:4; background:var(--carte); border:2px solid var(--marque);
-              border-radius:14px; padding:10px 14px; margin-bottom:12px; box-shadow:0 4px 14px rgba(0,0,0,.12); }
-.maintenant-titre { font-size:19px; font-weight:700; margin:2px 0 8px; }
-.maintenant .choix button { height:52px; font-size:18px; }
-.ligne.actuelle { border-left:4px solid var(--marque); padding-left:8px; background:var(--info); border-radius:8px; }
-/* Lignes repliées (la dernière fois, relevé) */
-.ligne-pliee { width:100%; text-align:left; padding:10px 14px; margin-bottom:12px; font-size:15px; color:var(--doux); }
-.entete-pliee { display:flex; justify-content:space-between; align-items:center; gap:8px; }
-.petit-bouton { height:40px; padding:0 14px; font-weight:700; }
-/* Bandeau « Passage noté · Annuler » */
-#toast { position:fixed; left:12px; right:12px; bottom:calc(80px + env(safe-area-inset-bottom)); z-index:25; display:none;
-         align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; border-radius:12px;
-         background:var(--texte); color:var(--fond); font-weight:600; box-shadow:0 4px 14px rgba(0,0,0,.25); }
-#toast button { height:40px; padding:0 14px; font-weight:700; background:var(--prise); border-color:var(--prise); color:#1C2A33; }
-/* Bouton « ✓ Fait » du minuteur */
-#mn-fait { display:none; width:100%; min-height:48px; padding:6px 10px; font-weight:700; background:#fff; color:#1C2A33; border:none; }
+#minuteur.plein #mn-temps { font-size:84px; }
+#minuteur.plein #mn-label, #minuteur.plein #mn-suivant, #minuteur.plein #mn-ecoule { font-size:18px; white-space:normal; }
+#minuteur.plein #mn-ctrl button { height:64px; font-size:20px; }
 #minuteur.plein #mn-fait { min-height:72px; font-size:20px; }
-/* Écran Exercices : menus déroulants */
-details.groupe { background:var(--carte); border:1px solid var(--bord); border-radius:14px; padding:0 14px; margin-bottom:10px; }
-details.groupe > summary { font-size:18px; color:var(--marque); padding:14px 0; }
-details.item { padding:10px 0; }
-/* Écran Réglages : un bouton par panneau */
-.panneau-titre { display:flex; justify-content:space-between; align-items:center; padding:0 16px; text-align:left; }
-.panneau-titre.ouvert { border-color:var(--marque); }
-/* Vue Semaine : séance du jour */
-.semaine-item.aujourdhui { border:2px solid var(--marque); background:var(--info); }
-.petit-etiquette { font-size:12px; text-transform:uppercase; letter-spacing:.05em; color:var(--marque); }
+body.flash { animation:flash .5s 3; }
+@keyframes flash { 50% { background:var(--fait); } }
 
-/* ---------- Version 3.3 : exercices par discipline ---------- */
-.rangee { display:flex; flex-wrap:wrap; gap:6px; padding:10px 0 6px; }
-.rangee button { flex:none; height:40px; padding:0 14px; font-weight:600; white-space:nowrap; }
-.interrupteur { display:flex; align-items:center; gap:8px; font-size:14px; color:var(--doux); margin:4px 0 12px; }
-.interrupteur input { width:22px; height:22px; accent-color:var(--marque); }
-.badge { display:inline-block; font-size:12px; font-weight:700; padding:2px 8px; border-radius:20px; background:var(--info); color:var(--marque); }
-details.item.verrou > summary { color:var(--doux); opacity:.7; }
-details.item .choix { margin-top:8px; }
+/* ---------- Bandeau « Passage noté · Annuler » ---------- */
+#toast { position:fixed; left:12px; right:12px; bottom:calc(80px + env(safe-area-inset-bottom)); z-index:25; display:none;
+         align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; border-radius:14px;
+         background:var(--texte); color:var(--fond); font-weight:600; box-shadow:0 4px 14px rgba(0,0,0,.25); }
+#toast button { height:40px; padding:0 14px; font-weight:700; background:var(--fond); border-color:var(--fond); color:var(--texte); }
 
-/* ---------- Version 3.4 ---------- */
-.titre-seance { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.menu-seance { width:48px; height:44px; font-size:24px; font-weight:700; flex:none; }
+/* ---------- Onglets du bas ---------- */
+#onglets { position:fixed; bottom:0; left:0; right:0; z-index:6; display:flex;
+           padding:6px 8px calc(6px + env(safe-area-inset-bottom)); background:var(--carte); border-top:1px solid var(--bord); }
+#onglets button { flex:1; border:none; background:none; color:var(--doux); font-size:12px; font-weight:600; min-height:52px; position:relative; }
+#onglets .ic { display:block; font-size:22px; line-height:1.1; }
+#onglets button.actif { color:var(--act); }
+#pastille-plus { display:none; position:absolute; top:6px; left:calc(50% + 10px); width:10px; height:10px; border-radius:50%; background:var(--attention); }
+
+/* ---------- Fenêtres ---------- */
+#fond-modal { position:fixed; inset:0; z-index:10; background:rgba(0,0,0,.45); display:none; align-items:flex-end; }
+#fond-modal .carte { width:100%; margin:0; border-radius:18px 18px 0 0; padding-bottom:calc(16px + env(safe-area-inset-bottom)); max-height:88vh; overflow:auto; }
 .menu-liste { display:flex; flex-direction:column; gap:8px; }
-.gros.danger { color:var(--alerte); border-color:var(--alerte); }
-.rond.plus { border-style:dashed; font-size:20px; font-weight:700; color:var(--marque); }
-.rond.en-plus { border-style:dashed; }
-.note { font-size:14px; margin-top:6px; padding:4px 8px; border-radius:8px; background:var(--avert); }
-.note.ancienne { background:var(--info); color:var(--doux); }
-.ligne { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
-ol.etapes { margin:6px 0; padding-left:22px; }
-ol.etapes li { margin-bottom:4px; }
-.circuit-ligne { border-top:1px solid var(--bord); padding:10px 0 4px; }
-.choix.compact button { min-height:38px; min-width:38px; padding:4px 8px; font-size:15px; }
-.choix.compact { margin-top:6px; }
-
-/* ---------- Version 3.5 : avancement, durées, couleurs par activité ---------- */
-header { flex-wrap:wrap; }
-#btn-menu { font-size:24px; font-weight:700; }
-#infos-seance { display:none; width:100%; text-align:center; font-size:13px; color:var(--doux); margin-top:-2px; font-variant-numeric:tabular-nums; }
-.maintenant { top:var(--haut-entete, 63px); border-color:var(--act, var(--marque)); }
-.barre-seance { display:flex; gap:3px; height:8px; margin:6px 0 8px; }
-.barre-seance span { background:var(--bord); border-radius:4px; min-width:4px; }
-.barre-seance span.fait { background:#3FA066; }
-.barre-seance span.encours { background:var(--act, var(--marque)); }
-.num-etape { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--doux); margin-bottom:2px; }
-.num-etape .etat { width:18px; text-align:center; font-weight:700; color:var(--act, var(--marque)); }
-.num-etape .duree-prevue { margin-left:auto; }
-.retard { color:var(--orange); font-weight:700; }
-#mn-ecoule { font-size:13px; opacity:.85; }
+.ligne-menu { display:flex; align-items:center; gap:12px; text-align:left; padding:12px 14px; min-height:56px; background:var(--carte); }
+.ligne-menu .icone { width:28px; text-align:center; font-size:20px; flex:none; }
+.ligne-menu .titre-menu { display:block; font-weight:600; }
+.ligne-menu .sous-menu { display:block; font-size:13px; color:var(--doux); }
+.ligne-menu .chevron { margin-left:auto; color:var(--doux); font-size:22px; }
+.ligne-menu.grande { min-height:66px; }
+.ligne-menu.en-retard .sous-menu { color:var(--attention); font-weight:700; }
+.separateur { height:8px; }
 .bilan-temps { border:none; padding:0 0 8px; }
-.bilan-temps summary { color:var(--marque); }
+.bilan-temps summary { color:var(--act); font-weight:600; }
 
-/* Une couleur par activité : titre, carte « Maintenant », étape en cours, boutons principaux, vue Semaine */
-body[data-activite="Voie"], .semaine-item[data-act="Voie"], body[data-activite="Escalade extérieur"], .semaine-item[data-act="Escalade extérieur"] { --act:#2E6FB7; }
-body[data-activite="Bloc"], .semaine-item[data-act="Bloc"] { --act:#D9822B; }
-body[data-activite="Course"], .semaine-item[data-act="Course"] { --act:#3FA066; }
-body[data-activite="Maison"], .semaine-item[data-act="Maison"] { --act:#7B5EA7; }
-@media (prefers-color-scheme: dark) {
-  body[data-activite="Voie"], .semaine-item[data-act="Voie"], body[data-activite="Escalade extérieur"], .semaine-item[data-act="Escalade extérieur"] { --act:#6FA8E8; }
-  body[data-activite="Bloc"], .semaine-item[data-act="Bloc"] { --act:#F0A65C; }
-  body[data-activite="Course"], .semaine-item[data-act="Course"] { --act:#6CC08E; }
-  body[data-activite="Maison"], .semaine-item[data-act="Maison"] { --act:#A98BD6; }
-}
-body[data-activite] main > h1 { color:var(--act, var(--marque)); }
-body[data-activite] .maintenant .gros.go, body[data-activite] .carte .gros.go { background:var(--act, var(--marque)); border-color:var(--act, var(--marque)); }
-.ligne.actuelle { border-left-color:var(--act, var(--marque)); }
-.semaine-item[data-act] { border-left:6px solid var(--act, var(--bord)); }
+/* ---------- Onglet Semaine ---------- */
+.bilan-semaine { text-align:center; font-weight:600; color:var(--doux); margin:4px 0 12px; }
+.carte-seance { display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:12px 14px; margin-bottom:8px;
+                border-left:6px solid var(--act); border-radius:0 14px 14px 0; background:var(--carte); }
+.carte-seance.aujourdhui { box-shadow:0 0 0 2px var(--act); }
+.cs-texte { flex:1; min-width:0; }
+.cs-jour { font-size:13px; color:var(--doux); }
+.cs-titre { font-weight:700; }
+.cs-duree { font-size:13px; color:var(--doux); }
+.petit-etiquette { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--act); }
+.etat-seance { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none;
+               border:2px solid var(--bord); color:var(--doux); font-weight:700; }
+.etat-seance.fait { background:var(--fait); border-color:var(--fait); color:#fff; }
+.etat-seance.encours { border-color:var(--act); color:var(--act); }
+/* Création de séance */
+.etapes-creation { display:flex; gap:6px; justify-content:center; margin:4px 0 12px; }
+.etapes-creation span { width:28px; height:6px; border-radius:3px; background:var(--bord); }
+.etapes-creation span.fait { background:var(--act); }
+.tuiles { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; margin:12px 0; }
+.tuile { min-height:72px; padding:10px; text-align:left; display:flex; flex-direction:column; justify-content:space-between;
+         border:1.5px solid var(--bord); border-top:5px solid var(--act); border-radius:12px; font-weight:700; background:var(--carte); }
+.tuile:not([data-act]), .tuile[data-act=""] { border-top-color:var(--bord); }
+.tuile.choisi { border-color:var(--act); color:var(--texte); box-shadow:0 0 0 2px var(--act); }
+.tuile-ic { font-size:20px; color:var(--act); }
+.tuile-n { font-size:13px; color:var(--doux); font-weight:500; }
+.carte-modele { display:block; width:100%; text-align:left; padding:12px 14px; margin-bottom:8px; border-left:6px solid var(--act); border-radius:0 12px 12px 0; background:var(--carte); }
+.carte-modele.choisi { box-shadow:0 0 0 2px var(--act); border-left-color:var(--act); color:var(--texte); }
+.cm-nom { display:block; font-weight:700; }
+.cm-desc, .cm-duree { display:block; font-size:13px; color:var(--doux); }
+.total-creation { margin-top:16px; padding:12px; border-radius:12px; background:var(--info); text-align:center; font-weight:700; }
+.ajout-exo { margin:10px 0; }
+.ajout-exo summary { color:var(--act); font-weight:600; padding:8px 0; }
 
-/* Retours visuels discrets (désactivés si l'iPhone réduit les animations) */
+/* ---------- Onglet Plus et bibliothèque ---------- */
+.version { margin-top:20px; }
+.sous-cat { font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--doux); margin:16px 0 6px; }
+.ligne-exo { display:flex; justify-content:space-between; align-items:center; gap:8px; width:100%; text-align:left; padding:12px 14px; margin-bottom:6px; min-height:52px; background:var(--carte); }
+.ligne-exo.verrou { color:var(--doux); }
+.titre-fiche { font-size:24px; margin:4px 0 6px; }
+.carte.fiche p { margin:8px 0; }
+
+/* ---------- Retours visuels discrets (désactivés si l'iPhone réduit les animations) ---------- */
 @media (prefers-reduced-motion: no-preference) {
   .rond.nouveau { animation:pop .3s ease-out; }
   .maintenant.nouvelle { animation:glisse .3s ease-out; }
-  .ligne.actuelle { transition:background .3s; }
   @keyframes pop { 0% { transform:scale(.6); } 70% { transform:scale(1.12); } 100% { transform:scale(1); } }
-  @keyframes glisse { 0% { opacity:.4; transform:translateY(6px); } 100% { opacity:1; transform:none; } }
+  @keyframes glisse { 0% { opacity:.5; transform:translateY(6px); } 100% { opacity:1; transform:none; } }
 }
+/* Réglages : un bouton par panneau */
+.panneau-titre { display:flex; justify-content:space-between; align-items:center; padding:0 16px; text-align:left; background:var(--carte); font-size:17px; }
+.carte-modele.choisi, .tuile.choisi { font-weight:inherit; }
+.carte-modele.choisi .cm-nom, .tuile.choisi { font-weight:700; }
