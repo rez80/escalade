@@ -1,4 +1,4 @@
-# App Escalade — mode d'emploi technique (version 5.1)
+# App Escalade — mode d'emploi technique (version 5.3)
 
 Ce fichier s'adresse à toi, pour faire vivre l'app et le rapport. Le guide d'utilisation, lisible par tout le monde, est `aide.html` (bouton **Plus → ❓ Aide** dans l'app, ou l'adresse `…/aide.html`).
 
@@ -34,7 +34,7 @@ Première fois : `pip install openpyxl` (seule dépendance).
 | --- | --- |
 | `python escalade.py` | Tout : `data.js` + `sw.js` pour l'app, et le rapport `Suivi.xlsx` |
 | `python escalade.py --app` | Seulement `data.js` (après une modification de `Programme.xlsx`) |
-| `python escalade.py --rapport` | Seulement `Suivi.xlsx` (après un nouvel export) |
+| `python escalade.py --rapport` | Seulement `Suivi.xlsx` (après un nouvel export) ; si l'export contient des modifications du programme, elles sont reportées dans `Programme.xlsx` et `data.js` est régénéré |
 | `python escalade.py --date 2026-12-01` | Le rapport « comme si » on était à cette date |
 
 La console affiche un résumé : séances faites, voies notées, verdict de l'import, forme du jour, signaux de vigilance, et les **alertes** sur `Programme.xlsx` (routine ou exercice cité mais inexistant).
@@ -47,7 +47,8 @@ La console affiche un résumé : séances faites, voies notées, verdict de l'im
 | --- | --- |
 | Accueil | Forme du jour, Vigilance, semaine en cours, niveaux consolidés (voie/bloc × vertical/dévers), points faibles et exercices conseillés, feux verts, verdict de l'import |
 | Séances | Une ligne par séance : durée, effort, charge, forme, récupération, douleurs avant/pendant/après |
-| Tentatives | Une ligne par voie ou bloc : cotation, profil, style, couleur, nom, résultat, cause d'échec |
+| Tentatives | Une ligne par voie ou bloc : cotation, profil, style, couleur, nom, résultat, cause d'échec, salle, secteur, cotation de la salle |
+| Salles | Projets en cours, et l'inventaire de chaque salle avec l'historique de chaque voie (essais, réussites, première réussite) |
 | Douleurs | Les **épisodes** (une zone, début, fin, durée, niveau max, en cours ou terminé) et tous les signalements |
 | Charge | Par semaine : séances, minutes par activité, charge, rapports sur 4 semaines (indicatifs) + graphiques |
 | Progression | Meilleure cotation réussie par semaine et par domaine + graphique |
@@ -105,6 +106,23 @@ Une séance peut avoir des versions (`## Voie (avec partenaire)`, `## Remplaceme
 
 Pour un nouveau **bloc** du même programme, il suffit d'ajouter ses lignes à la suite dans l'onglet Programme (sans changer la date) : rien n'est effacé.
 
+## Salles et temps saisis (version 5.2)
+
+- **Salles** (`localStorage` clé `salles`, incluse dans la sauvegarde) : nom, type, échelles de cotation (cotation de la salle → équivalent dans l'app), secteurs (profil par défaut, date de mise à jour), inventaire. Une tentative garde `cot` (échelle de l'app, utilisée par toutes les analyses), `cotSalle`, `salle` et `voieId`. Une tentative notée avec une couleur ou un nom crée la voie dans l'inventaire si elle n'existe pas (`finaliserTentative`).
+- **Voies « différentes »** (feux verts) : par identifiant de voie quand il existe, sinon cotation + couleur + nom.
+- **Temps saisis** : `d.tempsManuel` (minutes par étape) et `d.heuresSaisies` ; prioritaires sur les mesures (`tempsReel`), marqués « saisi » dans l'export.
+
+## Modifier le programme dans l'app (version 5.3)
+
+Les modifications (éditeur de séance, copier une séance ou une semaine, répéter, pause, bloc suivant) sont des **opérations** (`localStorage` clé `modifs-programme`) appliquées dans l'ordre par-dessus `SEANCES` (`programmeEffectif`) :
+- `set` : remplace le contenu (et la phase) d'une séance, ou l'ajoute ;
+- `del` : supprime une séance ;
+- `pause` : décale de `n` semaines toutes les séances à partir de `depuis`.
+
+Elles partent dans l'export (lignes `Programme`). `python escalade.py` les applique **une seule fois** à `Programme.xlsx` (onglet masqué « Modifs appliquées »), régénère `data.js`, qui contient `MODIFS_APPLIQUEES` : l'app ignore alors ces opérations, déjà intégrées au programme. Pense à envoyer `data.js` et `sw.js` sur GitHub après une synchronisation.
+
+Une semaine contenant des séances commencées n'est jamais écrasée par une copie, et une pause est refusée si une séance à décaler est déjà commencée.
+
 ## Carte du code (`app.js`)
 
 | Pour changer… | Regarde |
@@ -150,12 +168,14 @@ Puis lance `python escalade.py --app` (il signale les noms introuvables) et reme
 
 ## Format de l'export (`export-escalade-….csv`)
 
-Séparateur `;`, en-têtes `Type;Semaine;Jour;Activité;Date;C1…C14`. `Jour` est le jour **prévu** (clé de la séance) ; `Date` est la date **réelle** (une séance déplacée garde son jour prévu et prend la date du nouveau jour).
+Séparateur `;`, en-têtes `Type;Semaine;Jour;Activité;Date;C1…C15`. `Jour` est le jour **prévu** (clé de la séance) ; `Date` est la date **réelle** (une séance déplacée garde son jour prévu et prend la date du nouveau jour).
 
 | Type | C1 à C14 |
 | --- | --- |
-| Séance / Séance libre | Fait, durée, effort, douleur après, zone, meilleure perf, nb « sec », notes (dont « Raison : … » si sautée), récup doigts/coudes/épaules, énergie, motivation, douleur avant, zone avant, douleur pendant (max) |
-| Voie | Cotation, profil, résultat, nb « sec », rang, style, couleur, nom, cause d'échec |
+| Séance / Séance libre | Fait, durée, effort, douleur après, zone, meilleure perf, nb « sec », notes (dont « Raison : … » si sautée), récup doigts/coudes/épaules, énergie, motivation, douleur avant, zone avant, douleur pendant (max), salle |
+| Voie | Cotation (échelle de l'app), profil, résultat, nb « sec », rang, style, couleur, nom, cause d'échec, cotation de la salle, salle, secteur, identifiant de la voie |
+| Programme | Modification du programme faite dans l'app : opération (set, del, pause), contenu, phase, identifiant, semaine de départ et décalage (pause) |
+| Inventaire | Salle, secteur, couleur, cotation salle, cotation app, profil, nom, statut, date de démontage, identifiant, notes (colonne Activité = Voie ou Bloc, Date = ouverture) |
 | Douleur | Zone, niveau, heure |
 | Mesure | Planche, course, nb « sec », voie, bloc, tractions, notes, genou contre le mur, 90/90, squat profond, mains derrière le dos |
 | Compétences | Pieds, lecture, dévers, gainage, endurance, repos, profil, confiance, bloc |
