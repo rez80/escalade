@@ -1,6 +1,6 @@
 // Fichier généré par escalade.py à partir de Programme.xlsx — ne pas modifier à la main.
 
-const VERSION_PROGRAMME = "12/11/2026 23:08";
+const VERSION_PROGRAMME = "13/11/2026 00:02";
 
 const DATE_DEBUT = "2026-11-09";
 
@@ -55,7 +55,7 @@ const SEANCES = [
   "phase": "B1 · S1-2 Consolider le 5b",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Thème de la semaine : pieds silencieux.\n2× Voie en 5a · « Pieds silencieux » · « Regarder le pied jusqu'à la pose » (repos 3 min)\n2× Voie en 5b · « Aucun repositionnement » (repos 4 min)\n3× Voie en 5b en dévers · « Travail au point » · 3 essais max (repos 5 min)\n! Après chaque essai, note la cause d'échec : pieds, placement ou énergie.\n2× Voie facile en 4 ou 5a · montée lente · « Grimpe fluide » (repos 2 min)\n> Coudes après la séance"
+  "contenu": "## Voie (avec partenaire)\n> Échauffement voie\n> Vérifications croisées\n! Thème de la semaine : pieds silencieux.\n2× Voie en 5a · « Pieds silencieux » · « Regarder le pied jusqu'à la pose » (repos 3 min)\n2× Voie en 5b · « Aucun repositionnement » (repos 4 min)\n3× Voie en 5b en dévers · « Travail au point » · 3 essais max (repos 5 min)\n! Après chaque essai, note la cause d'échec : pieds, placement ou énergie.\n2× Voie facile en 4 ou 5a · montée lente · « Grimpe fluide » (repos 2 min)\n> Coudes après la séance\n## Remplacement bloc (pas de partenaire)\n> Échauffement bloc\n! Pas de partenaire : séance en bloc avec le même objectif que la voie de la semaine.\n5× Bloc niveau 4 · « Pieds silencieux » · « Regarder le pied jusqu'à la pose » (repos 2 min)\n4× Bloc niveau 5 · « Aucun repositionnement » (repos 3 min)\n4× Bloc 4 ou 5 en dévers · même méthode que le « Travail au point » : décompose, repose-toi, réessaie [effort] (repos 3 min)\n1× « Traversée basse » · 5 min sans poser pied, pour la continuité [facile]\n> Coudes après la séance"
  },
  {
   "semaine": 1,
@@ -69,7 +69,7 @@ const SEANCES = [
   "phase": "B1 · S1-2 Consolider le 5b",
   "jour": "Vendredi",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n5× Bloc niveau 4 · tous réussis, aucune précipitation (repos 2 min)\n6× Essai sur « Projet » : bloc 5 vertical (6 si feu vert) · 6 essais max (repos 4 min)\n! Quand le mouvement devient aléatoire : arrêt du projet.\n2× Bloc dévers facile · montée, « Désescalade », remontée · « Hanches collées » (repos 2 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n5× Bloc niveau 4 · tous réussis, aucune précipitation (repos 2 min)\n6× Essai sur « Projet » : bloc 5 vertical (6 si feu vert) · 6 essais max (repos 4 min)\n! Quand le mouvement devient aléatoire : arrêt du projet.\n2× Bloc dévers facile · montée, « Désescalade », remontée · « Hanches collées » (repos 2 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 1,
@@ -83,7 +83,7 @@ const SEANCES = [
   "phase": "B1 · S1-2 Consolider le 5b",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Thème technique : « Pieds silencieux ».\n5× Bloc niveau 4 · « Pieds silencieux » (repos 2 min)\n4× Bloc niveau 5 · sans pression (repos 3 min)\n2× Bloc difficile · 2 essais puis arrêt [effort] (repos 3 min)\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Thème technique : « Pieds silencieux ».\n5× Bloc niveau 4 · « Pieds silencieux » (repos 2 min)\n4× Bloc niveau 5 · sans pression (repos 3 min)\n2× Bloc difficile · 2 essais puis arrêt [effort] (repos 3 min)\n> Coudes après la séance"
  },
  {
   "semaine": 2,
@@ -97,7 +97,7 @@ const SEANCES = [
   "phase": "B1 · S1-2 Consolider le 5b",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Thème de la semaine : regarder chaque pied jusqu'à la pose.\n2× Voie en 5a · « Pieds silencieux » · « Regarder le pied jusqu'à la pose » (repos 3 min)\n2× Voie en 5b · « Aucun repositionnement » (repos 4 min)\n3× Voie en 5b en dévers · « Travail au point » · 3 essais max (repos 5 min)\n! Après chaque essai, note la cause d'échec : pieds, placement ou énergie.\n2× Voie facile en 4 ou 5a · montée lente · « Grimpe fluide » (repos 2 min)\n> Coudes après la séance"
+  "contenu": "## Voie (avec partenaire)\n> Échauffement voie\n> Vérifications croisées\n! Thème de la semaine : regarder chaque pied jusqu'à la pose.\n2× Voie en 5a · « Pieds silencieux » · « Regarder le pied jusqu'à la pose » (repos 3 min)\n2× Voie en 5b · « Aucun repositionnement » (repos 4 min)\n3× Voie en 5b en dévers · « Travail au point » · 3 essais max (repos 5 min)\n! Après chaque essai, note la cause d'échec : pieds, placement ou énergie.\n2× Voie facile en 4 ou 5a · montée lente · « Grimpe fluide » (repos 2 min)\n> Coudes après la séance\n## Remplacement bloc (pas de partenaire)\n> Échauffement bloc\n! Pas de partenaire : séance en bloc avec le même objectif que la voie de la semaine.\n5× Bloc niveau 4 · « Pieds silencieux » · « Regarder le pied jusqu'à la pose » (repos 2 min)\n4× Bloc niveau 5 · « Aucun repositionnement » (repos 3 min)\n4× Bloc 4 ou 5 en dévers · même méthode que le « Travail au point » : décompose, repose-toi, réessaie [effort] (repos 3 min)\n1× « Traversée basse » · 5 min sans poser pied, pour la continuité [facile]\n> Coudes après la séance"
  },
  {
   "semaine": 2,
@@ -111,7 +111,7 @@ const SEANCES = [
   "phase": "B1 · S1-2 Consolider le 5b",
   "jour": "Vendredi",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n5× Bloc niveau 4 · tous réussis, aucune précipitation (repos 2 min)\n6× Essai sur « Projet » : bloc 5 vertical (6 si feu vert) · 6 essais max (repos 4 min)\n! Quand le mouvement devient aléatoire : arrêt du projet.\n2× Bloc dévers facile · montée, « Désescalade », remontée · « Hanches collées » (repos 2 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n5× Bloc niveau 4 · tous réussis, aucune précipitation (repos 2 min)\n6× Essai sur « Projet » : bloc 5 vertical (6 si feu vert) · 6 essais max (repos 4 min)\n! Quand le mouvement devient aléatoire : arrêt du projet.\n2× Bloc dévers facile · montée, « Désescalade », remontée · « Hanches collées » (repos 2 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 2,
@@ -125,7 +125,7 @@ const SEANCES = [
   "phase": "B1 · S1-2 Consolider le 5b",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Thème technique : « Bras tendus ».\n5× Bloc niveau 4 · « Bras tendus » (repos 2 min)\n4× Bloc niveau 5 · sans pression (repos 3 min)\n2× Bloc difficile · 2 essais puis arrêt [effort] (repos 3 min)\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Thème technique : « Bras tendus ».\n5× Bloc niveau 4 · « Bras tendus » (repos 2 min)\n4× Bloc niveau 5 · sans pression (repos 3 min)\n2× Bloc difficile · 2 essais puis arrêt [effort] (repos 3 min)\n> Coudes après la séance"
  },
  {
   "semaine": 3,
@@ -139,7 +139,7 @@ const SEANCES = [
   "phase": "B1 · S3-4 Dévers",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Objectif : le dévers. Bassin collé au mur, bras tendus.\n3× Voie en 5a en dévers · « Hanches collées » (repos 3 min)\n2× Voie en 5b en dévers · « Profil alterné » (repos 4 min)\n3× Essai sur « Projet » : voie 5b en dévers (5c si feu vert) · 3 essais max (repos 10 min)\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance"
+  "contenu": "## Voie (avec partenaire)\n> Échauffement voie\n> Vérifications croisées\n! Objectif : le dévers. Bassin collé au mur, bras tendus.\n3× Voie en 5a en dévers · « Hanches collées » (repos 3 min)\n2× Voie en 5b en dévers · « Profil alterné » (repos 4 min)\n3× Essai sur « Projet » : voie 5b en dévers (5c si feu vert) · 3 essais max (repos 10 min)\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance\n## Remplacement bloc (pas de partenaire)\n> Échauffement bloc\n! Pas de partenaire : séance en bloc avec le même objectif que la voie de la semaine.\n! Objectif : le dévers. Bassin collé au mur, bras tendus.\n4× Bloc niveau 4 en dévers · « Hanches collées » · « Profil alterné » (repos 2 min)\n5× Essai sur « Projet » : bloc 5 en dévers · 5 essais max (repos 4 min)\n2× « Traversée dévers aller-retour » (repos 3 min)\n> Coudes après la séance"
  },
  {
   "semaine": 3,
@@ -153,7 +153,7 @@ const SEANCES = [
   "phase": "B1 · S3-4 Dévers",
   "jour": "Vendredi",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n5× Essai sur « Projet » : bloc 5 en dévers · 5 essais max (repos 4 min)\n3× Essai sur « Projet » : bloc 5 vertical (6 si feu vert) (repos 4 min)\n2× « Traversée dévers aller-retour » (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n5× Essai sur « Projet » : bloc 5 en dévers · 5 essais max (repos 4 min)\n3× Essai sur « Projet » : bloc 5 vertical (6 si feu vert) (repos 4 min)\n2× « Traversée dévers aller-retour » (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 3,
@@ -167,7 +167,7 @@ const SEANCES = [
   "phase": "B1 · S3-4 Dévers",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Thème : lecture. Avant chaque bloc, annonce mains, pieds et positions de repos.\n6× Bloc niveau 4 · « Lecture à voix haute » (repos 2 min)\n4× Bloc niveau 5 · « Les trois prises » (repos 3 min)\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Thème : lecture. Avant chaque bloc, annonce mains, pieds et positions de repos.\n6× Bloc niveau 4 · « Lecture à voix haute » (repos 2 min)\n4× Bloc niveau 5 · « Les trois prises » (repos 3 min)\n> Coudes après la séance"
  },
  {
   "semaine": 4,
@@ -181,7 +181,7 @@ const SEANCES = [
   "phase": "B1 · S3-4 Dévers",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Objectif : le dévers. Bassin collé au mur, bras tendus.\n3× Voie en 5a en dévers · « Hanches collées » (repos 3 min)\n2× Voie en 5b en dévers · « Profil alterné » (repos 4 min)\n3× Essai sur « Projet » : voie 5b en dévers (5c si feu vert) · 3 essais max (repos 10 min)\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance"
+  "contenu": "## Voie (avec partenaire)\n> Échauffement voie\n> Vérifications croisées\n! Objectif : le dévers. Bassin collé au mur, bras tendus.\n3× Voie en 5a en dévers · « Hanches collées » (repos 3 min)\n2× Voie en 5b en dévers · « Profil alterné » (repos 4 min)\n3× Essai sur « Projet » : voie 5b en dévers (5c si feu vert) · 3 essais max (repos 10 min)\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance\n## Remplacement bloc (pas de partenaire)\n> Échauffement bloc\n! Pas de partenaire : séance en bloc avec le même objectif que la voie de la semaine.\n! Objectif : le dévers. Bassin collé au mur, bras tendus.\n4× Bloc niveau 4 en dévers · « Hanches collées » · « Profil alterné » (repos 2 min)\n5× Essai sur « Projet » : bloc 5 en dévers · 5 essais max (repos 4 min)\n2× « Traversée dévers aller-retour » (repos 3 min)\n> Coudes après la séance"
  },
  {
   "semaine": 4,
@@ -195,7 +195,7 @@ const SEANCES = [
   "phase": "B1 · S3-4 Dévers",
   "jour": "Vendredi",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n5× Essai sur « Projet » : bloc 5 en dévers · 5 essais max (repos 4 min)\n3× Essai sur « Projet » : bloc 5 vertical (6 si feu vert) (repos 4 min)\n2× « Traversée dévers aller-retour » (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n5× Essai sur « Projet » : bloc 5 en dévers · 5 essais max (repos 4 min)\n3× Essai sur « Projet » : bloc 5 vertical (6 si feu vert) (repos 4 min)\n2× « Traversée dévers aller-retour » (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 4,
@@ -209,7 +209,7 @@ const SEANCES = [
   "phase": "B1 · S3-4 Dévers",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Thème : lecture. Avant chaque bloc, annonce mains, pieds et positions de repos.\n6× Bloc niveau 4 · « Lecture à voix haute » (repos 2 min)\n4× Bloc niveau 5 · « Les trois prises » (repos 3 min)\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Thème : lecture. Avant chaque bloc, annonce mains, pieds et positions de repos.\n6× Bloc niveau 4 · « Lecture à voix haute » (repos 2 min)\n4× Bloc niveau 5 · « Les trois prises » (repos 3 min)\n> Coudes après la séance"
  },
  {
   "semaine": 5,
@@ -223,7 +223,7 @@ const SEANCES = [
   "phase": "B1 · S5-6 Endurance",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Objectif : endurance spécifique. Accumuler de la fatigue sans s'épuiser.\n! Circuit : enchaîne les 4 voies avec seulement le temps de t'encorder entre elles (environ 2 minutes).\n1× « Circuit » de 4 voies : 5a, 5b, 5a, 5b [effort] (repos 5 min)\n1× Voie en 5b (5c si feu vert) · « Repos bras tendu » [effort] (repos 5 min)\n! Pendant la voie, cherche des positions de repos debout.\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance"
+  "contenu": "## Voie (avec partenaire)\n> Échauffement voie\n> Vérifications croisées\n! Objectif : endurance spécifique. Accumuler de la fatigue sans s'épuiser.\n! Circuit : enchaîne les 4 voies avec seulement le temps de t'encorder entre elles (environ 2 minutes).\n1× « Circuit » de 4 voies : 5a, 5b, 5a, 5b [effort] (repos 5 min)\n1× Voie en 5b (5c si feu vert) · « Repos bras tendu » [effort] (repos 5 min)\n! Pendant la voie, cherche des positions de repos debout.\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance\n## Remplacement bloc (pas de partenaire)\n> Échauffement bloc\n! Pas de partenaire : séance en bloc avec le même objectif que la voie de la semaine.\n! Objectif : endurance. Enchaîne les blocs d'un circuit sans pause.\n3× « Circuit » de 4 blocs faciles, niveau 3 ou 4 [effort] (repos 4 min)\n1× « ARC » · 10 min en continu, intensité 4/10 [facile]\n> Coudes après la séance"
  },
  {
   "semaine": 5,
@@ -237,7 +237,7 @@ const SEANCES = [
   "phase": "B1 · S5-6 Endurance",
   "jour": "Vendredi",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n4× Bloc niveau 5 (repos 3 min)\n6× Essai sur « Projet » : bloc 5 en dévers, ou bloc 6 si feu vert · 6 essais max (repos 4 min)\n2× « Traversée dévers aller-retour » (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n4× Bloc niveau 5 (repos 3 min)\n6× Essai sur « Projet » : bloc 5 en dévers, ou bloc 6 si feu vert · 6 essais max (repos 4 min)\n2× « Traversée dévers aller-retour » (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 5,
@@ -251,7 +251,7 @@ const SEANCES = [
   "phase": "B1 · S5-6 Endurance",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Volume sans chercher la performance (« Volume »).\n7× Bloc niveau 4 · « Aucun repositionnement » (repos 2 min)\n4× Bloc niveau 5 (repos 3 min)\n1× « ARC » · 10 min en continu, intensité 4/10 [facile]\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Volume sans chercher la performance (« Volume »).\n7× Bloc niveau 4 · « Aucun repositionnement » (repos 2 min)\n4× Bloc niveau 5 (repos 3 min)\n1× « ARC » · 10 min en continu, intensité 4/10 [facile]\n> Coudes après la séance"
  },
  {
   "semaine": 6,
@@ -265,7 +265,7 @@ const SEANCES = [
   "phase": "B1 · S5-6 Endurance",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Objectif : endurance spécifique. Accumuler de la fatigue sans s'épuiser.\n! Circuit : enchaîne les 4 voies avec seulement le temps de t'encorder entre elles (environ 2 minutes).\n1× « Circuit » de 4 voies : 5a, 5b, 5a, 5b [effort] (repos 5 min)\n1× Voie en 5b (5c si feu vert) · « Repos bras tendu » [effort] (repos 5 min)\n! Pendant la voie, cherche des positions de repos debout.\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance"
+  "contenu": "## Voie (avec partenaire)\n> Échauffement voie\n> Vérifications croisées\n! Objectif : endurance spécifique. Accumuler de la fatigue sans s'épuiser.\n! Circuit : enchaîne les 4 voies avec seulement le temps de t'encorder entre elles (environ 2 minutes).\n1× « Circuit » de 4 voies : 5a, 5b, 5a, 5b [effort] (repos 5 min)\n1× Voie en 5b (5c si feu vert) · « Repos bras tendu » [effort] (repos 5 min)\n! Pendant la voie, cherche des positions de repos debout.\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance\n## Remplacement bloc (pas de partenaire)\n> Échauffement bloc\n! Pas de partenaire : séance en bloc avec le même objectif que la voie de la semaine.\n! Objectif : endurance. Enchaîne les blocs d'un circuit sans pause.\n3× « Circuit » de 4 blocs faciles, niveau 3 ou 4 [effort] (repos 4 min)\n1× « ARC » · 10 min en continu, intensité 4/10 [facile]\n> Coudes après la séance"
  },
  {
   "semaine": 6,
@@ -279,7 +279,7 @@ const SEANCES = [
   "phase": "B1 · S5-6 Endurance",
   "jour": "Vendredi",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n4× Bloc niveau 5 (repos 3 min)\n6× Essai sur « Projet » : bloc 5 en dévers, ou bloc 6 si feu vert · 6 essais max (repos 4 min)\n2× « Traversée dévers aller-retour » (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n4× Bloc niveau 5 (repos 3 min)\n6× Essai sur « Projet » : bloc 5 en dévers, ou bloc 6 si feu vert · 6 essais max (repos 4 min)\n2× « Traversée dévers aller-retour » (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 6,
@@ -293,7 +293,7 @@ const SEANCES = [
   "phase": "B1 · S5-6 Endurance",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Volume sans chercher la performance (« Volume »).\n7× Bloc niveau 4 · « Aucun repositionnement » (repos 2 min)\n4× Bloc niveau 5 (repos 3 min)\n1× « ARC » · 10 min en continu, intensité 4/10 [facile]\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Volume sans chercher la performance (« Volume »).\n7× Bloc niveau 4 · « Aucun repositionnement » (repos 2 min)\n4× Bloc niveau 5 (repos 3 min)\n1× « ARC » · 10 min en continu, intensité 4/10 [facile]\n> Coudes après la séance"
  },
  {
   "semaine": 7,
@@ -307,7 +307,7 @@ const SEANCES = [
   "phase": "B1 · S7 Réalisation",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Objectif : réalisation. Teste tes meilleures voies, frais.\n2× Voie en 5b · proprement (repos 5 min)\n4× « Essai d'enchaînement » : voie 5c (6a si feu vert) · 4 essais max (repos 10 min)\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance"
+  "contenu": "## Voie (avec partenaire)\n> Échauffement voie\n> Vérifications croisées\n! Objectif : réalisation. Teste tes meilleures voies, frais.\n2× Voie en 5b · proprement (repos 5 min)\n4× « Essai d'enchaînement » : voie 5c (6a si feu vert) · 4 essais max (repos 10 min)\n1× Voie facile en 4 · « Grimpe fluide » [facile]\n> Coudes après la séance\n## Remplacement bloc (pas de partenaire)\n> Échauffement bloc\n! Pas de partenaire : séance en bloc avec le même objectif que la voie de la semaine.\n! Objectif : réalisation. Tes meilleurs blocs, frais.\n4× Bloc niveau 5 · proprement (repos 3 min)\n6× Essai sur « Projet » : ton meilleur niveau · 6 essais max (repos 4 min)\n> Coudes après la séance"
  },
  {
   "semaine": 7,
@@ -321,7 +321,7 @@ const SEANCES = [
   "phase": "B1 · S7 Réalisation",
   "jour": "Vendredi",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n8× Essai sur « Projet » : ton meilleur niveau, proprement (6 si feu vert) · 8 essais max (repos 4 min)\n! Les projets s'arrêtent dès que le mouvement devient aléatoire.\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n4× Bloc niveau 4 (repos 2 min)\n8× Essai sur « Projet » : ton meilleur niveau, proprement (6 si feu vert) · 8 essais max (repos 4 min)\n! Les projets s'arrêtent dès que le mouvement devient aléatoire.\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 7,
@@ -335,7 +335,7 @@ const SEANCES = [
   "phase": "B1 · S7 Réalisation",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Très léger : aucune fatigue.\n5× Bloc niveau 3 ou 4 · plaisir (repos 2 min)\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Très léger : aucune fatigue.\n5× Bloc niveau 3 ou 4 · plaisir (repos 2 min)\n> Coudes après la séance"
  },
  {
   "semaine": 8,
@@ -349,7 +349,7 @@ const SEANCES = [
   "phase": "B1 · S8 Décharge",
   "jour": "Mercredi",
   "activite": "Voie",
-  "contenu": "> Contrôle des doigts\n> Échauffement voie\n> Vérifications croisées\n! Semaine d'allègement (« Séance allégée ») : volume divisé par deux, pas de 5c, pas de projet.\n3× Voie en 4 ou 5a · « Grimpe fluide » (repos 3 min)\n1× Voie en 5b déjà réussie, proprement (repos 5 min)\n> Coudes après la séance"
+  "contenu": "## Voie (avec partenaire)\n> Échauffement voie\n> Vérifications croisées\n! Semaine d'allègement (« Séance allégée ») : volume divisé par deux, pas de 5c, pas de projet.\n3× Voie en 4 ou 5a · « Grimpe fluide » (repos 3 min)\n1× Voie en 5b déjà réussie, proprement (repos 5 min)\n> Coudes après la séance\n## Remplacement bloc (pas de partenaire)\n> Échauffement bloc\n! Pas de partenaire : séance en bloc avec le même objectif que la voie de la semaine.\n! Semaine d'allègement : blocs faciles uniquement, aucun projet.\n6× Bloc niveau 3 ou 4 (repos 2 min)\n1× « Traversée basse » · 3 min sans poser pied [facile]\n> Coudes après la séance"
  },
  {
   "semaine": 8,
@@ -363,7 +363,7 @@ const SEANCES = [
   "phase": "B1 · S8 Décharge",
   "jour": "Vendredi",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Semaine d'allègement : blocs 4 et 5 faciles uniquement, aucun projet.\n6× Bloc niveau 4 (repos 2 min)\n3× Bloc niveau 5 facile (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n! Semaine d'allègement : blocs 4 et 5 faciles uniquement, aucun projet.\n6× Bloc niveau 4 (repos 2 min)\n3× Bloc niveau 5 facile (repos 3 min)\n1× « Traversée basse » · 3 min sans poser pied · retour au calme [facile]\n> Pieds après le vendredi\n> Coudes après la séance"
  },
  {
   "semaine": 8,
@@ -377,7 +377,7 @@ const SEANCES = [
   "phase": "B1 · S8 Décharge",
   "jour": "Dimanche",
   "activite": "Bloc",
-  "contenu": "> Contrôle des doigts\n> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Semaine d'allègement : plaisir uniquement.\n6× Bloc niveau 3 ou 4 (repos 2 min)\n> Coudes après la séance"
+  "contenu": "> Échauffement bloc\n! Séance plaisir : aucune tentative maximale. Cette séance protège les doigts.\n! Semaine d'allègement : plaisir uniquement.\n6× Bloc niveau 3 ou 4 (repos 2 min)\n> Coudes après la séance"
  }
 ];
 

@@ -306,3 +306,57 @@ body.flash { animation:flash .5s 3; }
 #fond-modal .forme { margin-top:12px; }
 .petit-segment button { font-size:13px; min-height:38px; padding:0; }
 .carte.competences { border-left:6px solid var(--act); }
+
+/* ---------- Version 5.1 ---------- */
+/* Bandeau : version et ▶ Commencer en haut */
+.segment-bandeau { margin-top:12px; border-color:rgba(255,255,255,.6); }
+.segment-bandeau button { color:#fff; font-weight:600; }
+.segment-bandeau button.choisi { background:#fff; color:var(--act); }
+.bandeau-seance .commencer { display:block; width:100%; min-height:52px; margin-top:12px; font-size:19px; font-weight:800; background:#fff; border:none; color:var(--act); border-radius:12px; }
+.bandeau-seance .lien-blanc { display:block; margin:8px auto 0; }
+.bandeau-repos { background:var(--repos); }
+/* Carte Maintenant : temps de séance, chrono du passage, minuteur intégré */
+.maintenant-temps { font-size:12px; color:rgba(255,255,255,.85); font-variant-numeric:tabular-nums; margin-bottom:4px; }
+.maintenant-temps:empty { display:none; }
+.chrono-passage { margin:6px 0 2px; }
+.chrono-passage #chrono-passage { font-size:30px; font-weight:700; font-variant-numeric:tabular-nums; }
+.chrono-passage .petit { color:rgba(255,255,255,.85); }
+.maintenant.avec-minuteur .chrono-passage, .maintenant.avec-minuteur .choix-carte { display:none; }
+.maintenant.phase-repos { background:var(--repos); }
+.maintenant.bientot { background:var(--attention); }
+.maintenant.fini { background:var(--fait); }
+#minuteur.integre:not(.plein) { position:relative; left:auto; right:auto; bottom:auto; z-index:auto; background:transparent; box-shadow:none; padding:4px 0 0; border-radius:0; }
+#minuteur.integre:not(.plein) #mn-coins { top:0; right:0; }
+/* Pastille du minuteur sur les autres écrans */
+#minuteur.mini { flex-direction:row; align-items:center; gap:8px; padding:8px 14px; border-radius:30px; left:auto; right:12px; min-width:160px; }
+#minuteur.mini #mn-ctrl, #minuteur.mini #mn-fait, #minuteur.mini #mn-anneau, #minuteur.mini #mn-suivant, #minuteur.mini #mn-ecoule, #minuteur.mini #mn-coins { display:none !important; }
+#minuteur.mini #mn-haut { padding-right:0; gap:8px; }
+#minuteur.mini #mn-temps { font-size:20px; }
+.repos-ligne { font-size:13px; color:var(--doux); align-self:center; }
+/* Onglet Programme */
+.vue-toggle { margin-bottom:12px; }
+.ligne-semaine { display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:10px 12px; margin-bottom:6px; background:var(--carte); }
+.ligne-semaine.actuelle { box-shadow:0 0 0 2px var(--marque); }
+.ls-num { font-weight:800; width:34px; flex:none; }
+.ls-texte { flex:1; min-width:0; display:flex; flex-direction:column; }
+.ls-dates { font-size:13px; color:var(--doux); }
+.ls-phase { font-weight:600; font-size:15px; }
+.ls-etats { display:flex; gap:3px; flex:none; }
+.mini-etat { width:20px; height:20px; border-radius:50%; font-size:11px; display:flex; align-items:center; justify-content:center; border:2px solid var(--act, var(--bord)); color:var(--doux); }
+.mini-etat.fait { background:var(--fait); border-color:var(--fait); color:#fff; }
+.mini-etat.saute { border-color:var(--bord); color:var(--danger); }
+.carte-mesures { display:flex; justify-content:space-between; align-items:center; width:100%; padding:12px 14px; margin-bottom:12px; background:var(--carte); text-align:left; font-weight:600; }
+/* Feux verts en couleur */
+.feu-pastille { display:inline-block; width:12px; height:12px; border-radius:50%; background:var(--bord); margin-right:6px; vertical-align:middle; }
+.feu-pastille.vert { background:var(--fait); }
+.feu-pastille.info { background:var(--act, var(--marque)); }
+.carte.feux.avec-vert { border-left:6px solid var(--fait); }
+.feu-ligne.ok .feu-titre { color:var(--fait); }
+.feu-badge { font-size:11px; font-weight:700; color:#fff; background:var(--fait); border-radius:6px; padding:1px 6px; margin-left:4px; }
+.feu-barre span { background:var(--bord); }
+.feu-barre span.ok { background:var(--fait); }
+.feu-barre.info span { background:var(--act, var(--marque)); }
+.feu-barre:not(.info) span:not(.ok) { background:#9AA5AD; }
+/* Bibliothèque : fil d'Ariane */
+.fil-ariane { font-size:14px; color:var(--doux); margin:2px 0 10px; }
+.fil-ariane .lien { font-size:14px; }
