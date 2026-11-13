@@ -9,7 +9,7 @@
 // =====================================================================
 // 1. RÉGLAGES DU PROGRAMME (modifiables dans le code)
 // =====================================================================
-const APP_VERSION = "5.2";
+const APP_VERSION = "5.3";
 const REPOS_DEFAUT = { Voie: 300, Bloc: 180, Maison: 90 };   // secondes, si la ligne n'indique rien
 const COTATIONS = { Voie: ["3","4","4c","5a","5b","5c","6a","6b","6c"], Bloc: ["2","3","4","5","6","7"] };
 COTATIONS["Escalade extérieur"] = COTATIONS.Voie;               // se note comme une voie
@@ -98,10 +98,189 @@ const semaineDe = date => Math.floor((date - new Date(debutProgramme() + "T00:00
 // =====================================================================
 let LISTE = [];
 const lireLibres = () => JSON.parse(localStorage.getItem("libres") || "[]");
+// =====================================================================
+// MODIFIER LE PROGRAMME DANS L'APP : opérations appliquées par-dessus le programme fourni,
+// reportées dans Programme.xlsx par escalade.py (puis oubliées par l'app, voir MODIFS_APPLIQUEES)
+// =====================================================================
+const lireOps = () => { const appl = typeof MODIFS_APPLIQUEES !== "undefined" ? MODIFS_APPLIQUEES : [];
+  return JSON.parse(localStorage.getItem("modifs-programme") || "[]").filter(o => !appl.includes(o.id)); };
+function ajouterOps(ops) {
+  const l = lireOps(); ops.forEach(o => l.push({ id: "m" + Date.now() + Math.floor(Math.random() * 1e6), ...o }));
+  localStorage.setItem("modifs-programme", JSON.stringify(l)); reconstruire(); cacheFeux = null;
+}
+function programmeEffectif() {
+  let P = SEANCES.map(s => ({ ...s }));
+  lireOps().forEach(o => {
+    const meme = s => s.semaine === o.semaine && s.jour === o.jour && s.activite === o.activite;
+    if (o.op === "pause") P.forEach(s => { if (s.semaine >= o.depuis) s.semaine += o.n; });
+    else if (o.op === "del") P = P.filter(s => !meme(s));
+    else if (o.op === "set") { const x = P.find(meme);
+      if (x) { x.contenu = o.contenu; if (o.phase) x.phase = o.phase; x.modifie = true; }
+      else P.push({ semaine: o.semaine, jour: o.jour, activite: o.activite, phase: o.phase || "", contenu: o.contenu, modifie: true }); }
+  });
+  return P;
+}
+const aDesSaisies = s => { const d = lire(s); return !!(d.debut || d.fait || (d.voies || []).length || Object.keys(d.compteurs || {}).length); };
+const seancesSemaine = w => LISTE.filter(s => s.semaine === w && !s.libre);
+
+// ---------- Copier une séance ----------
+function htmlCopier() {
+  const s = courant(), dest = LISTE.filter(x => x.semaine === M.semaine && x.jour === M.jour && !x.libre);
+  const occupe = dest.some(aDesSaisies);
+  return `<h2>Copier la séance</h2><p class="petit">${esc(s.activite)} · semaine ${s.semaine}, ${esc(s.jour.toLowerCase())}. Vers :</p>
+    <label class="champ">Semaine</label><div class="compteur"><button data-m="cp-sem" data-pas="-1">−</button><span>${M.semaine}</span><button data-m="cp-sem" data-pas="1">+</button></div>
+    <label class="champ">Jour</label><div class="choix">${JOURS.map(j => `<button data-m="cp-jour" data-valeur="${j}" class="${M.jour === j ? "choisi" : ""}">${j.slice(0, 3)}</button>`).join("")}</div>
+    <p class="petit">${dest.length ? `Ce jour-là : ${dest.map(x => esc(x.activite)).join(", ")}${occupe ? " (déjà commencée : on ne peut que l'ajouter à côté)" : ""}.` : "Aucune séance ce jour-là."}</p>
+    <div class="actions"><button data-m="fermer">Annuler</button>
+      ${dest.length && !occupe ? `<button data-m="cp-ok" data-valeur="remplacer">Remplacer</button>` : ""}
+      <button data-m="cp-ok" data-valeur="ajouter" class="principal">${dest.length ? "Ajouter à côté" : "Copier"}</button></div>`;
+}
+function copierSeance(mode) {
+  const s = courant(), etat = M;
+  if (s.libre) {            // séance créée : on en crée une autre
+    const libre = { id: Date.now(), semaine: etat.semaine, jour: etat.jour, activite: s.activite, phase: s.phase, contenu: s.contenu };
+    localStorage.setItem("libres", JSON.stringify([...lireLibres(), libre])); reconstruire();
+  } else {
+    const ops = [];
+    if (mode === "remplacer") LISTE.filter(x => x.semaine === etat.semaine && x.jour === etat.jour && !x.libre).forEach(x => ops.push({ op: "del", semaine: x.semaine, jour: x.jour, activite: x.activite }));
+    ops.push({ op: "set", semaine: etat.semaine, jour: etat.jour, activite: s.activite, phase: s.phase, contenu: s.contenu });
+    ajouterOps(ops);
+  }
+  fermerModal(); montrerAnnulation("Séance copiée", annulerDernieresOps(mode === "remplacer" ? 2 : 1, s.libre));
+  afficher(false);
+}
+const annulerDernieresOps = (n, libre) => () => {
+  if (libre) { const l = lireLibres(); l.pop(); localStorage.setItem("libres", JSON.stringify(l)); }
+  else { const l = lireOps(); l.splice(-n); localStorage.setItem("modifs-programme", JSON.stringify(l)); }
+  reconstruire(); afficher(false);
+};
+
+// ---------- Outils de la semaine : copier, répéter, pause ----------
+function htmlOutilsSemaine() {
+  const w = M.semaine;
+  return `<h2>Semaine ${w}</h2>
+    <div class="outil"><b>Copier cette semaine</b><p class="petit">Remplace les séances de la semaine choisie (sauf si elles sont déjà commencées).</p>
+      <div class="ligne-outil"><span>vers la semaine</span><div class="compteur"><button data-m="os-dest" data-pas="-1">−</button><span>${M.dest}</span><button data-m="os-dest" data-pas="1">+</button></div>
+      <button class="principal" data-m="os-copier">Copier</button></div></div>
+    <div class="outil"><b>Répéter cette semaine</b><p class="petit">Copie la semaine sur les semaines qui suivent.</p>
+      <div class="ligne-outil"><span>sur</span><div class="compteur"><button data-m="os-rep" data-pas="-1">−</button><span>${M.rep}</span><button data-m="os-rep" data-pas="1">+</button></div><span>semaine${M.rep > 1 ? "s" : ""}</span>
+      <button class="principal" data-m="os-repeter">Répéter</button></div></div>
+    <div class="outil"><b>Mettre en pause</b><p class="petit">Vacances, maladie ? Les semaines ${w} et suivantes sont décalées ; les semaines passées ne bougent pas.</p>
+      <div class="ligne-outil"><span>décaler de</span><div class="compteur"><button data-m="os-pause-n" data-pas="-1">−</button><span>${M.pause}</span><button data-m="os-pause-n" data-pas="1">+</button></div><span>semaine${M.pause > 1 ? "s" : ""}</span>
+      <button class="principal" data-m="os-pause">Décaler</button></div></div>
+    <div class="actions"><button data-m="fermer">Fermer</button></div>`;
+}
+function copierSemaine(src, dests) {
+  const ops = [], refus = [];
+  dests.forEach(w => {
+    const cible = seancesSemaine(w);
+    if (cible.some(aDesSaisies)) { refus.push(w); return; }
+    cible.forEach(x => ops.push({ op: "del", semaine: w, jour: x.jour, activite: x.activite }));
+    seancesSemaine(src).forEach(x => ops.push({ op: "set", semaine: w, jour: x.jour, activite: x.activite, phase: x.phase, contenu: x.contenu }));
+  });
+  if (ops.length) { ajouterOps(ops); montrerAnnulation(`Semaine copiée${dests.length > 1 ? ` sur ${dests.length - refus.length} semaines` : ""}`, annulerDernieresOps(ops.length)); }
+  if (refus.length) alert(`Non copiée sur la semaine ${refus.join(", ")} : elle contient déjà des séances commencées.`);
+}
+function mettreEnPause(depuis, n) {
+  if (LISTE.some(s => !s.libre && s.semaine >= depuis && aDesSaisies(s))) return alert(`Impossible : des séances de la semaine ${depuis} ou après sont déjà commencées.`);
+  ajouterOps([{ op: "pause", depuis, n }]); montrerAnnulation(`Programme décalé de ${n} semaine${n > 1 ? "s" : ""}`, annulerDernieresOps(1));
+}
+
+// ---------- Éditeur de séance ----------
+const DECOMP = l => {
+  const m = l.match(/^(\d+)\s*×\s*(.*)$/); if (!m) return null;
+  let corps = m[2]; const x = { n: Number(m[1]) };
+  const r = corps.match(/\(repos\s+(\d+)\s*(min|s)\)/); if (r) { x.repos = r[2] === "min" ? Number(r[1]) : Math.round(Number(r[1]) / 60 * 10) / 10; corps = corps.replace(r[0], ""); }
+  const d = corps.match(/\(durée\s+(\d+)\s*(min|s)\)/); if (d) { x.duree = Number(d[1]); corps = corps.replace(d[0], ""); }
+  const t = corps.match(/\[(effort|facile)\]/i); if (t) { x.tag = t[1].toLowerCase(); corps = corps.replace(t[0], ""); }
+  x.corps = corps.replace(/\s+/g, " ").trim(); return x;
+};
+const RECOMP = x => `${x.n}× ${x.corps}${x.tag ? ` [${x.tag}]` : ""}${x.duree ? ` (durée ${x.duree} min)` : ""}${x.repos ? ` (repos ${x.repos} min)` : ""}`;
+function ouvrirEditeur() {
+  const s = courant();
+  ouvrirModal({ type: "editeur", lignes: s.contenu.split("\n").map(l => l.trim()).filter(Boolean), texte: false, ajout: "" });
+}
+function htmlEditeur() {
+  const s = courant(), avertir = aDesSaisies(s);
+  const routines = [...new Set(ROUTINES.map(r => r.routine))];
+  let h = `<h2>Modifier la séance</h2><p class="petit">${esc(s.activite)} · semaine ${s.semaine}, ${esc(s.jour.toLowerCase())}</p>
+    ${avertir ? `<div class="avert">Cette séance est déjà commencée : changer l'ordre ou le nombre de lignes peut décaler les passages notés.</div>` : ""}
+    <div class="segment"><button data-m="ed-mode" data-valeur="0" class="${!M.texte ? "choisi" : ""}">Lignes</button><button data-m="ed-mode" data-valeur="1" class="${M.texte ? "choisi" : ""}">Texte</button></div>`;
+  if (M.texte) h += `<textarea id="ed-texte" class="ed-texte">${esc(M.lignes.join("\n"))}</textarea>
+    <p class="petit">Syntaxe : <code>&gt; Routine</code> · <code>! Consigne</code> · <code>3× Voie en 5b · « Exercice » (repos 4 min)</code> · <code>## Version</code></p>`;
+  else h += M.lignes.map((l, k) => {
+    const fl = `<span class="ed-fleches"><button data-m="ed-haut" data-k="${k}" aria-label="Monter">↑</button><button data-m="ed-bas" data-k="${k}" aria-label="Descendre">↓</button><button data-m="ed-suppr" data-k="${k}" aria-label="Supprimer">✕</button></span>`;
+    if (l.startsWith("##")) return `<div class="ed-ligne ed-version"><b>Version : ${esc(l.slice(2).trim())}</b>${fl}</div>`;
+    if (l.startsWith(">")) return `<div class="ed-ligne"><span>▸ ${esc(l.slice(1).trim())} <span class="petit">(routine)</span></span>${fl}</div>`;
+    if (l.startsWith("!")) return `<div class="ed-ligne"><span class="petit">${esc(sansGuillemets(l.slice(1).trim()))}</span>${fl}</div>`;
+    const x = DECOMP(l); if (!x) return `<div class="ed-ligne"><span>${esc(l)}</span>${fl}</div>`;
+    return `<div class="ed-ligne ed-action"><div class="ed-haut"><span>${esc(sansGuillemets(x.corps))}</span>${fl}</div>
+      <div class="ed-reglages"><span class="compteur"><button data-m="ed-n" data-k="${k}" data-pas="-1">−</button><span>${x.n}×</span><button data-m="ed-n" data-k="${k}" data-pas="1">+</button></span>
+        <select data-ed-repos="${k}"><option value="">repos auto</option>${[1, 2, 3, 4, 5, 10].map(r => `<option value="${r}" ${x.repos === r ? "selected" : ""}>repos ${r} min</option>`).join("")}</select>
+        <select data-ed-tag="${k}"><option value="">type auto</option><option value="facile" ${x.tag === "facile" ? "selected" : ""}>facile</option><option value="effort" ${x.tag === "effort" ? "selected" : ""}>effort</option></select></div></div>`;
+  }).join("") + `<div class="ed-ajouts">
+      <select id="ed-exo"><option value="">+ Exercice…</option>${optionsExercices("")}</select>
+      <select id="ed-routine"><option value="">+ Routine…</option>${routines.map(r => `<option>${esc(r)}</option>`).join("")}</select>
+      <div class="ajout-secteur"><input type="text" id="ed-consigne" placeholder="+ Consigne"><button data-m="ed-consigne">Ajouter</button></div></div>`;
+  return h + `<div class="actions"><button data-m="fermer">Annuler</button><button data-m="ed-ok" class="principal">Enregistrer</button></div>`;
+}
+function enregistrerEditeur() {
+  if (M.texte) M.lignes = ($("ed-texte").value || "").split("\n").map(l => l.trim()).filter(Boolean);
+  const s = courant(), contenu = M.lignes.join("\n");
+  fermerModal();
+  if (s.libre) { const l = lireLibres(), x = l.find(y => y.id === s.id); x.contenu = contenu; localStorage.setItem("libres", JSON.stringify(l)); reconstruire(); }
+  else ajouterOps([{ op: "set", semaine: s.semaine, jour: s.jour, activite: s.activite, phase: s.phase, contenu }]);
+  const k = LISTE.findIndex(x => cle(x) === cle(s)); if (k >= 0) index = k;
+  afficher(false);
+}
+
+// ---------- Préparer le bloc suivant ----------
+function pointsFaiblesApp() {
+  const limite = Date.now() - 8 * 7 * 864e5, T = toutesVoies().filter(v => { const s = LISTE.find(x => cle(x) === v.seance); return s && dateSeance(s).getTime() >= limite; });
+  const profils = PROFILS.map(p => { const l = T.filter(v => v.profil === p); return { p, n: l.length, taux: l.length ? l.filter(reussi).length / l.length : 1 }; })
+    .filter(x => x.n >= PA("faible_essais", 5)).sort((a, b) => a.taux - b.taux);
+  const causes = {}; T.forEach(v => { if (v.cause) causes[v.cause] = (causes[v.cause] || 0) + 1; });
+  const cause = Object.entries(causes).sort((a, b) => b[1] - a[1])[0];
+  return { profil: profils[0] && profils[0].taux < 1 ? profils[0].p : null, cause: cause ? cause[0] : null };
+}
+function brouillonBlocSuivant() {
+  const prog = LISTE.filter(s => !s.libre), wmax = Math.max(...prog.map(s => s.semaine)), debut = wmax - 7;
+  const bloc = Math.ceil((wmax + 1) / 8), F = feuxVerts(), ok = id => (F.find(f => f.id === id) || {}).ok;
+  const niv = id => ((F.find(f => f.id === id) || {}).titre || "").split("le ").pop();
+  const pf = pointsFaiblesApp(), conseils = typeof CONSEILS !== "undefined" ? CONSEILS : [];
+  const conseil = pf.cause ? conseils.find(c => c.type === "Cause" && c.valeur === pf.cause) : pf.profil ? conseils.find(c => c.type === "Profil" && c.valeur === pf.profil) : null;
+  const changements = new Set();
+  const seances = prog.filter(s => s.semaine >= debut).map(s => {
+    let c = s.contenu;
+    const avant = c;
+    c = c.replace(/(\d+) min de course/g, (m, n) => { const v = Math.min(60, Number(n) + 5); if (v !== Number(n)) changements.add("Course : +5 minutes par sortie"); return `${v} min de course`; });
+    if (ok("voie5c")) c = c.replace(/voie 5b([^(\n]*)\(5c si feu vert\)/g, (m, x) => { changements.add("Projets en voie : 5b → 5c (feu vert atteint)"); return `voie 5c${x}(6a si feu vert)`; });
+    if (ok("voie6a")) c = c.replace(/voie 5c([^(\n]*)\(6a si feu vert\)/g, (m, x) => { changements.add("Essais : 5c → 6a (feu vert atteint)"); return `voie 6a${x.trimEnd()}`; });
+    if (ok("bloc6")) c = c.replace(/bloc 5 vertical \(6 si feu vert\)/g, () => { changements.add("Projets en bloc : 5 → 6 (feu vert atteint)"); return "bloc 6 vertical"; });
+    const nv = niv("deversVoie"); if (["5b", "5c", "6a"].includes(nv)) c = c.replace(/5a en dévers/g, () => { changements.add(`Voies en dévers : niveau ${nv}`); return `${nv} en dévers`; });
+    const nb = niv("deversBloc"); if (["5", "6"].includes(nb)) c = c.replace(/Bloc niveau 4 en dévers/g, () => { changements.add(`Blocs en dévers : niveau ${nb}`); return `Bloc niveau ${nb} en dévers`; });
+    const rel = s.semaine - debut + 1;
+    if (conseil && (rel === 3 || rel === 4) && ESCALADE.includes(s.activite)) {
+      const lignes = c.split("\n"), k = lignes.findIndex(l => !l.startsWith(">") && !l.startsWith("##"));
+      lignes.splice(k < 0 ? lignes.length : k, 0, `! Point faible du bloc précédent : ${(pf.cause || pf.profil).toLowerCase()}. Travaille ${conseil.exercices}.`);
+      c = lignes.join("\n"); changements.add(`Semaines ${debut + 2 + 8} et ${debut + 3 + 8} : travail du point faible (${(pf.cause || pf.profil).toLowerCase()})`);
+    }
+    return { semaine: s.semaine + 8, jour: s.jour, activite: s.activite, phase: (s.phase || "").replace(/^B\d+/, "B" + bloc), contenu: c };
+  });
+  return { debut: debut + 8, fin: wmax + 8, bloc, seances, changements: [...changements] };
+}
+function htmlBlocSuivant() {
+  const b = M.brouillon;
+  return `<h2>Bloc ${b.bloc} · semaines ${b.debut} à ${b.fin}</h2>
+    <p class="petit">Brouillon construit à partir du bloc ${b.bloc - 1} et de tes résultats (${b.seances.length} séances). Rien n'est appliqué avant ta validation ; tu pourras ensuite modifier chaque séance.</p>
+    <div class="carte"><b>Ajustements proposés</b>${b.changements.length ? `<ul>${b.changements.map(c => `<li>${esc(c)}</li>`).join("")}</ul>` : `<p class="petit">Aucun : le bloc est recopié tel quel (pas encore de feu vert atteint ni de point faible détecté).</p>`}</div>
+    <div class="actions"><button data-m="fermer">Annuler</button><button data-m="bs-ok" class="principal">Créer le bloc ${b.bloc}</button></div>`;
+}
+
 function reconstruire() {
   const libres = lireLibres().map(l => ({ ...l, phase: l.phase || "Séance libre", contenu: l.contenu || "", libre: true }));
   const dep = lireDeplacements();
-  LISTE = [...(R.mode === "libre" ? [] : SEANCES), ...libres].map((s, k) => ({ ...s, ordre: k, ...(dep[cle(s)] ? { deplace: dep[cle(s)] } : {}) }))
+  LISTE = [...(R.mode === "libre" ? [] : programmeEffectif()), ...libres].map((s, k) => ({ ...s, ordre: k, ...(dep[cle(s)] ? { deplace: dep[cle(s)] } : {}) }))
     .sort((a, b) => dateSeance(a) - dateSeance(b) || a.ordre - b.ordre);
 }
 reconstruire();
@@ -362,7 +541,7 @@ function afficherSeance() {
   const sousTitre = d.fin ? `✓ Faite en ${hm((d.fin - d.debut) / 1000)} · prévu ≈ ${hm(dureeTotale(s, d))}`
     : sautee ? "Séance sautée" : `≈ ${hm(dureeTotale(s, d))} · ${etapes.length} étape${etapes.length > 1 ? "s" : ""}`;
   const avant = !d.debut && !sautee && !d.fin;
-  let h = `<div class="bandeau-seance"><h1>${esc(act)}</h1><div class="phase">${esc(s.phase)}</div><div class="sous-titre">${sousTitre}</div>
+  let h = `<div class="bandeau-seance"><h1>${esc(act)}</h1><div class="phase">${esc(s.phase)}${s.modifie ? " · modifiée" : ""}</div><div class="sous-titre">${sousTitre}</div>
     ${avant && versions.length > 1 ? `<div class="segment segment-bandeau">${versions.map((v, n) =>
       `<button data-version="${n}" class="${(d.version || 0) === n ? "choisi" : ""}">${esc(v.nom.replace(/\s*\(.*\)\s*$/, ""))}</button>`).join("")}</div>` : ""}
     ${avant ? `<button class="blanc commencer" data-action="demarrer">▶ Commencer</button>
@@ -731,6 +910,7 @@ function finaliserTentative(etat, act) {
     if (!voie) { voie = { id: "v" + Date.now() + Math.floor(Math.random() * 1000), discipline: disc, secteur: etat.secteurNouvelle || "", couleur: v.couleur || "",
                           cot: grade, profil: v.profil, nom: v.nom || "", ouverture: isoDate(new Date()), statut: "En place", notes: "" };
                  sa.voies.push(voie); }
+    if (reussi(v) && voie.etoile) voie.etoile = "";
     v.voieId = voie.id; x.derniere[disc] = sid; ecrireSalles(x);
   }
   return v;
@@ -739,13 +919,14 @@ function finaliserTentative(etat, act) {
 function choixVoiesSalle(f, act, attr) {
   const sa = salleDe(f.salle); if (!sa) return "";
   const disc = discDe(act), secteurs = sa.secteurs;
-  const voies = sa.voies.filter(v => v.statut !== "Démontée" && v.discipline === disc && (!f.filtreSecteur || v.secteur === f.filtreSecteur));
+  const voies = sa.voies.filter(v => v.statut !== "Démontée" && v.discipline === disc && (!f.filtreSecteur || v.secteur === f.filtreSecteur))
+    .sort((a, b) => (etoileAujourdhui(b) ? 1 : 0) - (etoileAujourdhui(a) ? 1 : 0));
   const coul = n => (COULEURS.find(c => c[0] === n) || ["", "transparent"])[1];
   return `<label class="champ">${disc === "Voie" ? "Voie" : "Bloc"} de la salle <span class="petit">· ${esc(sa.nom)}</span></label>
     ${secteurs.length ? `<div class="choix compact"><button data-${attr}="filtreSecteur" data-valeur="" class="${!f.filtreSecteur ? "choisi" : ""}">Tous</button>${secteurs.map(x =>
       `<button data-${attr}="filtreSecteur" data-valeur="${x.id}" class="${f.filtreSecteur === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")}</div>` : ""}
     <div class="voies-salle">${voies.map(v => { const n = essaisVoie(v.id);
-      return `<button data-${attr}="voie" data-valeur="${v.id}" class="voie-salle ${f.voieId === v.id ? "choisi" : ""}"><span class="pastille-mini" style="background:${coul(v.couleur)}"></span>
+      return `<button data-${attr}="voie" data-valeur="${v.id}" class="voie-salle ${f.voieId === v.id ? "choisi" : ""}">${etoileAujourdhui(v) ? "★ " : ""}<span class="pastille-mini" style="background:${coul(v.couleur)}"></span>
         <b>${esc(v.cot)}</b> ${esc(v.nom || v.couleur || "")}<span class="petit"> ${esc(nomSecteur(sa, v.secteur))}${n.length ? ` · ${n.length} essai${n.length > 1 ? "s" : ""}${n.some(reussi) ? " ✓" : ""}` : ""}</span></button>`; }).join("")
       || `<p class="petit">Aucune ${disc === "Voie" ? "voie" : "bloc"} encore : note la couleur ci-dessous, elle s'ajoutera à la salle.</p>`}
     <button data-${attr}="nouvelle" class="voie-salle nouvelle ${f.nouvelle ? "choisi" : ""}">+ Nouvelle</button></div>
@@ -900,12 +1081,21 @@ function placerToast() {
   const h = m.style.display === "flex" && m.classList.contains("mini") ? m.offsetHeight + 8 : 0;
   t.style.top = "auto"; t.style.bottom = `calc(${80 + h}px + env(safe-area-inset-bottom))`;
 }
+let annulationGenerique = null;
+function montrerAnnulation(texte, fn) {             // bandeau « Annuler » pour une action autre qu'un passage
+  annulationGenerique = fn; derniereAction = null;
+  $("toast").querySelector("span").textContent = texte; $("toast").style.display = "flex"; placerToast();
+  clearTimeout(minuterieToast);
+  minuterieToast = setTimeout(() => { $("toast").style.display = "none"; annulationGenerique = null; }, 6000);
+}
 function montrerToast() {
+  annulationGenerique = null; $("toast").querySelector("span").textContent = "Passage noté";
   $("toast").style.display = "flex"; placerToast();
   clearTimeout(minuterieToast);
   minuterieToast = setTimeout(() => { $("toast").style.display = "none"; derniereAction = null; }, 5000);
 }
 $("toast-annuler").onclick = () => {
+  if (annulationGenerique) { const f = annulationGenerique; annulationGenerique = null; clearTimeout(minuterieToast); $("toast").style.display = "none"; return f(); }
   const a = derniereAction; if (!a) return;
   const d = lireCle(a.cle);
   d.compteurs = d.compteurs || {}; d.compteurs[a.ck] = a.avant;
@@ -1131,6 +1321,22 @@ function afficherModal() {
         <div class="segment petit-segment">${Array.from({ length: 10 }, (_, n) => n + 1).map(v => `<button data-m="comp" data-k="${k}" data-valeur="${v}" class="${M.notes[k] === v ? "choisi" : ""}">${v}</button>`).join("")}</div>`).join("")}
       <div class="actions"><button data-m="fermer">Annuler</button><button data-m="ok" class="principal" ${M.notes.every(n => n) ? "" : "disabled"}>Enregistrer</button></div>`;
   }
+  if (M.type === "ajoutRapide") h = htmlAjoutRapide();
+  if (M.type === "copier") h = htmlCopier();
+  if (M.type === "outilsSemaine") h = htmlOutilsSemaine();
+  if (M.type === "editeur") h = htmlEditeur();
+  if (M.type === "blocSuivant") h = htmlBlocSuivant();
+  if (M.type === "assistant") h = htmlAssistant();
+  if (M.type === "secteur") {
+    const sa = salleDe(M.sid), x = sa.secteurs.find(z => z.id === M.secId), n = sa.voies.filter(v => v.secteur === x.id && v.statut !== "Démontée").length;
+    h = `<h2>Secteur</h2><label class="champ">Nom</label><input type="text" id="sec-nom" value="${esc(x.nom)}">
+      <label class="champ">Profil par défaut</label><div class="segment">${PROFILS.map(p => `<button data-m="sec-profil" data-valeur="${p}" class="${x.profil === p ? "choisi" : ""}">${p}</button>`).join("")}</div>
+      <p class="petit">${n} voie${n > 1 ? "s" : ""} ou bloc${n > 1 ? "s" : ""} en place.</p>
+      <div class="menu-liste"><button class="ligne-menu" data-m="sec-renouv"><span class="icone">⟳</span><span><span class="titre-menu">Renouvelé</span><span class="sous-menu">ses voies passent en « démontée », puis ajout des nouvelles</span></span></button>
+      <button class="ligne-menu" data-m="sec-ajout"><span class="icone">+</span><span class="titre-menu">Ajouter des voies dans ce secteur</span></button>
+      <button class="ligne-menu danger" data-m="sec-suppr"><span class="icone">✕</span><span class="titre-menu">Supprimer le secteur</span></button></div>
+      <div class="actions"><button data-m="fermer" class="principal">Fermer</button></div>`;
+  }
   if (M.type === "apres") {
     const s = courant(), d = lire(s), els = elementsDe(s, d), x = lireSalles();
     h = `<h2>Saisir après coup</h2><p class="petit">Pour une séance faite sans suivre l'app. Les voies se notent ensuite dans « voies notées ».</p>
@@ -1162,7 +1368,9 @@ function afficherModal() {
       ${ligne("exos", "📖", "Exercices de cette séance")}
       ${ligne("ajout", "+", "Ajouter un exercice à cette séance")}
       ${ligne("note-etape", "📝", "Note sur l'étape en cours", "ou appui long sur une ligne")}
-      ${!d.fin ? ligne("apres", "✎", "Saisir après coup", "passages, heures et voies, sans suivi en direct") : ""}
+      ${ligne("editer", "✎", "Modifier la séance", "ajouter, retirer ou régler des lignes")}
+      ${ligne("copier", "⧉", "Copier vers…", "une autre semaine ou un autre jour")}
+      ${!d.fin ? ligne("apres", "🕑", "Saisir après coup", "passages, heures et voies, sans suivi en direct") : ""}
       ${ligne("deplacer", "↔", "Déplacer à un autre jour", courant().deplace ? `déplacée : ${courant().deplace.toLowerCase()} au lieu de ${courant().jour.toLowerCase()}` : "")}
       ${ligne("douleur", "⚠", "Signaler une douleur")}
       <div class="separateur"></div>
@@ -1219,6 +1427,69 @@ $("modal").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b || !M) return;
   const t = b.dataset, type = M.type;
   if (type === "menu" && t.m && t.m !== "fermer") return actionMenu(t.m);
+  if (type === "copier") {
+    if (t.m === "cp-sem") { M.semaine = Math.max(1, M.semaine + Number(t.pas)); return afficherModal(); }
+    if (t.m === "cp-jour") { M.jour = t.valeur; return afficherModal(); }
+    if (t.m === "cp-ok") return copierSeance(t.valeur);
+  }
+  if (type === "outilsSemaine") {
+    if (t.m === "os-dest") { M.dest = Math.max(1, M.dest + Number(t.pas)); return afficherModal(); }
+    if (t.m === "os-rep") { M.rep = Math.max(1, Math.min(8, M.rep + Number(t.pas))); return afficherModal(); }
+    if (t.m === "os-pause-n") { M.pause = Math.max(1, Math.min(8, M.pause + Number(t.pas))); return afficherModal(); }
+    const w = M.semaine;
+    if (t.m === "os-copier") { const dest = M.dest; fermerModal(); copierSemaine(w, [dest]); return afficher(false); }
+    if (t.m === "os-repeter") { const n = M.rep; fermerModal(); copierSemaine(w, Array.from({ length: n }, (_, k) => w + k + 1)); return afficher(false); }
+    if (t.m === "os-pause") { const n = M.pause; fermerModal(); mettreEnPause(w, n); return afficher(false); }
+  }
+  if (type === "editeur") {
+    const L = M.lignes, k = Number(t.k);
+    if (t.m === "ed-mode") { if (M.texte) M.lignes = ($("ed-texte").value || "").split("\n").map(l => l.trim()).filter(Boolean); M.texte = t.valeur === "1"; return afficherModal(); }
+    if (t.m === "ed-haut" && k > 0) { [L[k - 1], L[k]] = [L[k], L[k - 1]]; return afficherModal(); }
+    if (t.m === "ed-bas" && k < L.length - 1) { [L[k + 1], L[k]] = [L[k], L[k + 1]]; return afficherModal(); }
+    if (t.m === "ed-suppr") { L.splice(k, 1); return afficherModal(); }
+    if (t.m === "ed-n") { const x = DECOMP(L[k]); x.n = Math.max(1, x.n + Number(t.pas)); L[k] = RECOMP(x); return afficherModal(); }
+    if (t.m === "ed-consigne") { const v = ($("ed-consigne").value || "").trim(); if (v) L.push("! " + v); return afficherModal(); }
+    if (t.m === "ed-ok") return enregistrerEditeur();
+  }
+  if (type === "blocSuivant" && t.m === "bs-ok") {
+    const b = M.brouillon; fermerModal();
+    ajouterOps(b.seances.map(x => ({ op: "set", ...x })));
+    montrerAnnulation(`Bloc ${b.bloc} créé`, annulerDernieresOps(b.seances.length));
+    return ouvrirSemaine(b.debut);
+  }
+  if (type === "ajoutRapide") {
+    if (t.m === "couleurRapide") { M.couleur = M.couleur === t.valeur ? "" : t.valeur; return afficherModal(); }
+    if (t.m === "disc") { M.disc = t.valeur; M.cot = ""; return afficherModal(); }
+    if (t.m === "ajouter-suite") { ajouterVoieRapide(); return afficherModal(); }
+    if (t.m === "ajouter-fermer") { ajouterVoieRapide(); fermerModal(); return afficher(false); }
+    if (t.m === "fermer") { fermerModal(); return afficher(false); }
+  }
+  if (type === "secteur") {
+    const sid = M.sid, secId = M.secId;
+    if (t.m === "sec-profil") { majSalle(sid, sa => sa.secteurs.find(z => z.id === secId).profil = t.valeur); return afficherModal(); }
+    if (t.m === "sec-ajout") { fermerModal(); return ouvrirAjoutRapide(secId); }
+    if (t.m === "sec-renouv") {
+      fermerModal();
+      annulableSalles("Secteur renouvelé", () => majSalle(sid, sa => { sa.voies.forEach(v => { if (v.secteur === secId && v.statut !== "Démontée") { v.statut = "Démontée"; v.demontage = isoDate(new Date()); } });
+        sa.secteurs.find(z => z.id === secId).maj = Date.now(); }));
+      return ouvrirAjoutRapide(secId);
+    }
+    if (t.m === "sec-suppr") {
+      fermerModal();
+      annulableSalles("Secteur supprimé", () => majSalle(sid, sa => { sa.secteurs = sa.secteurs.filter(z => z.id !== secId); sa.voies.forEach(v => { if (v.secteur === secId) v.secteur = ""; }); }));
+      return afficher(false);
+    }
+    if (t.m === "fermer") { fermerModal(); return afficher(false); }
+  }
+  if (type === "assistant") {
+    if (t.m === "typeSalle") { M.typeSalle = t.valeur; return afficherModal(); }
+    if (t.m === "as-secteur") { M.secteurs = M.secteurs.includes(t.valeur) ? M.secteurs.filter(n => n !== t.valeur) : [...M.secteurs, t.valeur]; return afficherModal(); }
+    if (t.m === "as-perso") { const n = ($("as-perso").value || "").trim(); if (n && !M.secteurs.includes(n)) M.secteurs.push(n); return afficherModal(); }
+    if (t.m === "as-suivant") { if (M.etape === 1) M.nom = ($("as-nom").value || "").trim(); M.etape++; return afficherModal(); }
+    if (t.m === "as-retour") { M.etape--; return afficherModal(); }
+    if (t.m === "as-modele") { M.modele = t.valeur; return afficherModal(); }
+    if (t.m === "as-fin") return finirAssistant();
+  }
   if (type === "apres" && t.m === "apres-r") { M.compteurs[t.i] = M.compteurs[t.i] ? 0 : 1; return afficherModal(); }
   if (type === "apres" && t.m === "apres-c") { const e = elementsDe(courant(), lire(courant()))[t.i];
     M.compteurs[t.i] = Math.max(0, Math.min(e.n, M.compteurs[t.i] + Number(t.pas))); return afficherModal(); }
@@ -1334,6 +1605,8 @@ $("modal").addEventListener("input", e => {             // champs texte des fen�
   if (e.target.id === "m-note") M.texte = e.target.value;
   if (e.target.id === "m-nom") M.nom = e.target.value;
   if (e.target.id === "m-hdeb") M.hdeb = e.target.value;
+  if (e.target.id === "as-nom") M.nom = e.target.value;
+  if (e.target.id === "sec-nom" && e.target.value.trim()) { const v = e.target.value.trim(); majSalle(M.sid, sa => sa.secteurs.find(z => z.id === M.secId).nom = v); }
   if (e.target.id === "m-hfin") M.hfin = e.target.value;
   if (e.target.dataset && e.target.dataset.tempsEtape) { M.temps[e.target.dataset.tempsEtape] = e.target.value === "" ? "" : Number(e.target.value); }
   if (e.target.id === "m-detail") M.detail = e.target.value;
@@ -1344,6 +1617,15 @@ $("modal").addEventListener("input", e => {             // champs texte des fen�
   }
 });
 $("modal").addEventListener("toggle", e => { if (M && e.target.classList && e.target.classList.contains("temps-reels")) M.ouvrirTemps = e.target.open; }, true);
+$("modal").addEventListener("change", e => {
+  if (M && M.type === "editeur") {
+    const el = e.target;
+    if (el.id === "ed-exo" && el.value) { M.lignes.push(`3× « ${el.value} »`); return afficherModal(); }
+    if (el.id === "ed-routine" && el.value) { M.lignes.push(`> ${el.value}`); return afficherModal(); }
+    if (el.dataset.edRepos !== undefined) { const k = Number(el.dataset.edRepos), x = DECOMP(M.lignes[k]); x.repos = el.value ? Number(el.value) : undefined; M.lignes[k] = RECOMP(x); return; }
+    if (el.dataset.edTag !== undefined) { const k = Number(el.dataset.edTag), x = DECOMP(M.lignes[k]); x.tag = el.value || undefined; M.lignes[k] = RECOMP(x); return; }
+  }
+});
 $("modal").addEventListener("change", e => {
   if (M && M.type === "ajout" && e.target.id === "m-exo") { M.exo = e.target.value; afficherModal(); }
 });
@@ -1367,6 +1649,8 @@ function actionMenu(a) {
   }
   if (a === "terminer") { fermerModal(); return terminer(); }
   if (a === "deplacer") return ouvrirModal({ type: "deplacer" });
+  if (a === "editer") return ouvrirEditeur();
+  if (a === "copier") return ouvrirModal({ type: "copier", semaine: s.semaine + 1, jour: s.jour });
   if (a === "apres") {
     const d = lire(s), els = elementsDe(s, d);
     return ouvrirModal({ type: "apres", hdeb: d.debut ? heure(d.debut) : "18:00", hfin: d.fin ? heure(d.fin) : "19:30",
@@ -1782,6 +2066,7 @@ function afficherProgramme() {
       <span class="ls-num">S${w}</span><span class="ls-texte"><span class="ls-dates">${bornesSemaine(w)}</span><span class="ls-phase">${esc(phase.replace(/^B\d+ · /, ""))}</span></span>
       <span class="ls-etats">${symb}</span></button>`;
   });
+  h += `<button class="gros contour" data-bloc-suivant="1">Préparer le bloc suivant</button>`;
   $("ecran").innerHTML = h;
   const act = document.querySelector(".ligne-semaine.actuelle"); if (act) act.scrollIntoView({ block: "center" });
 }
@@ -1791,6 +2076,8 @@ $("ecran").addEventListener("click", e => {
   if (b.dataset.vueProg) { vue = b.dataset.vueProg; return afficher(); }
   if (b.dataset.semaineProg) return ouvrirSemaine(Number(b.dataset.semaineProg));
   if (b.dataset.mesuresSem) return ouvrirModal({ type: "mesures", sem: Number(b.dataset.mesuresSem) });
+  if (b.dataset.outilsSemaine) return ouvrirModal({ type: "outilsSemaine", semaine: semaineVue, dest: semaineVue + 1, rep: 1, pause: 1 });
+  if (b.dataset.blocSuivant) return ouvrirModal({ type: "blocSuivant", brouillon: brouillonBlocSuivant() });
 });
 
 // ---------- Onglet Semaine ----------
@@ -1808,7 +2095,8 @@ function afficherSemaine() {
   const prevues = items.filter(x => !/facultati/i.test(x.s.contenu) || x.d.fait === "Oui");
   const faites = items.filter(x => x.d.fait === "Oui");
   const minutesFaites = faites.reduce((t, x) => t + (x.d.fin && x.d.debut ? (x.d.fin - x.d.debut) / 1000 : (Number(x.d.duree) || 0) * 60), 0);
-  let h = basculeVue("semaine") + carteCompetences(semaineVue) + carteFeux() + carteMesures(semaineVue) + `<div class="bilan-semaine">${faites.length} séance${faites.length > 1 ? "s" : ""} faite${faites.length > 1 ? "s" : ""} sur ${prevues.length}${minutesFaites ? " · " + hm(minutesFaites) : ""}</div>`;
+  let h = basculeVue("semaine") + carteCompetences(semaineVue) + carteFeux() + carteMesures(semaineVue)
+    + `<button class="lien outils-semaine" data-outils-semaine="1">⋯ Outils de la semaine (copier, répéter, pause)</button>` + `<div class="bilan-semaine">${faites.length} séance${faites.length > 1 ? "s" : ""} faite${faites.length > 1 ? "s" : ""} sur ${prevues.length}${minutesFaites ? " · " + hm(minutesFaites) : ""}</div>`;
   if (!items.length) h += `<p class="petit centre">Aucune séance cette semaine.</p>`;
   const auj = isoDate(new Date());
   items.forEach(({ s, k, d }) => {
@@ -1821,7 +2109,7 @@ function afficherSemaine() {
     h += `<button class="carte-seance ${estAuj ? "aujourdhui" : ""}" data-act="${esc(s.activite)}" data-ouvrir="${k}">
       <div class="cs-texte">${estAuj ? `<span class="petit-etiquette">Aujourd'hui</span>` : ""}
         <div class="cs-jour">${esc(jourDe(s))} ${jourMois(dateSeance(s))}${s.deplace ? ` <span class="petit">(déplacée, prévue ${s.jour.toLowerCase()})</span>` : ""}</div>
-        <div class="cs-titre">${esc(titre)}${s.libre ? ` <span class="petit">· créée</span>` : ""}${v && d.fait === "Oui" ? ` <span class="petit">· ${esc(v)}</span>` : ""}</div>
+        <div class="cs-titre">${esc(titre)}${s.libre ? ` <span class="petit">· créée</span>` : ""}${s.modifie ? ` <span class="petit">· modifiée</span>` : ""}${v && d.fait === "Oui" ? ` <span class="petit">· ${esc(v)}</span>` : ""}</div>
         <div class="cs-duree">${duree}</div></div>${etat}</button>`;
   });
   h += `<button class="gros go" data-cree="ouvrir">+ Créer une séance</button>`;
@@ -2085,58 +2373,86 @@ $("ecran").addEventListener("click", e => {
 });
 
 // ---------- Salles (Plus → 🏢 Salles) ----------
-let SA = { id: null, voie: null, toutes: false };
-function ouvrirSalles(id) { vue = id ? "salle" : "salles"; SA = { id: id || null, voie: null, toutes: false }; afficher(); }
+let SA = { id: null, voie: null, onglet: "voies", filtre: "place" };
+function ouvrirSalles(id) { vue = id ? "salle" : "salles"; SA = { id: id || null, voie: null, onglet: "voies", filtre: "place" }; afficher(); }
 const majSalle = (id, f) => { const x = lireSalles(), sa = x.liste.find(y => y.id === id); f(sa, x); ecrireSalles(x); };
 const COULEUR_HEX = n => (COULEURS.find(c => c[0] === n) || ["", "transparent"])[1];
+const etoileAujourdhui = v => v.etoile === isoDate(new Date());
+// Annuler une action sur les salles (bandeau « Annuler »)
+function annulableSalles(texte, action) {
+  const avant = localStorage.getItem("salles"); action();
+  montrerAnnulation(texte, () => { localStorage.setItem("salles", avant); cacheFeux = null; afficher(false); });
+}
 function afficherSalles() {
   $("titre-date").textContent = "Salles";
   const x = lireSalles();
-  $("ecran").innerHTML = `<button class="retour" data-plus="retour">‹ Plus</button>
-    ${x.liste.map(sa => { const enPlace = sa.voies.filter(v => v.statut !== "Démontée").length, p = projetsEnCours(sa.id).length;
+  $("ecran").innerHTML = x.liste.map(sa => { const enPlace = sa.voies.filter(v => v.statut !== "Démontée").length, p = projetsEnCours(sa.id).length;
       return `<button class="ligne-menu grande" data-salle="${sa.id}"><span class="icone">🏢</span><span><span class="titre-menu">${esc(sa.nom)}</span>
-        <span class="sous-menu">${esc(sa.type)} · ${sa.secteurs.length} secteur${sa.secteurs.length > 1 ? "s" : ""} · ${enPlace} voie${enPlace > 1 ? "s" : ""} ou bloc${enPlace > 1 ? "s" : ""} en place${p ? ` · ${p} projet${p > 1 ? "s" : ""} en cours` : ""}</span></span><span class="chevron">›</span></button>`; }).join("")}
-    <button class="gros contour" data-salle-ajout="1">+ Nouvelle salle</button>`;
+        <span class="sous-menu">${esc(sa.type)} · ${sa.secteurs.length} secteur${sa.secteurs.length > 1 ? "s" : ""} · ${enPlace} en place${p ? ` · ${p} projet${p > 1 ? "s" : ""} en cours` : ""}</span></span><span class="chevron">›</span></button>`; }).join("")
+    + `<button class="gros contour" data-salle-ajout="1">+ Nouvelle salle</button>`;
+}
+// Le mur en un coup d'œil : par cotation, ce qui est en place et ce que tu as réussi
+function murSalle(sa) {
+  return ["Bloc", "Voie"].map(disc => {
+    const enPlace = sa.voies.filter(v => v.discipline === disc && v.statut !== "Démontée"); if (!enPlace.length) return "";
+    const grades = (sa.echelles[disc] || []).map(x => x.salle).filter(g => enPlace.some(v => v.cot === g));
+    return `<div class="mur"><div class="mur-titre">${disc === "Bloc" ? "Blocs" : "Voies"} en place</div>${grades.map(g => {
+      const l = enPlace.filter(v => v.cot === g), ok = l.filter(v => essaisVoie(v.id).some(reussi)).length;
+      return `<div class="mur-ligne"><span class="mur-cot">${esc(g)}</span><span class="mur-barre"><span style="width:${ok / l.length * 100}%"></span></span><span class="petit">${ok} / ${l.length}</span></div>`;
+    }).join("")}</div>`; }).join("");
+}
+function tuileVoie(v) {
+  const n = essaisVoie(v.id), ok = n.some(reussi);
+  const etat = ok ? `<span class="t-ok">✓ réussi</span>` : n.length ? `${n.length} essai${n.length > 1 ? "s" : ""}` : "à essayer";
+  return `<button class="tuile-voie ${v.statut === "Démontée" ? "demontee" : ""}" data-voie-salle="${v.id}" style="border-top-color:${COULEUR_HEX(v.couleur) === "transparent" ? "var(--bord)" : COULEUR_HEX(v.couleur)}">
+    ${etoileAujourdhui(v) ? `<span class="t-etoile">★</span>` : ""}<span class="t-cot">${esc(v.cot)}</span><span class="t-etat">${etat}</span>${v.nom ? `<span class="t-nom">${esc(v.nom)}</span>` : ""}</button>`;
 }
 function afficherSalle() {
   const sa = salleDe(SA.id); if (!sa) return ouvrirSalles();
   $("titre-date").textContent = sa.nom;
   if (SA.voie) return afficherVoieSalle(sa);
-  const parSecteur = {}, liste = sa.voies.filter(v => SA.toutes || v.statut !== "Démontée");
-  liste.forEach(v => (parSecteur[v.secteur || ""] = parSecteur[v.secteur || ""] || []).push(v));
-  const jours = ts => ts ? Math.floor((Date.now() - ts) / 864e5) : null;
-  const projets = projetsEnCours(sa.id);
-  const ligneVoie = v => { const n = essaisVoie(v.id), ok = n.some(reussi);
-    return `<button class="ligne-exo ${v.statut === "Démontée" ? "verrou" : ""}" data-voie-salle="${v.id}"><span><span class="pastille-mini" style="background:${COULEUR_HEX(v.couleur)}"></span>
-      <b>${esc(v.cot)}</b> ${esc(v.nom || v.couleur || "")} <span class="petit">${v.discipline === "Voie" ? "voie" : "bloc"} · ${esc(v.profil || "")}${v.statut === "Démontée" ? " · démontée" : ""}</span></span>
-      <span class="badge">${n.length ? `${n.length} essai${n.length > 1 ? "s" : ""}${ok ? " ✓" : ""}` : "jamais essayée"}</span></button>`; };
-  let h = `<nav class="fil-ariane"><button class="lien" data-salles="1">Salles</button> › <span>${esc(sa.nom)}</span></nav>
-    <label class="champ">Nom</label><input type="text" id="salle-nom" value="${esc(sa.nom)}">
-    <label class="champ">Type</label><div class="segment">${["Bloc", "Voie", "Bloc et voie"].map(t => `<button data-salle-type="${t}" class="${sa.type === t ? "choisi" : ""}">${t}</button>`).join("")}</div>
-    <h3 class="sous-cat">Projets en cours</h3>
-    ${projets.map(p => `<button class="ligne-exo" data-voie-salle="${p.v.id}"><span><span class="pastille-mini" style="background:${COULEUR_HEX(p.v.couleur)}"></span><b>${esc(p.v.cot)}</b> ${esc(p.v.nom || p.v.couleur || "")}
-      <span class="petit">${esc(nomSecteur(sa, p.v.secteur))}${p.v.notes ? " · " + esc(p.v.notes) : ""}</span></span><span class="badge">${p.essais.length} essai${p.essais.length > 1 ? "s" : ""}</span></button>`).join("")
-      || `<p class="petit">Aucun : toutes les voies essayées sont réussies.</p>`}
-    <h3 class="sous-cat">Secteurs</h3>
-    ${sa.secteurs.map(x => { const j = jours(x.maj);
-      return `<div class="secteur"><div><b>${esc(x.nom)}</b> <span class="petit">· ${esc(x.profil)}${j !== null ? ` · mis à jour il y a ${j} j` : ""}</span></div>
-        <div class="choix compact"><button data-secteur-renouve="${x.id}">Renouvelé</button><button data-secteur-suppr="${x.id}" aria-label="Supprimer le secteur">✕</button></div></div>`; }).join("")}
-    <div class="ajout-secteur"><input type="text" id="secteur-nom" placeholder="Nouveau secteur (ex. Grand dévers)">
-      <select id="secteur-profil">${PROFILS.map(p => `<option>${p}</option>`).join("")}</select><button class="principal" data-secteur-ajout="1">Ajouter</button></div>
-    <h3 class="sous-cat">Voies et blocs</h3>
-    <div class="segment"><button data-salle-toutes="0" class="${!SA.toutes ? "choisi" : ""}">En place</button><button data-salle-toutes="1" class="${SA.toutes ? "choisi" : ""}">Toutes</button></div>
-    ${Object.entries(parSecteur).map(([id, vs]) => `<p class="petit"><b>${esc(nomSecteur(sa, id) || "Sans secteur")}</b></p>${vs.map(ligneVoie).join("")}`).join("") || `<p class="petit">Aucune pour l'instant. Elles s'ajoutent toutes seules quand tu notes une couleur pendant une séance, ou ici :</p>`}
-    <div class="choix"><button data-voie-ajout="Voie">+ Voie</button><button data-voie-ajout="Bloc">+ Bloc</button></div>
-    <h3 class="sous-cat">Échelles de cotation</h3><p class="petit">Les cotations affichées dans la salle, et leur équivalent dans l'app (pour comparer les salles et calculer les feux verts).</p>
-    ${["Bloc", "Voie"].map(disc => `<p><b>${disc}</b></p><input type="text" data-echelle-liste="${disc}" value="${esc((sa.echelles[disc] || []).map(x => x.salle).join(", "))}">
-      <div class="echelle-table">${(sa.echelles[disc] || []).map((x, k) => `<label>${esc(x.salle)} → <select data-echelle="${disc}" data-k="${k}">${(COTATIONS[disc] || []).map(c => `<option ${c === x.app ? "selected" : ""}>${c}</option>`).join("")}</select></label>`).join("")}</div>`).join("")}
-    ${lireSalles().liste.length > 1 ? `<button class="gros contour danger" data-salle-suppr="1">Supprimer cette salle</button>` : ""}`;
+  const onglets = `<div class="segment onglets-salle">${[["voies", "Voies"], ["secteurs", "Secteurs"], ["reglages", "Réglages"]].map(([k, t]) =>
+    `<button data-onglet-salle="${k}" class="${SA.onglet === k ? "choisi" : ""}">${t}</button>`).join("")}</div>`;
+  let h = onglets;
+  if (SA.onglet === "voies") {
+    const projets = projetsEnCours(sa.id);
+    const garder = v => SA.filtre === "toutes" ? true : v.statut === "Démontée" ? false
+      : SA.filtre === "essayer" ? !essaisVoie(v.id).length : SA.filtre === "reussies" ? essaisVoie(v.id).some(reussi) : true;
+    const groupes = [...sa.secteurs.map(x => ({ id: x.id, nom: x.nom, profil: x.profil })), { id: "", nom: "Sans secteur", profil: "" }]
+      .map(g => ({ ...g, voies: sa.voies.filter(v => (v.secteur || "") === g.id && garder(v)).sort((a, b) => String(a.cot).localeCompare(String(b.cot), "fr", { numeric: true })) }))
+      .filter(g => g.voies.length);
+    h += murSalle(sa)
+      + (projets.length ? `<h3 class="sous-cat">Projets en cours</h3>${projets.slice(0, 5).map(p => `<button class="ligne-exo" data-voie-salle="${p.v.id}"><span><span class="pastille-mini" style="background:${COULEUR_HEX(p.v.couleur)}"></span><b>${esc(p.v.cot)}</b> ${esc(p.v.nom || p.v.couleur || "")}
+          <span class="petit">${esc(nomSecteur(sa, p.v.secteur))}</span></span><span class="badge">${p.essais.length} essai${p.essais.length > 1 ? "s" : ""}</span></button>`).join("")}` : "")
+      + `<div class="choix compact filtres-salle">${[["place", "En place"], ["essayer", "À essayer"], ["reussies", "Réussies"], ["toutes", "Toutes"]].map(([k, t]) =>
+          `<button data-filtre-salle="${k}" class="${SA.filtre === k ? "choisi" : ""}">${t}</button>`).join("")}</div>`
+      + (groupes.map(g => `<div class="groupe-secteur"><b>${esc(g.nom)}</b>${g.profil ? ` <span class="petit">· ${esc(g.profil.toLowerCase())}</span>` : ""}</div>
+          <div class="tuiles-voies">${g.voies.map(tuileVoie).join("")}</div>`).join("")
+        || `<p class="petit">Rien à afficher. Les voies s'ajoutent toutes seules quand tu notes une couleur pendant une séance, ou avec le bouton ci-dessous.</p>`)
+      + `<button class="gros go" data-ajout-rapide="">+ Ajouter des voies</button>`;
+  } else if (SA.onglet === "secteurs") {
+    const jours = ts => ts ? Math.floor((Date.now() - ts) / 864e5) : null;
+    h += sa.secteurs.map(x => { const n = sa.voies.filter(v => v.secteur === x.id && v.statut !== "Démontée").length, j = jours(x.maj);
+        return `<button class="ligne-menu" data-secteur="${x.id}"><span><span class="titre-menu">${esc(x.nom)}</span>
+          <span class="sous-menu">${esc(x.profil)} · ${n} en place${j !== null ? ` · mis à jour il y a ${j} jour${j > 1 ? "s" : ""}` : ""}</span></span><span class="chevron">›</span></button>`; }).join("")
+      + `<div class="ajout-secteur"><input type="text" id="secteur-nom" placeholder="Nouveau secteur (ex. Grand dévers)">
+        <select id="secteur-profil">${PROFILS.map(p => `<option>${p}</option>`).join("")}</select><button class="principal" data-secteur-ajout="1">Ajouter</button></div>`;
+  } else {
+    h += `<label class="champ">Nom</label><input type="text" id="salle-nom" value="${esc(sa.nom)}">
+      <label class="champ">Type</label><div class="segment">${["Bloc", "Voie", "Bloc et voie"].map(t => `<button data-salle-type="${t}" class="${sa.type === t ? "choisi" : ""}">${t}</button>`).join("")}</div>
+      <button class="gros contour" data-assistant="${sa.id}">Assistant : secteurs et échelle</button>
+      <h3 class="sous-cat">Échelles de cotation</h3><p class="petit">Les cotations affichées dans la salle, et leur équivalent dans l'app (pour comparer les salles et calculer les feux verts).</p>
+      ${["Bloc", "Voie"].map(disc => `<p><b>${disc}</b></p><input type="text" data-echelle-liste="${disc}" value="${esc((sa.echelles[disc] || []).map(x => x.salle).join(", "))}">
+        <div class="echelle-table">${(sa.echelles[disc] || []).map((x, k) => `<label>${esc(x.salle)} → <select data-echelle="${disc}" data-k="${k}">${(COTATIONS[disc] || []).map(c => `<option ${c === x.app ? "selected" : ""}>${c}</option>`).join("")}</select></label>`).join("")}</div>`).join("")}
+      ${lireSalles().liste.length > 1 ? `<button class="gros contour danger" data-salle-suppr="1">Supprimer cette salle</button>` : ""}`;
+  }
   $("ecran").innerHTML = h;
 }
 function afficherVoieSalle(sa) {
   const v = sa.voies.find(x => x.id === SA.voie); if (!v) { SA.voie = null; return afficherSalle(); }
   const essais = essaisVoie(v.id), disc = v.discipline;
-  $("ecran").innerHTML = `<nav class="fil-ariane"><button class="lien" data-salles="1">Salles</button> › <button class="lien" data-salle="${sa.id}">${esc(sa.nom)}</button> › <span>${disc === "Voie" ? "Voie" : "Bloc"} ${esc(v.cot)}</span></nav>
+  $("titre-date").textContent = `${disc} ${v.cot}`;
+  $("ecran").innerHTML = `<button class="gros ${etoileAujourdhui(v) ? "go" : "contour"}" data-etoile="1">${etoileAujourdhui(v) ? "★ À faire aujourd'hui" : "☆ À faire aujourd'hui"}</button>
     <label class="champ">Type</label><div class="segment">${["Voie", "Bloc"].map(t => `<button data-vs="discipline" data-valeur="${t}" class="${disc === t ? "choisi" : ""}">${t}</button>`).join("")}</div>
     <label class="champ">Secteur</label><div class="choix compact"><button data-vs="secteur" data-valeur="" class="${!v.secteur ? "choisi" : ""}">Aucun</button>${sa.secteurs.map(x => `<button data-vs="secteur" data-valeur="${x.id}" class="${v.secteur === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")}</div>
     <label class="champ">Cotation (échelle de la salle)</label><div class="choix compact">${(sa.echelles[disc] || []).map(x => `<button data-vs="cot" data-valeur="${esc(x.salle)}" class="${v.cot === x.salle ? "choisi" : ""}">${esc(x.salle)}</button>`).join("")}</div>
@@ -2150,37 +2466,86 @@ function afficherVoieSalle(sa) {
     ${essais.map(e => `<div class="voie"><span>${esc(e.res)}${e.sec ? ` (${e.sec} sec)` : ""} · ${esc(e.style || "")}</span><span class="petit">${esc((LISTE.find(s => cle(s) === e.seance) ? jourMois(dateSeance(LISTE.find(s => cle(s) === e.seance))) : ""))}</span></div>`).join("") || `<p class="petit">Pas encore essayée.</p>`}
     ${essais.length ? "" : `<button class="gros contour danger" data-vs-suppr="1">Supprimer</button>`}`;
 }
+// Ajout rapide en rafale
+function ouvrirAjoutRapide(secteur) {
+  const sa = salleDe(SA.id), disc = sa.type === "Voie" ? "Voie" : "Bloc";
+  ouvrirModal({ type: "ajoutRapide", sid: sa.id, disc, secteur: secteur ?? (sa.secteurs[0] || {}).id ?? "", couleur: "", cot: "", ajoutees: 0 });
+}
+function htmlAjoutRapide() {
+  const sa = salleDe(M.sid);
+  return `<h2>Ajouter des voies · ${esc(sa.nom)}</h2>
+    ${sa.type === "Bloc et voie" ? `<div class="segment">${["Bloc", "Voie"].map(t => `<button data-m="disc" data-valeur="${t}" class="${M.disc === t ? "choisi" : ""}">${t}</button>`).join("")}</div>` : ""}
+    <label class="champ">Secteur</label><div class="choix compact"><button data-m="secteur" data-valeur="" class="${!M.secteur ? "choisi" : ""}">Aucun</button>${sa.secteurs.map(x => `<button data-m="secteur" data-valeur="${x.id}" class="${M.secteur === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")}</div>
+    <label class="champ">Couleur</label><div class="pastilles">${COULEURS.map(([n, c]) => `<button data-m="couleurRapide" data-valeur="${n}" class="pastille ${M.couleur === n ? "choisi" : ""}" style="background:${c}" aria-label="${n}"></button>`).join("")}</div>
+    <label class="champ">Cotation</label><div class="choix compact">${(sa.echelles[M.disc] || []).map(x => `<button data-m="cot" data-valeur="${esc(x.salle)}" class="${M.cot === x.salle ? "choisi" : ""}">${esc(x.salle)}</button>`).join("")}</div>
+    ${M.ajoutees ? `<p class="ajout-ok">✓ ${M.ajoutees} ajoutée${M.ajoutees > 1 ? "s" : ""}</p>` : ""}
+    <div class="actions"><button data-m="ajouter-fermer" ${M.cot ? "" : "disabled"}>Ajouter</button><button data-m="ajouter-suite" class="principal" ${M.cot ? "" : "disabled"}>Ajouter et continuer</button></div>
+    <p class="centre"><button class="lien" data-m="fermer">Terminé</button></p>`;
+}
+function ajouterVoieRapide() {
+  majSalle(M.sid, sa => { const sec = sa.secteurs.find(x => x.id === M.secteur);
+    sa.voies.push({ id: "v" + Date.now() + Math.floor(Math.random() * 1000), discipline: M.disc, secteur: M.secteur, couleur: M.couleur, cot: M.cot,
+                    profil: sec ? sec.profil : "Vertical", nom: "", ouverture: isoDate(new Date()), statut: "En place", notes: "" }); });
+  M.ajoutees++; M.couleur = ""; M.cot = "";
+}
+// Création guidée d'une salle (ou compléter une salle existante)
+const SECTEURS_SUGGERES = [["Dalle", "Dalle"], ["Vertical", "Vertical"], ["Léger dévers", "Léger dévers"], ["Dévers", "Dévers"], ["Toit", "Toit"], ["Pan", "Dévers"]];
+const MODELES_ECHELLE = { "Blocs de 1 à 9": ["1", "2", "3", "4", "5", "6", "7", "8", "9"], "Blocs de 1 à 6": ["1", "2", "3", "4", "5", "6"], "Blocs comme l'app": null };
+function ouvrirAssistant(sid) {
+  const sa = sid && salleDe(sid);
+  ouvrirModal({ type: "assistant", sid: sid || null, etape: sa ? 2 : 1, nom: sa ? sa.nom : "", typeSalle: sa ? sa.type : "Bloc et voie",
+                secteurs: sa ? sa.secteurs.map(x => x.nom) : [], modele: null, perso: "" });
+}
+function htmlAssistant() {
+  const pas = `<div class="etapes-creation">${[1, 2, 3].map(n => `<span class="${n <= M.etape ? "fait" : ""}"></span>`).join("")}</div>`;
+  if (M.etape === 1) return `<h2>Nouvelle salle</h2>${pas}<label class="champ">Nom</label><input type="text" id="as-nom" value="${esc(M.nom)}" placeholder="ex. Arkose Bruxelles">
+    <label class="champ">Type</label><div class="segment">${["Bloc", "Voie", "Bloc et voie"].map(t => `<button data-m="typeSalle" data-valeur="${t}" class="${M.typeSalle === t ? "choisi" : ""}">${t}</button>`).join("")}</div>
+    <div class="actions"><button data-m="fermer">Annuler</button><button data-m="as-suivant" class="principal">Suivant ›</button></div>`;
+  if (M.etape === 2) return `<h2>Secteurs</h2>${pas}<p class="petit">Touche les secteurs de la salle ; ajoute-en d'autres si besoin. Tu pourras les renommer.</p>
+    <div class="choix">${SECTEURS_SUGGERES.map(([n]) => `<button data-m="as-secteur" data-valeur="${n}" class="${M.secteurs.includes(n) ? "choisi" : ""}">${n}</button>`).join("")}
+      ${M.secteurs.filter(n => !SECTEURS_SUGGERES.some(s => s[0] === n)).map(n => `<button data-m="as-secteur" data-valeur="${esc(n)}" class="choisi">${esc(n)}</button>`).join("")}</div>
+    <div class="ajout-secteur"><input type="text" id="as-perso" placeholder="Autre secteur"><button data-m="as-perso">Ajouter</button></div>
+    <div class="actions"><button data-m="${M.sid ? "fermer" : "as-retour"}">${M.sid ? "Annuler" : "‹ Retour"}</button><button data-m="as-suivant" class="principal">Suivant ›</button></div>`;
+  return `<h2>Échelle des blocs</h2>${pas}<p class="petit">Comment la salle cote-t-elle ses blocs ? (Les voies gardent la cotation française.) La correspondance se règle ensuite dans Réglages.</p>
+    <div class="menu-liste">${Object.keys(MODELES_ECHELLE).map(k => `<button class="ligne-menu ${M.modele === k ? "choisi" : ""}" data-m="as-modele" data-valeur="${k}"><span class="titre-menu">${k}</span></button>`).join("")}</div>
+    <div class="actions"><button data-m="as-retour">‹ Retour</button><button data-m="as-fin" class="principal" ${M.modele ? "" : "disabled"}>${M.sid ? "Enregistrer" : "Créer la salle"}</button></div>`;
+}
+function finirAssistant() {
+  const bloc = COTATIONS.Bloc || [], min = Number(bloc[0]), max = Number(bloc[bloc.length - 1]);
+  const grades = MODELES_ECHELLE[M.modele] || bloc;
+  const echelleBloc = grades.map((g, k) => ({ salle: g, app: MODELES_ECHELLE[M.modele] && grades.length === 6 && M.modele === "Blocs de 1 à 6" ? bloc[k] : String(Math.min(max, Math.max(min, Number(g)))) }));
+  const x = lireSalles();
+  let sa = M.sid && x.liste.find(y => y.id === M.sid);
+  if (!sa) { sa = salleParDefaut(); sa.nom = M.nom.trim() || "Nouvelle salle"; sa.type = M.typeSalle; x.liste.push(sa); }
+  M.secteurs.forEach(n => { if (!sa.secteurs.some(s => s.nom === n)) sa.secteurs.push({ id: "t" + Date.now() + Math.floor(Math.random() * 1000), nom: n,
+    profil: (SECTEURS_SUGGERES.find(s => s[0] === n) || [n, "Vertical"])[1], maj: Date.now() }); });
+  sa.echelles.Bloc = echelleBloc; ecrireSalles(x);
+  fermerModal(); ouvrirSalles(sa.id);
+}
 $("ecran").addEventListener("click", e => {
   if (!["salles", "salle"].includes(vue)) return;
   const b = e.target.closest("button"); if (!b) return;
   const t = b.dataset, y = window.scrollY;
-  if (t.plus === "retour") return ouvrirPlus();
-  if (t.salles) return ouvrirSalles();
   if (t.salle) return ouvrirSalles(t.salle);
-  if (t.salleAjout) { const x = lireSalles(), sa = salleParDefaut(); sa.nom = "Nouvelle salle"; x.liste.push(sa); ecrireSalles(x); return ouvrirSalles(sa.id); }
+  if (t.salleAjout) return ouvrirAssistant();
+  if (t.assistant) return ouvrirAssistant(t.assistant);
+  if (t.ongletSalle) { SA.onglet = t.ongletSalle; return afficher(); }
+  if (t.filtreSalle) SA.filtre = t.filtreSalle;
+  if (t.ajoutRapide !== undefined) return ouvrirAjoutRapide();
+  if (t.secteur) return ouvrirModal({ type: "secteur", sid: SA.id, secId: t.secteur });
   if (t.salleType) majSalle(SA.id, sa => sa.type = t.salleType);
-  if (t.salleToutes) SA.toutes = t.salleToutes === "1";
-  if (t.salleSuppr) { if (!confirm("Supprimer cette salle et son inventaire ? Tes tentatives restent dans tes séances.")) return;
-    const x = lireSalles(); x.liste = x.liste.filter(y => y.id !== SA.id); ecrireSalles(x); return ouvrirSalles(); }
+  if (t.salleSuppr) { const id = SA.id; annulableSalles("Salle supprimée", () => { const x = lireSalles(); x.liste = x.liste.filter(z => z.id !== id); ecrireSalles(x); }); return ouvrirSalles(); }
   if (t.secteurAjout) { const nom = $("secteur-nom").value.trim(); if (!nom) return;
     majSalle(SA.id, sa => sa.secteurs.push({ id: "t" + Date.now(), nom, profil: $("secteur-profil").value, maj: Date.now() })); }
-  if (t.secteurRenouve) { if (!confirm("Ce secteur a été renouvelé ? Ses voies en place passent en « démontée » (elles restent dans ton historique).")) return;
-    majSalle(SA.id, sa => { sa.voies.forEach(v => { if (v.secteur === t.secteurRenouve && v.statut !== "Démontée") { v.statut = "Démontée"; v.demontage = isoDate(new Date()); } });
-      sa.secteurs.find(x => x.id === t.secteurRenouve).maj = Date.now(); }); }
-  if (t.secteurSuppr) { const sa = salleDe(SA.id);
-    if (sa.voies.some(v => v.secteur === t.secteurSuppr) && !confirm("Des voies sont rangées dans ce secteur ; elles passeront « sans secteur ». Supprimer ?")) return;
-    majSalle(SA.id, sa => { sa.secteurs = sa.secteurs.filter(x => x.id !== t.secteurSuppr); sa.voies.forEach(v => { if (v.secteur === t.secteurSuppr) v.secteur = ""; }); }); }
-  if (t.voieAjout) { const id = "v" + Date.now();
-    majSalle(SA.id, sa => sa.voies.push({ id, discipline: t.voieAjout, secteur: "", couleur: "", cot: (sa.echelles[t.voieAjout] || [{ salle: "" }])[0].salle, profil: "Vertical", nom: "", ouverture: isoDate(new Date()), statut: "En place", notes: "" }));
-    SA.voie = id; afficher(); return; }
   if (t.voieSalle) { SA.voie = t.voieSalle; afficher(); return; }
+  if (t.etoile) majSalle(SA.id, sa => { const v = sa.voies.find(x => x.id === SA.voie); v.etoile = etoileAujourdhui(v) ? "" : isoDate(new Date()); });
   if (t.vs) majSalle(SA.id, sa => { const v = sa.voies.find(x => x.id === SA.voie);
     if (t.vs === "couleur") v.couleur = v.couleur === t.valeur ? "" : t.valeur;
     else if (t.vs === "statut") { v.statut = t.valeur; v.demontage = t.valeur === "Démontée" ? isoDate(new Date()) : ""; }
     else if (t.vs === "discipline") { v.discipline = t.valeur; v.cot = (sa.echelles[t.valeur] || [{ salle: v.cot }])[0].salle; }
     else if (t.vs === "secteur") { v.secteur = t.valeur; const x = sa.secteurs.find(z => z.id === t.valeur); if (x) v.profil = x.profil; }
     else v[t.vs] = t.valeur; });
-  if (t.vsSuppr) { majSalle(SA.id, sa => sa.voies = sa.voies.filter(v => v.id !== SA.voie)); SA.voie = null; }
+  if (t.vsSuppr) { const id = SA.voie, sid = SA.id; SA.voie = null; annulableSalles("Voie supprimée", () => majSalle(sid, sa => sa.voies = sa.voies.filter(v => v.id !== id))); }
   afficher(false); window.scrollTo(0, y);
 });
 $("ecran").addEventListener("change", e => {
@@ -2350,6 +2715,8 @@ function exporter() {
     const m = lireMesures(sem), a = autoSemaine(sem);
     lignes.push(["Mesure", sem, "", "", "", ...CHAMPS_MESURES.map(([c]) => vide(m[c]) ? (a[c] ?? "") : m[c])]);
   }
+  // Modifications du programme faites dans l'app (reportées dans Programme.xlsx par escalade.py)
+  lireOps().forEach(o => lignes.push(["Programme", o.semaine ?? "", o.jour || "", o.activite || "", "", o.op, o.contenu || "", o.phase || "", o.id, o.depuis ?? "", o.n ?? ""]));
   // Inventaire des salles (une ligne par voie ou bloc)
   lireSalles().liste.forEach(sa => sa.voies.forEach(v => lignes.push(["Inventaire", "", "", v.discipline, v.ouverture || "", sa.nom, nomSecteur(sa, v.secteur), v.couleur || "",
     v.cot, versApp(sa.id, v.discipline, v.cot), v.profil || "", v.nom || "", v.statut || "En place", v.demontage || "", v.id, v.notes || ""])));
@@ -2359,7 +2726,7 @@ function exporter() {
   });
   const csv = "\uFEFF" + lignes.map(l => l.map(champ).join(";")).join("\r\n");
   const sauvegarde = {};
-  Object.keys(localStorage).filter(k => /^(seance-|mesures-|libre-|competences-|libres$|reglages$|favoris$|moyennes$|programme-actif$|deplacements$|salles$)/.test(k)).forEach(k => sauvegarde[k] = localStorage.getItem(k));
+  Object.keys(localStorage).filter(k => /^(seance-|mesures-|libre-|competences-|libres$|reglages$|favoris$|moyennes$|programme-actif$|deplacements$|salles$|modifs-programme$)/.test(k)).forEach(k => sauvegarde[k] = localStorage.getItem(k));
   const jour = isoDate(new Date());
   partager([new File([csv], `export-escalade-${jour}.csv`, { type: "text/csv" }),
             new File([JSON.stringify(sauvegarde)], `sauvegarde-escalade-${jour}.json`, { type: "application/json" })]);
@@ -2455,7 +2822,9 @@ function afficher(enHaut = true) {
   const onglet = { seance: "seance", repos: "seance", semaine: "semaine", programme: "semaine", creation: "semaine" }[vue] || "plus";
   document.querySelectorAll("#onglets button").forEach(b => b.classList.toggle("actif", b.dataset.onglet === onglet));
   const fleches = vue === "seance" || vue === "semaine" || vue === "repos";
-  ["prec", "suiv"].forEach(id => $(id).style.visibility = fleches ? "visible" : "hidden");
+  $("prec").style.visibility = fleches || SOUS_ECRANS.includes(vue) ? "visible" : "hidden";
+  $("suiv").style.visibility = fleches ? "visible" : "hidden";
+  $("prec").classList.toggle("retour-entete", SOUS_ECRANS.includes(vue));
   $("btn-menu").style.display = vue === "seance" && courant() ? "" : "none";
   document.body.dataset.activite = vue === "seance" && courant() ? (actReleve(courant(), lire(courant())) === "Bloc" ? "Bloc" : courant().activite) : "";
   infoExport(); majInfosSeance(); placerMinuteur(); if (T) majMinuteur();
@@ -2471,7 +2840,17 @@ setInterval(() => {
   el.textContent = mmss(Math.max(0, Math.floor((Date.now() - dep) / 1000)));
 }, 1000);
 function changer(i) { vue = "seance"; index = i; ouverts = new Set(); formVoie = null; afficher(); }
-const precedent = () => vue === "semaine" ? ouvrirSemaine(semaineVue - 1) : vue === "repos" ? LISTE.length && changer(Math.max(0, indexAujourdhui() - 1))
+const SOUS_ECRANS = ["salles", "salle", "biblio", "reglages", "sauvegarde"];
+function retour() {
+  if (vue === "salle") { if (SA.voie) { SA.voie = null; return afficher(); } return ouvrirSalles(); }
+  if (vue === "biblio") {
+    if (B.ecran === "fiche") { B.ecran = "liste"; delete B.routine; return afficher(); }
+    if (B.ecran === "liste" && estDiscipline(B.filtre) && sousCategories(B.filtre).length > 1) { B = { ecran: "souscats", filtre: B.filtre, q: "" }; return afficher(); }
+    if (B.ecran !== "tuiles") { B = { ecran: "tuiles", q: "" }; return afficher(); }
+  }
+  return ouvrirPlus();
+}
+const precedent = () => SOUS_ECRANS.includes(vue) ? retour() : vue === "semaine" ? ouvrirSemaine(semaineVue - 1) : vue === "repos" ? LISTE.length && changer(Math.max(0, indexAujourdhui() - 1))
   : vue === "seance" && LISTE.length && changer(Math.max(0, index - 1));
 const suivant = () => vue === "semaine" ? ouvrirSemaine(semaineVue + 1) : vue === "repos" ? LISTE.length && changer(indexAujourdhui())
   : vue === "seance" && LISTE.length && changer(Math.min(LISTE.length - 1, index + 1));

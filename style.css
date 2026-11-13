@@ -377,3 +377,43 @@ body.flash { animation:flash .5s 3; }
 .temps-etape input { width:80px; text-align:center; }
 .temps-etape .compteur span { min-width:50px; }
 .secteur .choix { flex-wrap:nowrap; flex:none; } .secteur > div:first-child { min-width:0; }
+
+/* ---------- Version 5.3 : fiche de salle ---------- */
+#prec.retour-entete { color:var(--act); }
+.onglets-salle { margin-bottom:12px; }
+.mur { background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:10px 12px; margin-bottom:10px; }
+.mur-titre { font-weight:700; font-size:14px; margin-bottom:6px; }
+.mur-ligne { display:flex; align-items:center; gap:8px; font-size:14px; margin:3px 0; }
+.mur-cot { width:28px; font-weight:700; text-align:right; }
+.mur-barre { flex:1; height:10px; border-radius:5px; background:var(--info); overflow:hidden; }
+.mur-barre span { display:block; height:100%; background:var(--fait); }
+.filtres-salle { margin:12px 0 4px; }
+.groupe-secteur { margin:12px 0 6px; }
+.tuiles-voies { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:6px; }
+.tuile-voie { position:relative; display:flex; flex-direction:column; align-items:center; padding:6px 4px; min-height:64px; border-top:6px solid var(--bord); border-radius:10px; background:var(--carte); }
+.tuile-voie.demontee { opacity:.45; }
+.t-cot { font-size:20px; font-weight:800; line-height:1.1; }
+.t-etat { font-size:11px; color:var(--doux); }
+.t-ok { color:var(--fait); font-weight:700; }
+.t-nom { font-size:11px; color:var(--doux); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+.t-etoile { position:absolute; top:2px; right:4px; color:var(--attention); font-size:13px; }
+.ajout-ok { color:var(--fait); font-weight:700; text-align:center; }
+.ligne-menu.choisi { box-shadow:0 0 0 2px var(--act); }
+
+/* ---------- Version 5.3 : modifier le programme ---------- */
+.outils-semaine { display:block; margin:0 0 8px; font-size:14px; }
+.outil { border-top:1px solid var(--bord); padding:10px 0; }
+.ligne-outil { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:14px; }
+.ligne-outil .principal { margin-left:auto; padding:0 14px; min-height:40px; }
+.ed-ligne { border:1px solid var(--bord); border-radius:10px; padding:8px 10px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; gap:8px; background:var(--carte); }
+.ed-action { display:block; }
+.ed-haut { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.ed-version { background:var(--info); }
+.ed-fleches { display:flex; gap:4px; flex:none; }
+.ed-fleches button { width:34px; height:34px; padding:0; background:transparent; }
+.ed-reglages { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:6px; }
+.ed-reglages select { width:auto; padding:6px; font-size:14px; }
+.ed-reglages .compteur button { width:36px; height:34px; }
+.ed-reglages .compteur span { min-width:36px; }
+.ed-ajouts { display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+.ed-texte { min-height:320px; font-family:ui-monospace, Menlo, monospace; font-size:13px; }

@@ -1,6 +1,6 @@
 // Fichier généré par escalade.py à partir de Programme.xlsx — ne pas modifier à la main.
 
-const VERSION_PROGRAMME = "13/11/2026 00:35";
+const VERSION_PROGRAMME = "13/11/2026 10:56";
 
 const DATE_DEBUT = "2026-11-09";
 
@@ -41,6 +41,77 @@ const ZONES = [
  "Mollet / Achille",
  "Autre"
 ];
+
+const CONSEILS = [
+ {
+  "type": "Cause",
+  "valeur": "Lecture",
+  "exercices": "« Lecture avant de grimper » · « Les trois prises » · « Lecture à voix haute »",
+  "pourquoi": "Prévoir les mouvements avant de grimper."
+ },
+ {
+  "type": "Cause",
+  "valeur": "Pieds",
+  "exercices": "« Pieds silencieux » · « Regarder le pied jusqu'à la pose » · « Pieds imposés »",
+  "pourquoi": "Précision et confiance dans les pieds."
+ },
+ {
+  "type": "Cause",
+  "valeur": "Placement ou gainage",
+  "exercices": "« Hanches collées » · « Profil alterné » · « Planche » · « Dead bug »",
+  "pourquoi": "Bassin près du mur et tronc gainé."
+ },
+ {
+  "type": "Cause",
+  "valeur": "Force",
+  "exercices": "« Suspension active » · « Rowing inversé » · « Bras tendus »",
+  "pourquoi": "Économiser les bras avant de chercher la force."
+ },
+ {
+  "type": "Cause",
+  "valeur": "Endurance",
+  "exercices": "« ARC » · « Traversée basse » · « Circuit »",
+  "pourquoi": "Accumuler du volume facile."
+ },
+ {
+  "type": "Cause",
+  "valeur": "Peur",
+  "exercices": "« Désescalade » · « Trois points d'appui » · « Respiration »",
+  "pourquoi": "Grimper en contrôle, sans se crisper."
+ },
+ {
+  "type": "Profil",
+  "valeur": "Dévers",
+  "exercices": "« Hanches collées » · « Pieds qui tirent » · « Traversée dévers aller-retour »",
+  "pourquoi": "Ton dévers : bassin collé, pieds actifs."
+ },
+ {
+  "type": "Profil",
+  "valeur": "Léger dévers",
+  "exercices": "« Hanches collées » · « Profil alterné »",
+  "pourquoi": "Tourner les hanches pour gagner de l'allonge."
+ },
+ {
+  "type": "Profil",
+  "valeur": "Toit",
+  "exercices": "« Pieds qui tirent » · « Crochet de pointe »",
+  "pourquoi": "Garder les pieds au mur."
+ },
+ {
+  "type": "Profil",
+  "valeur": "Dalle",
+  "exercices": "« Grimpe en dalle » · « Pied qui plane »",
+  "pourquoi": "Équilibre et confiance dans l'adhérence."
+ },
+ {
+  "type": "Profil",
+  "valeur": "Vertical",
+  "exercices": "« Bras tendus » · « Trois points d'appui »",
+  "pourquoi": "Économie de mouvement."
+ }
+];
+
+const MODIFS_APPLIQUEES = [];
 
 const SEANCES = [
  {
