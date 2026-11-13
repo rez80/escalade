@@ -1,4 +1,4 @@
-# App Escalade — mode d'emploi technique (version 5.0)
+# App Escalade — mode d'emploi technique (version 5.1)
 
 Ce fichier s'adresse à toi, pour faire vivre l'app et le rapport. Le guide d'utilisation, lisible par tout le monde, est `aide.html` (bouton **Plus → ❓ Aide** dans l'app, ou l'adresse `…/aide.html`).
 
@@ -101,6 +101,8 @@ Après une modification : `python escalade.py --app`, puis envoie `data.js` et `
 2. L'app détecte le nouveau programme (`PROGRAMME_ID`) et propose : **Exporter**, puis **Démarrer** (les séances de l'ancien programme sont effacées ; réglages, favoris et moyennes gardés).
 3. Range cet export dans un dossier d'archive (par exemple `exports/programme-2/`) ; pour l'afficher dans l'onglet Historique, remplace le contenu de `exports/programme-1/` ou adapte la constante `HISTO` dans `escalade.py`.
 
+Une séance peut avoir des versions (`## Voie (avec partenaire)`, `## Remplacement bloc (pas de partenaire)`) : l'app propose le choix dans le bandeau ; une version dont le nom contient « bloc » note des blocs.
+
 Pour un nouveau **bloc** du même programme, il suffit d'ajouter ses lignes à la suite dans l'onglet Programme (sans changer la date) : rien n'est effacé.
 
 ## Carte du code (`app.js`)
@@ -113,9 +115,10 @@ Pour un nouveau **bloc** du même programme, il suffit d'ajouter ses lignes à l
 | La lecture des lignes d'une séance | Section 4 (`analyser`) |
 | Les durées prévues et le temps réel | Section 4 bis |
 | Les feux verts, la forme du jour, le bilan de compétences | Section « Feux verts » (`feuxVerts`, `formeDuJour`, `carteCompetences`) |
-| L'écran séance, la carte Maintenant, les types d'étape | Section 7 |
-| Les fenêtres (résultat, circuit, récupération, compétences, menu ⋯…) | Section 9 |
-| L'onglet Semaine et la création de séance | Section 13 |
+| L'écran séance (bandeau avec version et ▶ Commencer), la carte Maintenant, les types d'étape | Section 7 |
+| Les fenêtres (résultat, circuit, récupération, compétences, séance sautée, déplacer, menu ⋯…) | Section 9 |
+| Le minuteur (`placerMinuteur` : dans la carte Maintenant ou en pastille), le chrono du passage | Section 10 |
+| L'onglet Programme (vues Semaine et Programme), l'écran Repos, la création de séance | Section 13 |
 | L'onglet Plus, la bibliothèque, les réglages | Section 14 |
 | L'export, la sauvegarde, le calendrier | Section 15 |
 | Les onglets, l'en-tête, le balayage | Section 17 |
@@ -147,11 +150,11 @@ Puis lance `python escalade.py --app` (il signale les noms introuvables) et reme
 
 ## Format de l'export (`export-escalade-….csv`)
 
-Séparateur `;`, en-têtes `Type;Semaine;Jour;Activité;Date;C1…C14`.
+Séparateur `;`, en-têtes `Type;Semaine;Jour;Activité;Date;C1…C14`. `Jour` est le jour **prévu** (clé de la séance) ; `Date` est la date **réelle** (une séance déplacée garde son jour prévu et prend la date du nouveau jour).
 
 | Type | C1 à C14 |
 | --- | --- |
-| Séance / Séance libre | Fait, durée, effort, douleur après, zone, meilleure perf, nb « sec », notes, récup doigts/coudes/épaules, énergie, motivation, douleur avant, zone avant, douleur pendant (max) |
+| Séance / Séance libre | Fait, durée, effort, douleur après, zone, meilleure perf, nb « sec », notes (dont « Raison : … » si sautée), récup doigts/coudes/épaules, énergie, motivation, douleur avant, zone avant, douleur pendant (max) |
 | Voie | Cotation, profil, résultat, nb « sec », rang, style, couleur, nom, cause d'échec |
 | Douleur | Zone, niveau, heure |
 | Mesure | Planche, course, nb « sec », voie, bloc, tractions, notes, genou contre le mur, 90/90, squat profond, mains derrière le dos |
