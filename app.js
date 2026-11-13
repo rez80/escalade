@@ -9,7 +9,7 @@
 // =====================================================================
 // 1. RÉGLAGES DU PROGRAMME (modifiables dans le code)
 // =====================================================================
-const APP_VERSION = "5.1";
+const APP_VERSION = "5.2";
 const REPOS_DEFAUT = { Voie: 300, Bloc: 180, Maison: 90 };   // secondes, si la ligne n'indique rien
 const COTATIONS = { Voie: ["3","4","4c","5a","5b","5c","6a","6b","6c"], Bloc: ["2","3","4","5","6","7"] };
 COTATIONS["Escalade extérieur"] = COTATIONS.Voie;               // se note comme une voie
@@ -225,6 +225,8 @@ function noterMoyenne(s, d, i, ms) {
   const m = lireMoyennes(); m[type] = [...(m[type] || []), Math.round(parPassage * 10) / 10].slice(-10);
   localStorage.setItem("moyennes", JSON.stringify(m));
 }
+// Temps réel d'une étape (ms) : la saisie manuelle est prioritaire sur la mesure
+const tempsReel = (d, k) => d.tempsManuel && d.tempsManuel[k] != null ? d.tempsManuel[k] * 60000 : (d.temps || {})[k];
 // Temps passé sur l'étape en cours (en secondes)
 function tempsEtapeEnCours(d) {
   const ec = d.etapeEnCours; if (!ec) return 0;
@@ -575,7 +577,7 @@ function ligneAction(s, d, e, i, actuelle, num) {
   const eviter = alerteRecup(d) && estProjet(e) && c < e.n;
   const ouvert = ouverts.has("h" + i);
   return `<div class="ligne etape type-${num ? num.type : "facile"} ${c >= e.n ? "finie" : ""} ${actuelle ? "actuelle" : ""}" data-action-ligne="${i}" data-el="${i}">
-    <div class="txt">${entete(num)}${eviter ? `<span class="a-eviter">À éviter aujourd'hui</span> ` : ""}${lier(e.texte, i)}${rappelFeu(e)}${e.serie ? ` <span class="petit">(série de ${e.serie})</span>` : ""}${outils ? `<div class="outils">${outils}</div>` : ""}
+    <div class="txt">${entete(num)}${eviter ? `<span class="a-eviter">À éviter aujourd'hui</span> ` : ""}${lier(e.texte, i)}${rappelFeu(e)}${rappelProjets(s, d, e)}${e.serie ? ` <span class="petit">(série de ${e.serie})</span>` : ""}${outils ? `<div class="outils">${outils}</div>` : ""}
     ${note ? `<div class="note">📝 ${esc(note)}</div>` : ""}
     ${detailsAvant ? `<button class="lien petit" data-plier="h${i}">Dernière fois ${ouvert ? "▾" : "▸"}</button>` : ""}
     ${detailsAvant && ouvert ? `${hist}${avant && !note ? `<div class="note ancienne">📝 ${esc(avant)}</div>` : ""}` : ""}${explication(i)}</div>
@@ -671,7 +673,7 @@ function formulaireResultat(f, act, attr) {
   const pastilles = `<div class="pastilles">${COULEURS.map(([n, c]) =>
     `<button data-${attr}="couleur" data-valeur="${n}" class="pastille ${f.couleur === n ? "choisi" : ""}" style="background:${c}" aria-label="${n}"></button>`).join("")}</div>`;
   const echec = f.res && !reussi(f);
-  return `<label class="champ">Cotation</label>${choix("cot", COTATIONS[act])}
+  return `${f.salle ? choixVoiesSalle(f, act, attr) : ""}<label class="champ">Cotation${f.salle ? ` <span class="petit">(échelle de la salle)</span>` : ""}</label>${choix("cot", f.salle ? gradesSalle(f.salle, act) : COTATIONS[act])}
     <label class="champ">Profil</label>${segment("profil", PROFILS)}
     <label class="champ">Style</label>${segment("style", STYLES)}
     <label class="champ">Couleur et nom <span class="petit">(facultatif)</span></label>${pastilles}
@@ -683,6 +685,89 @@ function formulaireResultat(f, act, attr) {
       <div class="choix">${CAUSES.map(c => `<button data-m="cause" data-valeur="${c}" class="${f.cause === c ? "choisi" : ""}">${c}</button>`).join("")}
       ${f.res === "Avec sec" ? "" : `<button data-m="cause" data-valeur="">Sans préciser</button>`}</div>` : ""}`;
 }
+// =====================================================================
+// SALLES : échelles de cotation, secteurs, inventaire des voies et blocs
+// =====================================================================
+const discDe = act => estVoie(act) ? "Voie" : "Bloc";
+function salleParDefaut() {
+  const bloc = COTATIONS.Bloc || ["2", "3", "4", "5", "6", "7"], min = Number(bloc[0]), max = Number(bloc[bloc.length - 1]);
+  return { id: "s" + Date.now(), nom: "Ma salle", type: "Bloc et voie", secteurs: [], voies: [],
+           echelles: { Bloc: ["1", "2", "3", "4", "5", "6", "7", "8", "9"].map(g => ({ salle: g, app: String(Math.min(max, Math.max(min, Number(g)))) })),
+                       Voie: (COTATIONS.Voie || []).map(c => ({ salle: c, app: c })) } };
+}
+function lireSalles() {
+  let x = JSON.parse(localStorage.getItem("salles") || "null");
+  if (!x) { x = { liste: [salleParDefaut()], derniere: {} }; localStorage.setItem("salles", JSON.stringify(x)); }
+  return x;
+}
+const ecrireSalles = x => { localStorage.setItem("salles", JSON.stringify(x)); cacheFeux = null; };
+const salleDe = id => lireSalles().liste.find(x => x.id === id) || null;
+const salleParDefautPour = act => { const x = lireSalles(); return x.derniere[discDe(act)] || x.derniere.tout || (x.liste[0] || {}).id; };
+const gradesSalle = (sid, act) => { const sa = salleDe(sid); return sa && sa.echelles[discDe(act)] && sa.echelles[discDe(act)].length ? sa.echelles[discDe(act)].map(x => x.salle) : COTATIONS[act]; };
+const versApp = (sid, act, g) => { const sa = salleDe(sid), e = sa && (sa.echelles[discDe(act)] || []).find(x => x.salle === String(g)); return e ? e.app : String(g); };
+const versSalle = (sid, act, g) => { const sa = salleDe(sid), e = sa && (sa.echelles[discDe(act)] || []).find(x => x.app === String(g)); return e ? e.salle : String(g); };
+const nomSecteur = (sa, id) => ((sa && sa.secteurs.find(x => x.id === id)) || {}).nom || "";
+// Historique d'une voie de l'inventaire (toutes séances)
+const essaisVoie = id => toutesVoies().filter(v => v.voieId === id);
+// Projets en cours : voies en place essayées, jamais réussies
+function projetsEnCours(sid, disc) {
+  const sa = salleDe(sid); if (!sa) return [];
+  return sa.voies.filter(v => v.statut !== "Démontée" && (!disc || v.discipline === disc)).map(v => ({ v, essais: essaisVoie(v.id) }))
+    .filter(x => x.essais.length && !x.essais.some(reussi)).sort((a, b) => b.essais.length - a.essais.length);
+}
+// Résultat → tentative : cotation de l'app + cotation de la salle, salle, voie ; l'inventaire se complète tout seul
+function finaliserTentative(etat, act) {
+  const sid = etat.salle, grade = String(etat.cot);
+  const v = { cot: sid ? versApp(sid, act, grade) : grade, profil: etat.profil, res: etat.res, act, ligne: etat.ligne, style: etat.style || "À vue" };
+  if (sid) { v.salle = sid; v.cotSalle = grade; }
+  if (etat.res === "Avec sec") v.sec = etat.sec;
+  if (etat.couleur) v.couleur = etat.couleur;
+  if ((etat.nom || "").trim()) v.nom = etat.nom.trim();
+  if (etat.cause && !reussi(v)) v.cause = etat.cause;
+  if (sid && (etat.voieId || etat.nouvelle || v.couleur || v.nom)) {
+    const x = lireSalles(), sa = x.liste.find(y => y.id === sid), disc = discDe(act);
+    let voie = etat.voieId && sa.voies.find(y => y.id === etat.voieId);
+    if (!voie) voie = sa.voies.find(y => y.statut !== "Démontée" && y.discipline === disc && y.cot === grade && (y.couleur || "") === (v.couleur || "") && (y.nom || "") === (v.nom || ""));
+    if (!voie) { voie = { id: "v" + Date.now() + Math.floor(Math.random() * 1000), discipline: disc, secteur: etat.secteurNouvelle || "", couleur: v.couleur || "",
+                          cot: grade, profil: v.profil, nom: v.nom || "", ouverture: isoDate(new Date()), statut: "En place", notes: "" };
+                 sa.voies.push(voie); }
+    v.voieId = voie.id; x.derniere[disc] = sid; ecrireSalles(x);
+  }
+  return v;
+}
+// Liste des voies de la salle dans la fenêtre de résultat
+function choixVoiesSalle(f, act, attr) {
+  const sa = salleDe(f.salle); if (!sa) return "";
+  const disc = discDe(act), secteurs = sa.secteurs;
+  const voies = sa.voies.filter(v => v.statut !== "Démontée" && v.discipline === disc && (!f.filtreSecteur || v.secteur === f.filtreSecteur));
+  const coul = n => (COULEURS.find(c => c[0] === n) || ["", "transparent"])[1];
+  return `<label class="champ">${disc === "Voie" ? "Voie" : "Bloc"} de la salle <span class="petit">· ${esc(sa.nom)}</span></label>
+    ${secteurs.length ? `<div class="choix compact"><button data-${attr}="filtreSecteur" data-valeur="" class="${!f.filtreSecteur ? "choisi" : ""}">Tous</button>${secteurs.map(x =>
+      `<button data-${attr}="filtreSecteur" data-valeur="${x.id}" class="${f.filtreSecteur === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")}</div>` : ""}
+    <div class="voies-salle">${voies.map(v => { const n = essaisVoie(v.id);
+      return `<button data-${attr}="voie" data-valeur="${v.id}" class="voie-salle ${f.voieId === v.id ? "choisi" : ""}"><span class="pastille-mini" style="background:${coul(v.couleur)}"></span>
+        <b>${esc(v.cot)}</b> ${esc(v.nom || v.couleur || "")}<span class="petit"> ${esc(nomSecteur(sa, v.secteur))}${n.length ? ` · ${n.length} essai${n.length > 1 ? "s" : ""}${n.some(reussi) ? " ✓" : ""}` : ""}</span></button>`; }).join("")
+      || `<p class="petit">Aucune ${disc === "Voie" ? "voie" : "bloc"} encore : note la couleur ci-dessous, elle s'ajoutera à la salle.</p>`}
+    <button data-${attr}="nouvelle" class="voie-salle nouvelle ${f.nouvelle ? "choisi" : ""}">+ Nouvelle</button></div>
+    ${f.nouvelle && secteurs.length ? `<div class="choix compact">${secteurs.map(x => `<button data-${attr}="secteurNouvelle" data-valeur="${x.id}" class="${f.secteurNouvelle === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")}</div>` : ""}`;
+}
+// Choisir une voie de la liste : tout se remplit
+function choisirVoie(f, id, act) {
+  const sa = salleDe(f.salle), v = sa && sa.voies.find(x => x.id === id); if (!v) return;
+  if (f.voieId === id) { f.voieId = ""; return; }
+  Object.assign(f, { voieId: id, nouvelle: false, cot: v.cot, couleur: v.couleur, nom: v.nom,
+    profil: v.profil || ((sa.secteurs.find(x => x.id === v.secteur) || {}).profil) || f.profil,
+    style: essaisVoie(id).length ? "Après travail" : "À vue" });
+}
+// Rappel des projets en cours sur les lignes de projet
+function rappelProjets(s, d, e) {
+  if (!estProjet(e) || !ESCALADE.includes(s.activite)) return "";
+  const act = actReleve(s, d), sid = d.salle || salleParDefautPour(act), p = projetsEnCours(sid, discDe(act)).slice(0, 2);
+  if (!p.length) return "";
+  const sa = salleDe(sid);
+  return `<div class="feu-rappel">🎯 Projets en cours : ${p.map(x => `${esc(x.v.couleur || "")} ${esc(x.v.cot)}${x.v.nom ? " « " + esc(x.v.nom) + " »" : ""}${nomSecteur(sa, x.v.secteur) ? " (" + esc(nomSecteur(sa, x.v.secteur)) + ")" : ""}, ${x.essais.length} essai${x.essais.length > 1 ? "s" : ""}`).join(" · ")}</div>`;
+}
+
 // Style proposé : « Après travail » si la même voie (cotation + couleur + nom) a déjà été notée
 function stylePropose(act, cot, couleur, nom) {
   if (!couleur && !nom) return "À vue";
@@ -742,10 +827,10 @@ $("ecran").addEventListener("click", e => {
   if (b && t.guide !== undefined) return lancerGuide(Number(t.guide));
   if (b && t.repos !== undefined) return lancerRepos(Number(t.repos));
   if (b && t.action === "demarrer") {
-    if (ESCALADE.includes(courant().activite) && !lire(courant()).recup) return ouvrirModal({ type: "recup", dAvant: null, nAvant: 3, zAvant: "" });
+    if (ESCALADE.includes(courant().activite) && !lire(courant()).recup) return ouvrirModal({ type: "recup", dAvant: null, nAvant: 3, zAvant: "", salle: salleParDefautPour(actReleve(courant(), lire(courant()))) });
     modifier(d => { d.debut = Date.now(); delete d.fin; delete d.fait; }); garderEcran(); return allerAuSuivant();
   }
-  if (b && t.action === "recup") return ouvrirModal({ type: "recup", apres: true, dAvant: null, nAvant: 3, zAvant: "" });
+  if (b && t.action === "recup") return ouvrirModal({ type: "recup", apres: true, dAvant: null, nAvant: 3, zAvant: "", salle: lire(courant()).salle || salleParDefautPour(actReleve(courant(), lire(courant()))) });
   if (b && t.action === "sauter") return ouvrirModal({ type: "sauter" });
   if (b && t.action === "desauter") return modifier(d => { delete d.fait; delete d.raison; });
   if (b && t.action === "terminer") return terminer();
@@ -835,14 +920,16 @@ $("toast-annuler").onclick = () => {
 function actionFormVoie(t) {
   const s = courant(), d = lire(s), act = actReleve(s, d);
   if (t.form === "ouvrir") { const der = (d.voies || []).filter(v => (v.act || act) === act).slice(-1)[0];
-    formVoie = { cot: der ? der.cot : "", profil: der ? der.profil : "Vertical", res: "", sec: 1, style: "À vue", couleur: "", nom: "" }; ouverts.add("releve"); }
+    const salle = d.salle || salleParDefautPour(act);
+    formVoie = { cot: der ? (der.cotSalle || versSalle(salle, act, der.cot)) : "", profil: der ? der.profil : "Vertical", res: "", sec: 1, style: "À vue", couleur: "", nom: "", salle }; ouverts.add("releve"); }
   else if (t.form === "annuler") formVoie = null;
   else if (t.form === "sec") formVoie.sec = Math.max(1, formVoie.sec + Number(t.pas));
   else if (t.form === "ajouter") {
-    const v = { ...formVoie, act }; if (v.res !== "Avec sec") delete v.sec;
-    if (!v.couleur) delete v.couleur; if (!(v.nom || "").trim()) delete v.nom;
+    const v = finaliserTentative({ ...formVoie, ligne: undefined }, act);
     formVoie = null; return modifier(d => { d.voies = d.voies || []; d.voies.push(v); });
-  } else if (t.form === "couleur") formVoie.couleur = formVoie.couleur === t.valeur ? "" : t.valeur;
+  } else if (t.form === "voie") choisirVoie(formVoie, t.valeur, act);
+  else if (t.form === "nouvelle") { formVoie.nouvelle = !formVoie.nouvelle; formVoie.voieId = ""; }
+  else if (t.form === "couleur") formVoie.couleur = formVoie.couleur === t.valeur ? "" : t.valeur;
   else formVoie[t.form] = t.valeur;
   afficher(false);
 }
@@ -868,8 +955,8 @@ function fermerModal() { M = null; $("fond-modal").style.display = "none"; }
 function ouvrirResultat(i, edit) {
   if (edit !== undefined) {                                      // corriger un résultat déjà noté
     const v = lire(courant()).voies[edit];
-    return ouvrirModal({ type: "resultat", edit, ligne: v.ligne, act: v.act || actReleve(courant(), lire(courant())), cot: v.cot, profil: v.profil, res: v.res, sec: v.sec || 1,
-                         style: v.style || "À vue", couleur: v.couleur || "", nom: v.nom || "", cause: v.cause || "" });
+    return ouvrirModal({ type: "resultat", edit, ligne: v.ligne, act: v.act || actReleve(courant(), lire(courant())), cot: v.cotSalle || v.cot, profil: v.profil, res: v.res, sec: v.sec || 1,
+                         style: v.style || "À vue", couleur: v.couleur || "", nom: v.nom || "", cause: v.cause || "", salle: v.salle || "", voieId: v.voieId || "" });
   }
   const s = courant(), d = lire(s), act = actReleve(s, d), e = elementsDe(s, d)[i];
   const notes = (d.voies || []).filter(v => (v.act || act) === act);
@@ -879,16 +966,13 @@ function ouvrirResultat(i, edit) {
   // Projet ou essai : on retente la même voie (couleur, nom, « Après travail ») ; sinon chaque passage est une voie différente
   const meme = memeLigne && (estProjet(e) || /au point/i.test(e.texte));
   const couleur = meme ? memeLigne.couleur || "" : "", nom = meme ? memeLigne.nom || "" : "";
-  ouvrirModal({ type: "resultat", ligne: i, act, cot, profil, res: "", sec: 1, couleur, nom, cause: "",
-                style: meme ? "Après travail" : stylePropose(act, cot, couleur, nom) });
+  const salle = d.salle || salleParDefautPour(act);
+  ouvrirModal({ type: "resultat", ligne: i, act, cot: memeLigne && memeLigne.cotSalle ? memeLigne.cotSalle : versSalle(salle, act, cot), profil, res: "", sec: 1, couleur, nom, cause: "",
+                salle, voieId: meme ? memeLigne.voieId || "" : "", style: meme ? "Après travail" : stylePropose(act, cot, couleur, nom) });
 }
 function enregistrerResultat() {
   const etat = M; fermerModal();
-  const v = { cot: etat.cot, profil: etat.profil, res: etat.res, act: etat.act, ligne: etat.ligne, style: etat.style || "À vue" };
-  if (etat.res === "Avec sec") v.sec = etat.sec;
-  if (etat.couleur) v.couleur = etat.couleur;
-  if ((etat.nom || "").trim()) v.nom = etat.nom.trim();
-  if (etat.cause && !reussi(v)) v.cause = etat.cause;
+  const v = finaliserTentative(etat, etat.act);
   if (etat.edit !== undefined) return modifier(d => { d.voies[etat.edit] = v; });   // correction : rien d'autre
   modifier(d => { d.voies = d.voies || []; d.voies.push(v); });
   if (derniereAction && derniereAction.i === etat.ligne) { derniereAction.voie = 1; montrerToast(); }
@@ -903,14 +987,15 @@ function ouvrirCircuit(i) {
   const profil = memeLigne ? memeLigne.profil : /dévers/i.test(e.texte) ? "Dévers" : "Vertical";
   // Cotations écrites dans la ligne (« 5a, 5b, 5a, 5b »), dans l'ordre ; sinon la cotation proposée
   const ecrites = (e.texte.split(":")[1] || "").match(/\b[3-8][abc]\+?/g) || [];
-  ouvrirModal({ type: "circuit", ligne: i, act, profil, serie: compte(d, i), n: e.n,
-                items: Array.from({ length: e.serie }, (_, j) => ({ cot: ecrites.length ? ecrites[j % ecrites.length] : cot, ok: true })) });
+  const salle = d.salle || salleParDefautPour(act);
+  ouvrirModal({ type: "circuit", ligne: i, act, profil, serie: compte(d, i), n: e.n, salle,
+                items: Array.from({ length: e.serie }, (_, j) => ({ cot: versSalle(salle, act, ecrites.length ? ecrites[j % ecrites.length] : cot), ok: true })) });
 }
 function enregistrerCircuit() {
   const etat = M; fermerModal();
   const voie = estVoie(etat.act);
   modifier(d => { d.voies = d.voies || [];
-    etat.items.forEach(it => d.voies.push({ cot: it.cot, profil: etat.profil, act: etat.act, ligne: etat.ligne, style: "À vue",
+    etat.items.forEach(it => d.voies.push({ cot: etat.salle ? versApp(etat.salle, etat.act, it.cot) : it.cot, ...(etat.salle ? { salle: etat.salle, cotSalle: it.cot } : {}), profil: etat.profil, act: etat.act, ligne: etat.ligne, style: "À vue",
       res: it.ok ? (voie ? "Enchaînée" : "Réussi") : (voie ? "Pas finie" : "Pas réussi") })); });
   if (derniereAction && derniereAction.i === etat.ligne) { derniereAction.voie = etat.items.length; montrerToast(); }
   apresPassage(etat.ligne);
@@ -948,10 +1033,41 @@ function verifierSeanceOuverte() {
 // Bilan de temps : durée réelle de la séance et de chaque étape, comparée au prévu
 function bilanTemps() {
   const s = courant(), d = lire(s); if (!d.debut || !d.fin) return "";
-  const els = elementsDe(s, d), lignes = etapesDe(els).filter(x => (d.temps || {})[ck(d, x.i)]);
+  const els = elementsDe(s, d), lignes = etapesDe(els).filter(x => tempsReel(d, ck(d, x.i)));
   return `<details class="bilan-temps"><summary>Séance faite en ${hm((d.fin - d.debut) / 1000)} (prévu ≈ ${hm(dureeTotale(s, d))}) ▸</summary>
     ${lignes.map((x, n) => `<div class="voie"><span>${esc(x.e.type === "routine" ? x.e.nom : titreAction(x.e))}</span>
-      <span class="petit">${hm(d.temps[ck(d, x.i)] / 1000)} / ≈ ${hm(dureeElement(s, d, x.e))}</span></div>`).join("")}</details>`;
+      <span class="petit">${hm(tempsReel(d, ck(d, x.i)) / 1000)}${d.tempsManuel && d.tempsManuel[ck(d, x.i)] != null ? " (saisi)" : ""} / ≈ ${hm(dureeElement(s, d, x.e))}</span></div>`).join("")}</details>`;
+}
+
+// Bilan : heure de début et de fin, et temps de chaque étape, modifiables (prioritaires sur la mesure)
+const heure = ms => { const x = new Date(ms); return `${pad(x.getHours())}:${pad(x.getMinutes())}`; };
+function sectionTempsReels() {
+  const s = courant(), d = lire(s); if (!d.debut) return "";
+  const els = elementsDe(s, d), fin = d.fin || Date.now();
+  if (!M.temps) M.temps = Object.fromEntries(etapesDe(els).map(x => [ck(d, x.i), tempsReel(d, ck(d, x.i)) ? Math.round(tempsReel(d, ck(d, x.i)) / 60000) : ""]));
+  if (M.hdeb === undefined) { M.hdeb = heure(d.debut); M.hfin = heure(fin); }
+  return `<details class="temps-reels" ${M.ouvrirTemps ? "open" : ""}><summary>Temps réels (modifiables) ▸</summary>
+    <p class="petit">Corrige si tu n'as pas suivi la séance en direct : tes valeurs passent avant les mesures automatiques.</p>
+    <div class="heures"><label>Début <input type="time" id="m-hdeb" value="${M.hdeb}"></label><label>Fin <input type="time" id="m-hfin" value="${M.hfin}"></label></div>
+    ${etapesDe(els).map((x, n) => `<div class="temps-etape"><span>${n + 1}. ${esc(x.e.type === "routine" ? x.e.nom : titreAction(x.e))}</span>
+      <input type="number" inputmode="numeric" min="0" data-temps-etape="${ck(d, x.i)}" value="${M.temps[ck(d, x.i)]}" placeholder="min"></div>`).join("")}</details>`;
+}
+function appliquerTempsReels(d, etat, s) {
+  if (!etat.temps) return;
+  const jour = new Date(dateSeance(s)), aMs = h => { const [hh, mm] = h.split(":").map(Number); const x = new Date(jour); x.setHours(hh, mm, 0, 0); return x.getTime(); };
+  if (etat.hdeb && etat.hfin && (etat.hdeb !== heure(d.debut) || etat.hfin !== heure(d.fin || Date.now()))) {
+    d.debut = aMs(etat.hdeb); d.fin = aMs(etat.hfin); if (d.fin <= d.debut) d.fin += 864e5;
+    d.heuresSaisies = true;
+    if (!etat.dureeTouchee) { d.duree = Math.round((d.fin - d.debut) / 60000); etat.duree = d.duree; }   // les heures priment, sauf durée modifiée à la main
+  }
+  const avant = d.tempsManuel || {}; d.tempsManuel = {};
+  Object.entries(etat.temps).forEach(([k, v]) => {
+    const mesure = (d.temps || {})[k] ? Math.round(d.temps[k] / 60000) : "";
+    if (v !== "" && v !== null && (Number(v) !== mesure || avant[k] != null)) d.tempsManuel[k] = Number(v);
+  });
+  // Moyennes par voie et par bloc : les temps saisis comptent
+  const els = elementsDe(s, d);
+  Object.keys(d.tempsManuel).forEach(k => { const i = els.findIndex((e, n) => ck(d, n) === k); if (i >= 0 && avant[k] == null) noterMoyenne(s, d, i, d.tempsManuel[k] * 60000); });
 }
 
 function afficherModal() {
@@ -965,7 +1081,7 @@ function afficherModal() {
     return `<button data-m="${champ}" data-valeur="${v}" class="${ch ? "choisi" : ""}" style="background:${v ? couleurEchelle(v) : "var(--carte)"};color:${v ? texteEchelle(v) : "var(--texte)"}">${v}</button>`;
   }).join("")}</div>`;
   let h = "";
-  if (M.type === "fin") h = `<h2>${esc(M.titre)}</h2>${bilanTemps()}${ESCALADE.includes(courant().activite) ? `<p class="rappel-peau">🧴 Ce soir : crème sur les mains${courant().jour === "Dimanche" ? ", puis inspection des durillons (limer seulement les bosses)" : ""}.</p>` : ""}
+  if (M.type === "fin") h = `<h2>${esc(M.titre)}</h2>${bilanTemps()}${sectionTempsReels()}${ESCALADE.includes(courant().activite) ? `<p class="rappel-peau">🧴 Ce soir : crème sur les mains${courant().jour === "Dimanche" ? ", puis inspection des durillons (limer seulement les bosses)" : ""}.</p>` : ""}
       <label class="champ">Effort (1 à 10)</label>${echelle("effort", 1)}
       <label class="champ">Douleur après la séance (0 à 10)</label>${echelle("douleur", 0)}
       ${M.douleur > 0 ? `<label class="champ">Zone</label>${choix("zone", zones)}` : ""}
@@ -987,7 +1103,10 @@ function afficherModal() {
     const note = (champ, titre, aide) => `<label class="champ">${titre}</label><p class="petit">${aide}</p>
       <div class="segment">${[1, 2, 3, 4, 5].map(v => `<button data-m="${champ}" data-valeur="${v}" class="${M[champ] === v ? "choisi" : ""}">${v}</button>`).join("")}</div>`;
     const complet = M.corps && M.energie && M.motivation && M.dAvant !== null && (M.dAvant === 0 || M.zAvant);
+    const x = lireSalles();
     h = `<h2>Avant de commencer</h2>
+      ${x.liste.length > 1 ? `<label class="champ">Salle</label><div class="choix">${x.liste.map(sa => `<button data-m="salle" data-valeur="${sa.id}" class="${M.salle === sa.id ? "choisi" : ""}">${esc(sa.nom)}</button>`).join("")}</div>`
+        : `<p class="petit">Salle : <b>${esc((salleDe(M.salle) || {}).nom || "")}</b> · <button class="lien" data-m="gerer-salles">gérer les salles</button></p>`}
       ${note("corps", "Contrôle des doigts, coudes, épaules", "Ferme le poing complètement 3 secondes, puis ouvre la main, doigts tendus, et pousse-les doucement en arrière. 5 = aucune gêne, 1 = douleur nette.")}
       ${note("energie", "Énergie et sommeil", "5 = en pleine forme, 1 = épuisé.")}
       ${note("motivation", "Motivation", "5 = très motivé, 1 = aucune envie.")}
@@ -1012,6 +1131,16 @@ function afficherModal() {
         <div class="segment petit-segment">${Array.from({ length: 10 }, (_, n) => n + 1).map(v => `<button data-m="comp" data-k="${k}" data-valeur="${v}" class="${M.notes[k] === v ? "choisi" : ""}">${v}</button>`).join("")}</div>`).join("")}
       <div class="actions"><button data-m="fermer">Annuler</button><button data-m="ok" class="principal" ${M.notes.every(n => n) ? "" : "disabled"}>Enregistrer</button></div>`;
   }
+  if (M.type === "apres") {
+    const s = courant(), d = lire(s), els = elementsDe(s, d), x = lireSalles();
+    h = `<h2>Saisir après coup</h2><p class="petit">Pour une séance faite sans suivre l'app. Les voies se notent ensuite dans « voies notées ».</p>
+      ${ESCALADE.includes(s.activite) && x.liste.length > 1 ? `<label class="champ">Salle</label><div class="choix">${x.liste.map(sa => `<button data-m="salle" data-valeur="${sa.id}" class="${M.salle === sa.id ? "choisi" : ""}">${esc(sa.nom)}</button>`).join("")}</div>` : ""}
+      <div class="heures"><label>Début <input type="time" id="m-hdeb" value="${M.hdeb}"></label><label>Fin <input type="time" id="m-hfin" value="${M.hfin}"></label></div>
+      ${etapesDe(els).map(({ e, i }) => e.type === "routine"
+        ? `<div class="temps-etape"><span>${esc(e.nom)}</span><button data-m="apres-r" data-i="${i}" class="${M.compteurs[i] ? "choisi" : ""}">${M.compteurs[i] ? "✓ Faite" : "Pas faite"}</button></div>`
+        : `<div class="temps-etape"><span>${esc(titreAction(e))}</span><div class="compteur"><button data-m="apres-c" data-i="${i}" data-pas="-1">−</button><span>${M.compteurs[i]}/${e.n}</span><button data-m="apres-c" data-i="${i}" data-pas="1">+</button></div></div>`).join("")}
+      <div class="actions"><button data-m="fermer">Annuler</button><button data-m="ok" class="principal">Suivant : bilan ›</button></div>`;
+  }
   if (M.type === "sauter") h = `<h2>Séance sautée</h2><p class="petit">Pourquoi ? Un appui enregistre. Le rapport t'aidera à voir ce qui revient souvent.</p>
       <div class="menu-liste">${["Fatigue", "Douleur", "Emploi du temps", "Pas de partenaire"].map(r => `<button class="ligne-menu" data-m="raison" data-valeur="${r}"><span class="titre-menu">${r}</span></button>`).join("")}
       <button class="ligne-menu" data-m="raison" data-valeur=""><span class="titre-menu">Sans préciser</span></button></div>
@@ -1033,6 +1162,7 @@ function afficherModal() {
       ${ligne("exos", "📖", "Exercices de cette séance")}
       ${ligne("ajout", "+", "Ajouter un exercice à cette séance")}
       ${ligne("note-etape", "📝", "Note sur l'étape en cours", "ou appui long sur une ligne")}
+      ${!d.fin ? ligne("apres", "✎", "Saisir après coup", "passages, heures et voies, sans suivi en direct") : ""}
       ${ligne("deplacer", "↔", "Déplacer à un autre jour", courant().deplace ? `déplacée : ${courant().deplace.toLowerCase()} au lieu de ${courant().jour.toLowerCase()}` : "")}
       ${ligne("douleur", "⚠", "Signaler une douleur")}
       <div class="separateur"></div>
@@ -1044,7 +1174,7 @@ function afficherModal() {
     h = `<h2>Série ${M.serie} sur ${M.n} · ${M.items.length} ${estVoie(M.act) ? "voies" : "blocs"}</h2>
       <label class="champ">Profil</label>${choix("profil", PROFILS)}
       ${M.items.map((it, j) => `<div class="circuit-ligne"><b>${estVoie(M.act) ? "Voie" : "Bloc"} ${j + 1}</b>
-        <div class="choix compact">${COTATIONS[M.act].map(c => `<button data-m="ccot" data-j="${j}" data-valeur="${c}" class="${String(it.cot) === c ? "choisi" : ""}">${c}</button>`).join("")}</div>
+        <div class="choix compact">${(M.salle ? gradesSalle(M.salle, M.act) : COTATIONS[M.act]).map(c => `<button data-m="ccot" data-j="${j}" data-valeur="${c}" class="${String(it.cot) === c ? "choisi" : ""}">${c}</button>`).join("")}</div>
         <div class="choix compact">${res.map((r, n) => `<button data-m="cok" data-j="${j}" data-valeur="${n === 0}" class="${n === 0 ? "res-ok" : "res-non"} ${it.ok === (n === 0) ? "choisi" : ""}">${n === 0 ? "✓ " : "✗ "}${r}</button>`).join("")}</div></div>`).join("")}
       <div class="actions"><button data-m="fermer">Passer</button><button data-m="tout">Tout réussi</button><button data-m="ok" class="principal">Enregistrer</button></div>`;
   }
@@ -1089,6 +1219,9 @@ $("modal").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b || !M) return;
   const t = b.dataset, type = M.type;
   if (type === "menu" && t.m && t.m !== "fermer") return actionMenu(t.m);
+  if (type === "apres" && t.m === "apres-r") { M.compteurs[t.i] = M.compteurs[t.i] ? 0 : 1; return afficherModal(); }
+  if (type === "apres" && t.m === "apres-c") { const e = elementsDe(courant(), lire(courant()))[t.i];
+    M.compteurs[t.i] = Math.max(0, Math.min(e.n, M.compteurs[t.i] + Number(t.pas))); return afficherModal(); }
   if (type === "sauter" && t.m === "raison") { fermerModal(); return modifier(d => { d.fait = "Sautée"; if (t.valeur) d.raison = t.valeur; else delete d.raison; }); }
   if (type === "deplacer" && t.m === "jour-dep") {
     const s = courant(), k = cle(s), dep = lireDeplacements();
@@ -1096,6 +1229,7 @@ $("modal").addEventListener("click", e => {
     localStorage.setItem("deplacements", JSON.stringify(dep)); fermerModal();
     reconstruire(); index = LISTE.findIndex(x => cle(x) === k); return afficher();
   }
+  if (type === "recup" && t.m === "gerer-salles") { fermerModal(); return ouvrirSalles(); }
   if (type === "competences" && t.m === "comp") { M.notes[Number(t.k)] = Number(t.valeur); return afficherModal(); }
   if (type === "programme" && t.m === "exporter") return exporter();
   if (type === "programme" && t.m === "nouveau") {
@@ -1122,10 +1256,25 @@ $("modal").addEventListener("click", e => {
       localStorage.setItem("competences-" + etat.bloc, JSON.stringify({ notes: etat.notes, date: Date.now(), semaine: etat.bloc * 8 }));
       return afficher(false);
     }
+    if (type === "apres") {
+      const etat = M, s = courant(); fermerModal();
+      modifier(d => {
+        const els = elementsDe(s, d), jour = new Date(dateSeance(s)), aMs = h => { const [hh, mm] = h.split(":").map(Number); const x = new Date(jour); x.setHours(hh, mm, 0, 0); return x.getTime(); };
+        d.debut = aMs(etat.hdeb); d.fin = aMs(etat.hfin); if (d.fin <= d.debut) d.fin += 864e5;
+        d.heuresSaisies = true; d.duree = Math.round((d.fin - d.debut) / 60000); delete d.fait;
+        if (etat.salle) d.salle = etat.salle;
+        d.compteurs = d.compteurs || {}; d.routines = d.routines || {};
+        Object.entries(etat.compteurs).forEach(([i, n]) => { i = Number(i);
+          if (els[i].type === "routine") { if (n) d.routines[ck(d, i)] = true; else delete d.routines[ck(d, i)]; }
+          else d.compteurs[ck(d, i)] = n; });
+      });
+      return ouvrirBilan("Bilan de la séance");
+    }
     if (type === "recup") {
       const etat = M; fermerModal();
       modifier(d => {
         d.recup = { corps: etat.corps, energie: etat.energie, motivation: etat.motivation, douleurAvant: etat.dAvant > 0 ? etat.nAvant : 0, zoneAvant: etat.dAvant > 0 ? etat.zAvant : "" };
+        if (etat.salle) { d.salle = etat.salle; const x = lireSalles(); x.derniere[discDe(actReleve(courant(), d))] = etat.salle; x.derniere.tout = etat.salle; ecrireSalles(x); }
         if (!etat.apres) { d.debut = Date.now(); delete d.fin; delete d.fait; }
       });
       if (!etat.apres) { garderEcran(); allerAuSuivant(); }
@@ -1151,6 +1300,7 @@ $("modal").addEventListener("click", e => {
     }
     const etat = M; fermerModal();
     if (type === "fin") return modifier(d => {
+      appliquerTempsReels(d, etat, courant());
       d.effort = etat.effort ?? d.effort; d.douleur = etat.douleur ?? d.douleur;
       if (etat.zone) d.zone = etat.zone;
       if (!vide(etat.duree)) d.duree = Number(etat.duree);
@@ -1167,6 +1317,9 @@ $("modal").addEventListener("click", e => {
   if (t.m === "repos") { M.repos = Number(t.valeur); return afficherModal(); }
   if (t.m === "dureeAj") { M.dureeAj = Number(t.valeur); return afficherModal(); }
   if (t.m === "sec") M.sec = Math.max(1, M.sec + Number(t.pas));
+  else if (t.m === "voie") { choisirVoie(M, t.valeur, M.act); return afficherModal(); }
+  else if (t.m === "secteurNouvelle") { M.secteurNouvelle = t.valeur; const x = (salleDe(M.salle) || { secteurs: [] }).secteurs.find(z => z.id === t.valeur); if (x) M.profil = x.profil; return afficherModal(); }
+  else if (t.m === "nouvelle") { M.nouvelle = !M.nouvelle; M.voieId = ""; if (M.nouvelle) { M.couleur = ""; M.nom = ""; M.style = "À vue"; } return afficherModal(); }
   else if (t.m === "couleur") { M.couleur = M.couleur === t.valeur ? "" : t.valeur; if (type === "resultat" && M.edit === undefined) M.style = stylePropose(M.act, M.cot, M.couleur, M.nom); }
   else if (t.m) M[t.m] = ["effort", "douleur", "niv", "corps", "energie", "motivation", "dAvant", "nAvant"].includes(t.m) ? Number(t.valeur) : t.valeur;   // les cotations restent du texte
   // Résultat en deux appuis : une réussite s'enregistre directement ; un échec demande la cause (un appui de plus)
@@ -1176,10 +1329,13 @@ $("modal").addEventListener("click", e => {
 });
 $("modal").addEventListener("input", e => {             // champs texte des fenêtres (sans réafficher)
   if (!M) return;
-  if (e.target.id === "m-duree") M.duree = e.target.value;
+  if (e.target.id === "m-duree") { M.duree = e.target.value; M.dureeTouchee = true; }
   if (e.target.id === "m-notes") M.notes = e.target.value;
   if (e.target.id === "m-note") M.texte = e.target.value;
   if (e.target.id === "m-nom") M.nom = e.target.value;
+  if (e.target.id === "m-hdeb") M.hdeb = e.target.value;
+  if (e.target.id === "m-hfin") M.hfin = e.target.value;
+  if (e.target.dataset && e.target.dataset.tempsEtape) { M.temps[e.target.dataset.tempsEtape] = e.target.value === "" ? "" : Number(e.target.value); }
   if (e.target.id === "m-detail") M.detail = e.target.value;
   if (e.target.id === "m-duree-hier") M.duree = e.target.value;
   if (e.target.dataset.mesure) {
@@ -1187,6 +1343,7 @@ $("modal").addEventListener("input", e => {             // champs texte des fen�
     m[e.target.dataset.mesure] = e.target.type === "number" && v !== "" ? Number(v) : v; ecrireMesures(M.sem, m);
   }
 });
+$("modal").addEventListener("toggle", e => { if (M && e.target.classList && e.target.classList.contains("temps-reels")) M.ouvrirTemps = e.target.open; }, true);
 $("modal").addEventListener("change", e => {
   if (M && M.type === "ajout" && e.target.id === "m-exo") { M.exo = e.target.value; afficherModal(); }
 });
@@ -1210,6 +1367,12 @@ function actionMenu(a) {
   }
   if (a === "terminer") { fermerModal(); return terminer(); }
   if (a === "deplacer") return ouvrirModal({ type: "deplacer" });
+  if (a === "apres") {
+    const d = lire(s), els = elementsDe(s, d);
+    return ouvrirModal({ type: "apres", hdeb: d.debut ? heure(d.debut) : "18:00", hfin: d.fin ? heure(d.fin) : "19:30",
+      salle: d.salle || salleParDefautPour(actReleve(s, d)),
+      compteurs: Object.fromEntries(etapesDe(els).map(x => [x.i, x.e.type === "routine" ? (routineOk(d, x.i) ? 1 : 0) : compte(d, x.i)])) });
+  }
   if (a === "douleur") return ouvrirModal({ type: "douleur" });
   if (a === "exos") { fermerModal(); return ouvrirBiblio({ ecran: "liste", filtre: "seance" }); }
   if (a === "ajout") return ouvrirModal({ type: "ajout", exo: "", series: 3, detail: "", repos: 0, dureeAj: 0 });
@@ -1921,6 +2084,118 @@ $("ecran").addEventListener("click", e => {
   }
 });
 
+// ---------- Salles (Plus → 🏢 Salles) ----------
+let SA = { id: null, voie: null, toutes: false };
+function ouvrirSalles(id) { vue = id ? "salle" : "salles"; SA = { id: id || null, voie: null, toutes: false }; afficher(); }
+const majSalle = (id, f) => { const x = lireSalles(), sa = x.liste.find(y => y.id === id); f(sa, x); ecrireSalles(x); };
+const COULEUR_HEX = n => (COULEURS.find(c => c[0] === n) || ["", "transparent"])[1];
+function afficherSalles() {
+  $("titre-date").textContent = "Salles";
+  const x = lireSalles();
+  $("ecran").innerHTML = `<button class="retour" data-plus="retour">‹ Plus</button>
+    ${x.liste.map(sa => { const enPlace = sa.voies.filter(v => v.statut !== "Démontée").length, p = projetsEnCours(sa.id).length;
+      return `<button class="ligne-menu grande" data-salle="${sa.id}"><span class="icone">🏢</span><span><span class="titre-menu">${esc(sa.nom)}</span>
+        <span class="sous-menu">${esc(sa.type)} · ${sa.secteurs.length} secteur${sa.secteurs.length > 1 ? "s" : ""} · ${enPlace} voie${enPlace > 1 ? "s" : ""} ou bloc${enPlace > 1 ? "s" : ""} en place${p ? ` · ${p} projet${p > 1 ? "s" : ""} en cours` : ""}</span></span><span class="chevron">›</span></button>`; }).join("")}
+    <button class="gros contour" data-salle-ajout="1">+ Nouvelle salle</button>`;
+}
+function afficherSalle() {
+  const sa = salleDe(SA.id); if (!sa) return ouvrirSalles();
+  $("titre-date").textContent = sa.nom;
+  if (SA.voie) return afficherVoieSalle(sa);
+  const parSecteur = {}, liste = sa.voies.filter(v => SA.toutes || v.statut !== "Démontée");
+  liste.forEach(v => (parSecteur[v.secteur || ""] = parSecteur[v.secteur || ""] || []).push(v));
+  const jours = ts => ts ? Math.floor((Date.now() - ts) / 864e5) : null;
+  const projets = projetsEnCours(sa.id);
+  const ligneVoie = v => { const n = essaisVoie(v.id), ok = n.some(reussi);
+    return `<button class="ligne-exo ${v.statut === "Démontée" ? "verrou" : ""}" data-voie-salle="${v.id}"><span><span class="pastille-mini" style="background:${COULEUR_HEX(v.couleur)}"></span>
+      <b>${esc(v.cot)}</b> ${esc(v.nom || v.couleur || "")} <span class="petit">${v.discipline === "Voie" ? "voie" : "bloc"} · ${esc(v.profil || "")}${v.statut === "Démontée" ? " · démontée" : ""}</span></span>
+      <span class="badge">${n.length ? `${n.length} essai${n.length > 1 ? "s" : ""}${ok ? " ✓" : ""}` : "jamais essayée"}</span></button>`; };
+  let h = `<nav class="fil-ariane"><button class="lien" data-salles="1">Salles</button> › <span>${esc(sa.nom)}</span></nav>
+    <label class="champ">Nom</label><input type="text" id="salle-nom" value="${esc(sa.nom)}">
+    <label class="champ">Type</label><div class="segment">${["Bloc", "Voie", "Bloc et voie"].map(t => `<button data-salle-type="${t}" class="${sa.type === t ? "choisi" : ""}">${t}</button>`).join("")}</div>
+    <h3 class="sous-cat">Projets en cours</h3>
+    ${projets.map(p => `<button class="ligne-exo" data-voie-salle="${p.v.id}"><span><span class="pastille-mini" style="background:${COULEUR_HEX(p.v.couleur)}"></span><b>${esc(p.v.cot)}</b> ${esc(p.v.nom || p.v.couleur || "")}
+      <span class="petit">${esc(nomSecteur(sa, p.v.secteur))}${p.v.notes ? " · " + esc(p.v.notes) : ""}</span></span><span class="badge">${p.essais.length} essai${p.essais.length > 1 ? "s" : ""}</span></button>`).join("")
+      || `<p class="petit">Aucun : toutes les voies essayées sont réussies.</p>`}
+    <h3 class="sous-cat">Secteurs</h3>
+    ${sa.secteurs.map(x => { const j = jours(x.maj);
+      return `<div class="secteur"><div><b>${esc(x.nom)}</b> <span class="petit">· ${esc(x.profil)}${j !== null ? ` · mis à jour il y a ${j} j` : ""}</span></div>
+        <div class="choix compact"><button data-secteur-renouve="${x.id}">Renouvelé</button><button data-secteur-suppr="${x.id}" aria-label="Supprimer le secteur">✕</button></div></div>`; }).join("")}
+    <div class="ajout-secteur"><input type="text" id="secteur-nom" placeholder="Nouveau secteur (ex. Grand dévers)">
+      <select id="secteur-profil">${PROFILS.map(p => `<option>${p}</option>`).join("")}</select><button class="principal" data-secteur-ajout="1">Ajouter</button></div>
+    <h3 class="sous-cat">Voies et blocs</h3>
+    <div class="segment"><button data-salle-toutes="0" class="${!SA.toutes ? "choisi" : ""}">En place</button><button data-salle-toutes="1" class="${SA.toutes ? "choisi" : ""}">Toutes</button></div>
+    ${Object.entries(parSecteur).map(([id, vs]) => `<p class="petit"><b>${esc(nomSecteur(sa, id) || "Sans secteur")}</b></p>${vs.map(ligneVoie).join("")}`).join("") || `<p class="petit">Aucune pour l'instant. Elles s'ajoutent toutes seules quand tu notes une couleur pendant une séance, ou ici :</p>`}
+    <div class="choix"><button data-voie-ajout="Voie">+ Voie</button><button data-voie-ajout="Bloc">+ Bloc</button></div>
+    <h3 class="sous-cat">Échelles de cotation</h3><p class="petit">Les cotations affichées dans la salle, et leur équivalent dans l'app (pour comparer les salles et calculer les feux verts).</p>
+    ${["Bloc", "Voie"].map(disc => `<p><b>${disc}</b></p><input type="text" data-echelle-liste="${disc}" value="${esc((sa.echelles[disc] || []).map(x => x.salle).join(", "))}">
+      <div class="echelle-table">${(sa.echelles[disc] || []).map((x, k) => `<label>${esc(x.salle)} → <select data-echelle="${disc}" data-k="${k}">${(COTATIONS[disc] || []).map(c => `<option ${c === x.app ? "selected" : ""}>${c}</option>`).join("")}</select></label>`).join("")}</div>`).join("")}
+    ${lireSalles().liste.length > 1 ? `<button class="gros contour danger" data-salle-suppr="1">Supprimer cette salle</button>` : ""}`;
+  $("ecran").innerHTML = h;
+}
+function afficherVoieSalle(sa) {
+  const v = sa.voies.find(x => x.id === SA.voie); if (!v) { SA.voie = null; return afficherSalle(); }
+  const essais = essaisVoie(v.id), disc = v.discipline;
+  $("ecran").innerHTML = `<nav class="fil-ariane"><button class="lien" data-salles="1">Salles</button> › <button class="lien" data-salle="${sa.id}">${esc(sa.nom)}</button> › <span>${disc === "Voie" ? "Voie" : "Bloc"} ${esc(v.cot)}</span></nav>
+    <label class="champ">Type</label><div class="segment">${["Voie", "Bloc"].map(t => `<button data-vs="discipline" data-valeur="${t}" class="${disc === t ? "choisi" : ""}">${t}</button>`).join("")}</div>
+    <label class="champ">Secteur</label><div class="choix compact"><button data-vs="secteur" data-valeur="" class="${!v.secteur ? "choisi" : ""}">Aucun</button>${sa.secteurs.map(x => `<button data-vs="secteur" data-valeur="${x.id}" class="${v.secteur === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")}</div>
+    <label class="champ">Cotation (échelle de la salle)</label><div class="choix compact">${(sa.echelles[disc] || []).map(x => `<button data-vs="cot" data-valeur="${esc(x.salle)}" class="${v.cot === x.salle ? "choisi" : ""}">${esc(x.salle)}</button>`).join("")}</div>
+    <label class="champ">Couleur</label><div class="pastilles">${COULEURS.map(([n, c]) => `<button data-vs="couleur" data-valeur="${n}" class="pastille ${v.couleur === n ? "choisi" : ""}" style="background:${c}" aria-label="${n}"></button>`).join("")}</div>
+    <label class="champ">Profil</label><div class="segment">${PROFILS.map(p => `<button data-vs="profil" data-valeur="${p}" class="${v.profil === p ? "choisi" : ""}">${p}</button>`).join("")}</div>
+    <label class="champ">Nom ou numéro</label><input type="text" id="vs-nom" value="${esc(v.nom || "")}">
+    <label class="champ">Notes (méthode, prises…)</label><textarea id="vs-notes">${esc(v.notes || "")}</textarea>
+    <label class="champ">Statut</label><div class="segment">${["En place", "Démontée"].map(t => `<button data-vs="statut" data-valeur="${t}" class="${(v.statut || "En place") === t ? "choisi" : ""}">${t}</button>`).join("")}</div>
+    <p class="petit">Ouverte le ${esc(v.ouverture || "?")}${v.demontage ? ` · démontée le ${esc(v.demontage)}` : ""}</p>
+    <h3 class="sous-cat">Ton historique</h3>
+    ${essais.map(e => `<div class="voie"><span>${esc(e.res)}${e.sec ? ` (${e.sec} sec)` : ""} · ${esc(e.style || "")}</span><span class="petit">${esc((LISTE.find(s => cle(s) === e.seance) ? jourMois(dateSeance(LISTE.find(s => cle(s) === e.seance))) : ""))}</span></div>`).join("") || `<p class="petit">Pas encore essayée.</p>`}
+    ${essais.length ? "" : `<button class="gros contour danger" data-vs-suppr="1">Supprimer</button>`}`;
+}
+$("ecran").addEventListener("click", e => {
+  if (!["salles", "salle"].includes(vue)) return;
+  const b = e.target.closest("button"); if (!b) return;
+  const t = b.dataset, y = window.scrollY;
+  if (t.plus === "retour") return ouvrirPlus();
+  if (t.salles) return ouvrirSalles();
+  if (t.salle) return ouvrirSalles(t.salle);
+  if (t.salleAjout) { const x = lireSalles(), sa = salleParDefaut(); sa.nom = "Nouvelle salle"; x.liste.push(sa); ecrireSalles(x); return ouvrirSalles(sa.id); }
+  if (t.salleType) majSalle(SA.id, sa => sa.type = t.salleType);
+  if (t.salleToutes) SA.toutes = t.salleToutes === "1";
+  if (t.salleSuppr) { if (!confirm("Supprimer cette salle et son inventaire ? Tes tentatives restent dans tes séances.")) return;
+    const x = lireSalles(); x.liste = x.liste.filter(y => y.id !== SA.id); ecrireSalles(x); return ouvrirSalles(); }
+  if (t.secteurAjout) { const nom = $("secteur-nom").value.trim(); if (!nom) return;
+    majSalle(SA.id, sa => sa.secteurs.push({ id: "t" + Date.now(), nom, profil: $("secteur-profil").value, maj: Date.now() })); }
+  if (t.secteurRenouve) { if (!confirm("Ce secteur a été renouvelé ? Ses voies en place passent en « démontée » (elles restent dans ton historique).")) return;
+    majSalle(SA.id, sa => { sa.voies.forEach(v => { if (v.secteur === t.secteurRenouve && v.statut !== "Démontée") { v.statut = "Démontée"; v.demontage = isoDate(new Date()); } });
+      sa.secteurs.find(x => x.id === t.secteurRenouve).maj = Date.now(); }); }
+  if (t.secteurSuppr) { const sa = salleDe(SA.id);
+    if (sa.voies.some(v => v.secteur === t.secteurSuppr) && !confirm("Des voies sont rangées dans ce secteur ; elles passeront « sans secteur ». Supprimer ?")) return;
+    majSalle(SA.id, sa => { sa.secteurs = sa.secteurs.filter(x => x.id !== t.secteurSuppr); sa.voies.forEach(v => { if (v.secteur === t.secteurSuppr) v.secteur = ""; }); }); }
+  if (t.voieAjout) { const id = "v" + Date.now();
+    majSalle(SA.id, sa => sa.voies.push({ id, discipline: t.voieAjout, secteur: "", couleur: "", cot: (sa.echelles[t.voieAjout] || [{ salle: "" }])[0].salle, profil: "Vertical", nom: "", ouverture: isoDate(new Date()), statut: "En place", notes: "" }));
+    SA.voie = id; afficher(); return; }
+  if (t.voieSalle) { SA.voie = t.voieSalle; afficher(); return; }
+  if (t.vs) majSalle(SA.id, sa => { const v = sa.voies.find(x => x.id === SA.voie);
+    if (t.vs === "couleur") v.couleur = v.couleur === t.valeur ? "" : t.valeur;
+    else if (t.vs === "statut") { v.statut = t.valeur; v.demontage = t.valeur === "Démontée" ? isoDate(new Date()) : ""; }
+    else if (t.vs === "discipline") { v.discipline = t.valeur; v.cot = (sa.echelles[t.valeur] || [{ salle: v.cot }])[0].salle; }
+    else if (t.vs === "secteur") { v.secteur = t.valeur; const x = sa.secteurs.find(z => z.id === t.valeur); if (x) v.profil = x.profil; }
+    else v[t.vs] = t.valeur; });
+  if (t.vsSuppr) { majSalle(SA.id, sa => sa.voies = sa.voies.filter(v => v.id !== SA.voie)); SA.voie = null; }
+  afficher(false); window.scrollTo(0, y);
+});
+$("ecran").addEventListener("change", e => {
+  if (vue !== "salle") return;
+  const el = e.target;
+  if (el.id === "salle-nom" && el.value.trim()) majSalle(SA.id, sa => sa.nom = el.value.trim());
+  if (el.id === "vs-nom") majSalle(SA.id, sa => sa.voies.find(x => x.id === SA.voie).nom = el.value.trim());
+  if (el.id === "vs-notes") majSalle(SA.id, sa => sa.voies.find(x => x.id === SA.voie).notes = el.value.trim());
+  if (el.dataset.echelle) majSalle(SA.id, sa => sa.echelles[el.dataset.echelle][Number(el.dataset.k)].app = el.value);
+  if (el.dataset.echelleListe) { const disc = el.dataset.echelleListe, app = COTATIONS[disc] || [];
+    majSalle(SA.id, sa => { const avant = sa.echelles[disc] || [];
+      sa.echelles[disc] = el.value.split(",").map(x => x.trim()).filter(Boolean).map(g => ({ salle: g, app: (avant.find(a => a.salle === g) || {}).app || (app.includes(g) ? g : app[0]) })); });
+    afficher(false); }
+});
+
 // ---------- Onglet Plus ----------
 function ouvrirPlus() { vue = "plus"; afficher(); }
 function texteExport() {
@@ -1937,6 +2212,7 @@ function afficherPlus() {
     <span><span class="titre-menu">${titre}</span><span class="sous-menu">${sous}</span></span><span class="chevron">›</span></button>`;
   $("ecran").innerHTML = `<div class="menu-liste">
     ${ligne("biblio", "📖", "Exercices et méthodes", `${EXERCICES.length} fiches · favoris · recherche`)}
+    ${ligne("salles", "🏢", "Salles", `${lireSalles().liste.length} salle${lireSalles().liste.length > 1 ? "s" : ""} · secteurs, voies, projets en cours`)}
     ${ligne("exporter", "⬆", "Exporter", ex.texte, ex.retard ? "en-retard" : "")}
     ${ligne("sauvegarde", "💾", "Sauvegarde", "Restaurer tes saisies")}
     ${ligne("reglages", "⚙", "Réglages", "Programme, minuteur, son, rappels")}
@@ -1962,6 +2238,7 @@ $("ecran").addEventListener("click", e => {
   const a = b.dataset.plus;
   if (a === "retour") return ouvrirPlus();
   if (a === "biblio") return ouvrirBiblio();
+  if (a === "salles") return ouvrirSalles();
   if (a === "exporter") { exporter(); return afficher(false); }
   if (a === "sauvegarde") { vue = "sauvegarde"; return afficher(); }
   if (a === "restaurer") return $("fichier").click();
@@ -2047,7 +2324,7 @@ const isoDate = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDat
 // Colonne Type : Séance, Séance libre, Mesure, Voie, Douleur. Colonnes C1 à C8 selon le type.
 function exporter() {
   const champ = v => typeof v === "number" ? v : `"${String(v ?? "").replace(/"/g, '""')}"`;
-  const lignes = [["Type","Semaine","Jour","Activité","Date","C1","C2","C3","C4","C5","C6","C7","C8","C9","C10","C11","C12","C13","C14"]];
+  const lignes = [["Type","Semaine","Jour","Activité","Date","C1","C2","C3","C4","C5","C6","C7","C8","C9","C10","C11","C12","C13","C14","C15"]];
   LISTE.forEach(s => {
     const d = lire(s), base = [s.semaine, s.jour, s.activite, isoDate(dateSeance(s))], act = actReleve(s, d);
     const notes = [s.libre && s.phase !== "Séance libre" ? s.phase : "",
@@ -2055,15 +2332,17 @@ function exporter() {
       (d.voies || []).length ? "Relevé : " + d.voies.map(resume).join(", ") : "",
       (d.douleurs || []).length ? "Douleurs : " + d.douleurs.map(x => `${x.zone} ${x.niv} (${x.heure})`).join(", ") : "",
       d.raison ? "Raison : " + d.raison : "",
-      d.debut && d.fin ? `Temps : ${hm((d.fin - d.debut) / 1000)} (prévu ${hm(dureeTotale(s, d))})` + (d.temps ? " — " + etapesDe(elementsDe(s, d))
-        .filter(x => d.temps[ck(d, x.i)]).map((x, n) => `${n + 1}. ${Math.round(d.temps[ck(d, x.i)] / 60000)}/${Math.round(dureeElement(s, d, x.e) / 60)} min`).join(", ") : "") : ""
+      d.debut && d.fin ? `Temps${d.heuresSaisies ? " (saisi)" : ""} : ${hm((d.fin - d.debut) / 1000)} (prévu ${hm(dureeTotale(s, d))})` + (d.temps || d.tempsManuel ? " — " + etapesDe(elementsDe(s, d))
+        .filter(x => tempsReel(d, ck(d, x.i))).map((x, n) => `${n + 1}. ${Math.round(tempsReel(d, ck(d, x.i)) / 60000)}${d.tempsManuel && d.tempsManuel[ck(d, x.i)] != null ? " saisi" : ""}/${Math.round(dureeElement(s, d, x.e) / 60)} min`).join(", ") : "") : ""
     ].filter(Boolean).join(" | ");
     const r = d.recup || {}, pendant = (d.douleurs || []).length ? Math.max(...d.douleurs.map(x => Number(x.niv) || 0)) : "";
     lignes.push([s.libre ? "Séance libre" : "Séance", ...base, d.fait, d.duree, d.effort, d.douleur, d.zone,
-                 perfFinale(d, act), secFinal(d), notes, r.corps ?? "", r.energie ?? "", r.motivation ?? "", r.douleurAvant ?? "", r.zoneAvant ?? "", pendant]);
+                 perfFinale(d, act), secFinal(d), notes, r.corps ?? "", r.energie ?? "", r.motivation ?? "", r.douleurAvant ?? "", r.zoneAvant ?? "", pendant,
+                 (salleDe(d.salle) || {}).nom || ""]);
     (d.voies || []).forEach(v => { const a = v.act || s.activite;
       lignes.push(["Voie", s.semaine, s.jour, a, base[3], v.cot, v.profil, v.res,
-        v.res === "Enchaînée" ? 0 : v.res === "Avec sec" ? v.sec : "", rang(a, v.cot) + 1, v.style || "", v.couleur || "", v.nom || "", v.cause || ""]); });
+        v.res === "Enchaînée" ? 0 : v.res === "Avec sec" ? v.sec : "", rang(a, v.cot) + 1, v.style || "", v.couleur || "", v.nom || "", v.cause || "",
+        v.cotSalle || "", (salleDe(v.salle) || {}).nom || "", nomSecteur(salleDe(v.salle), (((salleDe(v.salle) || { voies: [] }).voies.find(x => x.id === v.voieId)) || {}).secteur), v.voieId || ""]); });
     (d.douleurs || []).forEach(x => lignes.push(["Douleur", ...base, x.zone, x.niv, x.heure]));
   });
   const derniere = Math.max(...LISTE.map(s => s.semaine));
@@ -2071,13 +2350,16 @@ function exporter() {
     const m = lireMesures(sem), a = autoSemaine(sem);
     lignes.push(["Mesure", sem, "", "", "", ...CHAMPS_MESURES.map(([c]) => vide(m[c]) ? (a[c] ?? "") : m[c])]);
   }
+  // Inventaire des salles (une ligne par voie ou bloc)
+  lireSalles().liste.forEach(sa => sa.voies.forEach(v => lignes.push(["Inventaire", "", "", v.discipline, v.ouverture || "", sa.nom, nomSecteur(sa, v.secteur), v.couleur || "",
+    v.cot, versApp(sa.id, v.discipline, v.cot), v.profil || "", v.nom || "", v.statut || "En place", v.demontage || "", v.id, v.notes || ""])));
   Object.keys(localStorage).filter(k => k.startsWith("competences-")).sort().forEach(k => {
     const b = JSON.parse(localStorage.getItem(k)), bloc = Number(k.split("-")[1]);
     lignes.push(["Compétences", b.semaine || bloc * 8, "", "", isoDate(new Date(b.date)), ...b.notes, bloc]);
   });
   const csv = "\uFEFF" + lignes.map(l => l.map(champ).join(";")).join("\r\n");
   const sauvegarde = {};
-  Object.keys(localStorage).filter(k => /^(seance-|mesures-|libre-|competences-|libres$|reglages$|favoris$|moyennes$|programme-actif$|deplacements$)/.test(k)).forEach(k => sauvegarde[k] = localStorage.getItem(k));
+  Object.keys(localStorage).filter(k => /^(seance-|mesures-|libre-|competences-|libres$|reglages$|favoris$|moyennes$|programme-actif$|deplacements$|salles$)/.test(k)).forEach(k => sauvegarde[k] = localStorage.getItem(k));
   const jour = isoDate(new Date());
   partager([new File([csv], `export-escalade-${jour}.csv`, { type: "text/csv" }),
             new File([JSON.stringify(sauvegarde)], `sauvegarde-escalade-${jour}.json`, { type: "application/json" })]);
@@ -2168,7 +2450,7 @@ function afficher(enHaut = true) {
   const mn = $("minuteur"); if (mn.parentElement !== document.body) document.body.insertBefore(mn, $("toast"));   // à l'abri avant de redessiner
   if (vue === "seance" && !courant()) { vue = "semaine"; semaineVue = Math.max(1, semaineDe(new Date())); }
   ({ seance: afficherSeance, repos: afficherRepos, semaine: afficherSemaine, programme: afficherProgramme, creation: afficherCreation, plus: afficherPlus,
-     biblio: afficherBiblio, reglages: afficherReglages, sauvegarde: afficherSauvegarde })[vue]();
+     biblio: afficherBiblio, reglages: afficherReglages, sauvegarde: afficherSauvegarde, salles: afficherSalles, salle: afficherSalle })[vue]();
   // Onglet actif, flèches, menu ⋯ et ligne de temps selon l'écran
   const onglet = { seance: "seance", repos: "seance", semaine: "semaine", programme: "semaine", creation: "semaine" }[vue] || "plus";
   document.querySelectorAll("#onglets button").forEach(b => b.classList.toggle("actif", b.dataset.onglet === onglet));

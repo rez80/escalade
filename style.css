@@ -360,3 +360,20 @@ body.flash { animation:flash .5s 3; }
 /* Bibliothèque : fil d'Ariane */
 .fil-ariane { font-size:14px; color:var(--doux); margin:2px 0 10px; }
 .fil-ariane .lien { font-size:14px; }
+
+/* ---------- Version 5.2 : salles, voies, temps réels ---------- */
+.pastille-mini { display:inline-block; width:12px; height:12px; border-radius:50%; border:1px solid var(--bord); vertical-align:middle; margin-right:4px; }
+.voies-salle { display:flex; flex-direction:column; gap:6px; max-height:240px; overflow-y:auto; margin-bottom:6px; }
+.voie-salle { text-align:left; padding:8px 10px; min-height:44px; background:transparent; }
+.voie-salle.nouvelle { color:var(--act); font-weight:700; border-style:dashed; }
+.secteur { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--bord); }
+.ajout-secteur { display:flex; gap:6px; margin:8px 0; }
+.ajout-secteur input { flex:1; } .ajout-secteur select { width:auto; } .ajout-secteur button { padding:0 12px; }
+.echelle-table { display:flex; flex-wrap:wrap; gap:6px 12px; margin:8px 0 12px; font-size:15px; }
+.echelle-table select { width:auto; padding:4px 6px; }
+.temps-reels { margin:10px 0; } .temps-reels summary { color:var(--act); font-weight:600; padding:6px 0; }
+.heures { display:flex; gap:12px; margin:8px 0; } .heures label { flex:1; font-size:14px; color:var(--doux); }
+.temps-etape { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:6px 0; border-bottom:1px solid var(--bord); font-size:15px; }
+.temps-etape input { width:80px; text-align:center; }
+.temps-etape .compteur span { min-width:50px; }
+.secteur .choix { flex-wrap:nowrap; flex:none; } .secteur > div:first-child { min-width:0; }
