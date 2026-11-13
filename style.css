@@ -446,3 +446,16 @@ body.flash { animation:flash .5s 3; }
 .tuile-voie.br-ko { box-shadow:0 0 0 3px var(--doux); opacity:.8; }
 .carte.a-completer { border-left:6px solid var(--attention); }
 .carte.a-completer .choix { margin-top:8px; }
+
+/* ---------- Version 5.5 : réorganisation ---------- */
+.choix-carte .principal-carte { flex:2; }
+.choix-carte button { min-height:50px; }
+.petits-boutons { display:flex; justify-content:space-around; flex-wrap:wrap; gap:4px; margin-top:8px; }
+.petits-boutons button { border:none; background:none; color:rgba(255,255,255,.9); font-size:13px; padding:6px 4px; min-height:36px; }
+.titre-etape { font-weight:600; }
+.panneau-etape { margin-top:8px; padding-top:8px; border-top:1px solid var(--bord); cursor:auto; }
+.panneau-etape p { margin:4px 0; font-size:15px; }
+.panneau-etape .choix { margin:8px 0; }
+.panneau-etape .ligne-outil { margin:6px 0; }
+.ligne.etape { cursor:pointer; }
+.choix-couleur { width:48px; height:42px; padding:2px; flex:none; }
