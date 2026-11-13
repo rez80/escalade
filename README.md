@@ -1,4 +1,4 @@
-# App Escalade — mode d'emploi technique (version 5.3)
+# App Escalade — mode d'emploi technique (version 5.5)
 
 Ce fichier s'adresse à toi, pour faire vivre l'app et le rapport. Le guide d'utilisation, lisible par tout le monde, est `aide.html` (bouton **Plus → ❓ Aide** dans l'app, ou l'adresse `…/aide.html`).
 
@@ -111,6 +111,20 @@ Pour un nouveau **bloc** du même programme, il suffit d'ajouter ses lignes à l
 - **Salles** (`localStorage` clé `salles`, incluse dans la sauvegarde) : nom, type, échelles de cotation (cotation de la salle → équivalent dans l'app), secteurs (profil par défaut, date de mise à jour), inventaire. Une tentative garde `cot` (échelle de l'app, utilisée par toutes les analyses), `cotSalle`, `salle` et `voieId`. Une tentative notée avec une couleur ou un nom crée la voie dans l'inventaire si elle n'existe pas (`finaliserTentative`).
 - **Voies « différentes »** (feux verts) : par identifiant de voie quand il existe, sinon cotation + couleur + nom.
 - **Temps saisis** : `d.tempsManuel` (minutes par étape) et `d.heuresSaisies` ; prioritaires sur les mesures (`tempsReel`), marqués « saisi » dans l'export.
+
+## Réorganisation (version 5.5)
+
+- **Une action, un seul endroit** : bandeau (version, Commencer, Sautée, Déjà faite ?) ; carte Maintenant (✓, ⏭ Suivante, ■ Fin ; puis ⚠, ⏱ Repos / ▶, mode) ; menu ⋯ (Bilan rapide, Modifier, Copier vers…, Déplacer, Sautée ; Annuler, Réinitialiser). « Saisir après coup » est remplacé par le bilan rapide ; l'appui long et le menu du titre d'étape sont supprimés.
+- **Étapes dépliables** (`panneauEtape`, clé `ouverts` « e » + index) : toucher la ligne déplie ; la case ou les ronds cochent.
+- **Couleurs** : `COULEURS` (19) + `salle.couleurs` ({nom, hex}) via `couleursDe(sid)` et `COULEUR_HEX`.
+- **Secteurs** : page dédiée (`afficherSecteur`), profils multiples (`secteur.profils`, `profilsSecteur`), le premier recopié dans `secteur.profil` pour compatibilité.
+
+## Suivi léger et bilan rapide (version 5.4)
+
+- **Mode de suivi** par séance (`d.mode` : `leger` ou `detaille`), mémorisé par activité (`R.modes`), modifiable à tout moment. En léger : pas de fenêtre de résultat ni de repos après un passage, liste compacte.
+- **Étapes** : terminée (`etapeFinie` : tous les passages, ou `d.finies` après « Étape suivante »), passée (`d.passees`), choisie (`d.focus`, « Aller à cette étape ») ; `prochain()` en tient compte.
+- **Bilan rapide** (`ouvrirBilanRapide`) : heures, état de chaque étape, grille par cotation (tentatives marquées `approx`), voies de la salle, effort, douleur, notes. La séance est marquée `d.approx` : hors moyennes de temps (`noterMoyenne`), et « Suivi léger (approximatif) » dans les notes de l'export (colonne Suivi du rapport).
+- **Repos manuel par défaut** (`R.auto = false`, appliqué une fois aux réglages existants) ; le chrono du passage a été supprimé.
 
 ## Modifier le programme dans l'app (version 5.3)
 
