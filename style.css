@@ -521,3 +521,114 @@ body.grand .petits-boutons button { font-size:16px; min-height:44px; }
 .gc-cot { background:none; border:none; padding:0; min-height:36px; font-weight:800; text-align:left; color:var(--texte); }
 .gc-voies { padding:8px 10px; border-top:1px solid var(--bord); background:var(--carte); }
 .filtre-couleurs .pastille { width:30px; height:30px; }
+
+/* ---------- Version 6.1 ---------- */
+/* Zones tactiles d'au moins 44 px */
+.choix.compact button { min-height:44px; min-width:44px; }
+#mn-coins button { width:44px; height:44px; }
+.pastille { width:42px; height:42px; }
+.filtre-couleurs .pastille { width:36px; height:36px; }
+.petit-segment button { min-height:44px; }
+.ed-fleches button { width:44px; height:44px; }
+.ed-reglages .compteur button, .gc-ligne .compteur button { width:44px; height:44px; }
+.petits-boutons button { min-height:44px; padding:6px 8px; }
+.gc-cot { min-height:44px; }
+/* La case des étapes reste visible en mode sombre */
+@media (prefers-color-scheme: dark) {
+  .ligne.etape .case { border:2px solid rgba(255,255,255,.6); background:rgba(255,255,255,.08); }
+  .ligne.etape .case.ok { background:var(--fait); border-color:var(--fait); }
+}
+/* Pendant la séance, le bandeau se réduit à une ligne : la liste remonte */
+.bandeau-seance.reduit { padding:10px 14px; }
+.bandeau-seance.reduit h1 { font-size:20px; margin:0; display:inline; }
+.bandeau-seance.reduit .phase { display:inline; margin-left:8px; font-size:13px; opacity:.85; }
+.bandeau-seance.reduit .sous-titre { display:none; }
+
+/* ======================= Version 6.2 : une seule logique de couleurs ======================= */
+/* Couleur pleine = l'activité ; pastel = la même couleur adoucie (séance à venir) */
+:root { --c-repos:#9AA5AD; }
+/* Règle des boutons : tout ce qui se touche a un fond et une bordure */
+.lien { display:inline-flex; align-items:center; gap:4px; border:1.5px solid var(--bord); border-radius:10px; padding:6px 12px; min-height:40px;
+  background:var(--carte); color:var(--act, var(--marque)); text-decoration:none; font-weight:600; }
+.lien.petit { color:var(--doux); font-weight:600; font-size:14px; }
+.exo { display:inline-flex; align-items:center; border:1.5px solid var(--bord); border-radius:14px; padding:2px 10px; min-height:34px; margin:2px 0;
+  background:var(--carte); color:var(--texte); text-decoration:none; font-weight:600; font-size:.92em; }
+.lien-blanc { border:1.5px solid rgba(255,255,255,.75) !important; border-radius:10px; padding:6px 12px !important; min-height:40px; background:rgba(255,255,255,.12); text-decoration:none !important; }
+/* En-tête : aide contextuelle et retour au programme */
+#btn-aide { width:36px; height:36px; border-radius:50%; border:1.5px solid rgba(255,255,255,.6) !important; background:none; color:#fff; font-weight:800; font-size:16px; padding:0; flex:none; }
+#prec.retour-texte { font-size:15px; font-weight:700; white-space:nowrap; width:auto; padding:0 6px; }
+/* Séances de la semaine : pastel à venir, pleine une fois faite */
+.carte-seance { border-left:6px solid var(--act); background:color-mix(in srgb, var(--act) 14%, var(--carte)); }
+.carte-seance.faite { background:var(--act); border-left-color:var(--act); color:#fff; }
+.carte-seance.faite .cs-jour, .carte-seance.faite .cs-duree, .carte-seance.faite .petit-etiquette { color:rgba(255,255,255,.9); }
+.carte-seance.faite .etat-seance { background:rgba(255,255,255,.25); color:#fff; border:none; }
+.carte-seance.encours { box-shadow:0 0 0 2px var(--act); }
+.carte-seance.sautee { background:var(--carte); border-left-color:var(--c-repos); opacity:.75; }
+.carte-seance.sautee .cs-titre { text-decoration:line-through; }
+.carte-seance.aujourdhui { outline:3px solid var(--texte); outline-offset:-1px; }
+/* Programme : une semaine = une ligne, avec 7 cases colorées */
+.semaine-prog { margin-bottom:6px; border-radius:14px; }
+.semaine-prog.ouverte { background:var(--carte); border:1px solid var(--bord); padding:0 8px 10px; }
+.semaine-prog.actuelle > .ligne-semaine { box-shadow:0 0 0 2px var(--marque); }
+.semaine-prog.ouverte > .ligne-semaine { box-shadow:none; background:none; border:none; padding:10px 4px; }
+.ligne-semaine .chevron { color:var(--doux); flex:none; }
+.cases-semaine { display:flex; gap:3px; flex:none; }
+.case-jour { width:14px; height:22px; border-radius:4px; background:color-mix(in srgb, var(--act) 28%, var(--carte)); }
+.case-jour.vide { background:var(--info); }
+.case-jour.faite { background:var(--act); }
+.case-jour.sautee { background:var(--c-repos); }
+.case-jour.facult:not(.faite) { opacity:.5; }
+.case-jour.auj { outline:2px solid var(--texte); outline-offset:1px; }
+.bande-jours { display:flex; gap:4px; margin:4px 0 10px; }
+.bande-jours .jour { flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:1px; padding:6px 0; min-height:62px; border-radius:10px;
+  border:none; background:color-mix(in srgb, var(--act) 22%, var(--carte)); color:var(--texte); }
+.bande-jours .jour.vide { background:var(--info); color:var(--doux); }
+.bande-jours .jour.faite { background:var(--act); color:#fff; }
+.bande-jours .jour.sautee { background:var(--c-repos); color:#fff; }
+.bande-jours .jour.facult:not(.faite) { opacity:.6; }
+.bande-jours .jour.auj { outline:3px solid var(--texte); outline-offset:-1px; }
+.j-lettre { font-size:12px; font-weight:700; } .j-date { font-size:17px; font-weight:800; } .j-etat { font-size:13px; height:16px; }
+.a-faire { border:1px solid color-mix(in srgb, var(--attention) 45%, var(--bord)); border-left:6px solid var(--attention); border-radius:0 12px 12px 0; background:var(--carte); padding:10px; margin-bottom:10px; }
+.a-faire > button { display:block; width:100%; text-align:left; margin-top:6px; min-height:44px; padding:8px 12px; border:1.5px solid var(--bord); border-radius:10px; background:var(--fond); font-weight:600; }
+.a-faire .resume-progres { margin:8px 0 2px; }
+/* Carte Maintenant : une ligne qui se déplie */
+.maintenant-haut { width:100%; border:none; background:none; padding:0; min-height:30px; color:rgba(255,255,255,.92); text-align:left; }
+.maintenant-details { background:rgba(255,255,255,.14); border-radius:10px; padding:8px 10px; margin:6px 0; font-size:13px; display:flex; flex-direction:column; gap:3px; }
+.maintenant-details .maintenant-temps { margin:0; }
+/* Récupération en un appui */
+.ressentis { display:flex; gap:8px; margin-bottom:10px; }
+.ressenti { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; padding:10px 4px; min-height:84px; font-size:13px; font-weight:700; border:1.5px solid var(--bord); border-radius:14px; background:var(--carte); }
+.ressenti .ic { font-size:30px; line-height:1; }
+.ressenti.choisi { border-color:var(--act); background:color-mix(in srgb, var(--act) 16%, var(--carte)); box-shadow:0 0 0 2px var(--act); }
+/* Étape dépliée : contenu à gauche, actions en colonne à droite */
+.panneau-etape { display:flex; gap:10px; align-items:flex-start; }
+.pe-gauche { flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
+.pe-gauche p { margin:0; }
+.actions-etape { display:flex; flex-direction:column; gap:6px; width:76px; flex:none; }
+.actions-etape button { display:flex; flex-direction:column; align-items:center; gap:2px; padding:6px 0; min-height:52px; font-size:17px; border:1.5px solid var(--bord); border-radius:10px; background:var(--carte); color:var(--texte); }
+.actions-etape button span { font-size:11px; font-weight:700; }
+.actions-etape button.fait { background:var(--fait); border-color:var(--fait); color:#fff; }
+.actions-etape button.choisi { border-color:var(--texte); }
+/* Tuiles de voies : toute la couleur de la prise */
+.tuile-voie.pleine .t-etat, .tuile-voie.pleine .t-nom { color:inherit; opacity:.92; }
+.tuile-voie.pleine { border-top:none; }
+.tuile-voie.selection { outline:3px solid var(--texte); outline-offset:2px; transform:scale(1.04); }
+.tuile-voie.ici { border:2px dashed var(--doux); background:none; color:var(--doux); }
+/* Mur de la salle */
+.barre-mur { display:flex; gap:8px; align-items:center; margin:10px 0 4px; }
+.barre-mur .filtres-salle { flex:1; margin:0; }
+.barre-mur > button { flex:none; min-height:44px; padding:0 12px; border:1.5px solid var(--bord); border-radius:10px; background:var(--carte); font-weight:700; }
+.aide-ranger { background:var(--info); border-radius:10px; padding:8px 10px; font-size:14px; }
+.projets { display:flex; flex-direction:column; gap:6px; margin:8px 0; }
+.tete-secteur { display:flex; align-items:center; gap:6px; margin:14px 0 6px; }
+.ts-nom { flex:1; min-width:0; display:flex; flex-direction:column; align-items:flex-start; text-align:left; padding:6px 10px; min-height:44px; border:1.5px solid var(--bord); border-radius:10px; background:var(--carte); }
+.ts-nom .petit { font-weight:500; }
+.ts-btn { width:44px; height:44px; flex:none; border:1.5px solid var(--bord); border-radius:10px; background:var(--carte); font-size:18px; font-weight:800; padding:0; }
+#modal h2 .pastille-mini { width:16px; height:16px; }
+.actions .danger { color:var(--danger); }
+/* Étape dépliée : la colonne d'actions remplace la case et les ronds */
+.ligne.etape:has(.panneau-etape) > .case, .ligne.etape:has(.panneau-etape) > .ronds { display:none; }
+/* Formulaires d'ajout : le champ texte sur sa propre ligne */
+.ajout-secteur { flex-wrap:wrap; }
+.ajout-secteur input[type=text] { flex:1 1 100%; }
+.ajout-secteur select { flex:1; }
