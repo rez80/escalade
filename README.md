@@ -1,4 +1,4 @@
-# App Escalade — mode d'emploi technique (version 6.0)
+# App Escalade — mode d'emploi technique (version 6.2)
 
 Ce fichier s'adresse à toi, pour faire vivre l'app et le rapport. Le guide d'utilisation, lisible par tout le monde, est `aide.html` (bouton **Plus → ❓ Aide** dans l'app, ou l'adresse `…/aide.html`).
 
@@ -112,6 +112,25 @@ Pour un nouveau **bloc** du même programme, il suffit d'ajouter ses lignes à l
 - **Voies « différentes »** (feux verts) : par identifiant de voie quand il existe, sinon cotation + couleur + nom.
 - **Temps saisis** : `d.tempsManuel` (minutes par étape) et `d.heuresSaisies` ; prioritaires sur les mesures (`tempsReel`), marqués « saisi » dans l'export.
 
+## Version 6.2 (couleurs, salle, programme, navigation)
+
+- **Couleurs** : couleur pleine = activité (séance faite), adoucie = à venir (`color-mix` sur `--act`) ; pastel = type de phase. Tuiles de voies : `styleTuile(couleur)` met la couleur de la prise en fond et choisit le texte (`texteSur`, noir sur les couleurs claires).
+- **Boutons** : `.lien`, `.lien-blanc` et `.exo` ont fond et bordure ; le simple texte n'en a jamais.
+- **Séance** : titre court = ce qui précède le premier « · » (`teteReste`, `titreAction`) ; la suite est dans l'étape dépliée (`panneauEtape` : contenu à gauche, actions en colonne). Carte Maintenant : une ligne « Phase · temps » qui se déplie (`ouverts` « mn »). Récupération en un appui (`ressenti` : bien 5/5/5, moyen 3/3/4, mal 2/2/3 + douleur).
+- **Salle** : onglets Mur et Réglages ; fiche de voie (`voie2`) et réglages du secteur (`secteur2`) dans une fenêtre du bas. Ordre des voies : `v.ordre` (mode Ranger, `deplacerVoie`), repris dans la liste en séance.
+- **Programme** : vues Programme et Progrès. La semaine dépliée (`detailSemaine`) : bande des 7 jours, encadré « À faire », séances. Outils de la semaine dans ⋯ (semaine dépliée en dernier = `semaineVue`). Feux verts dans Progrès.
+- **Navigation** : « ‹ Programme » quand une séance est ouverte depuis le programme (`origine`, `progY`) ; chaque onglet se rouvre là où on l'a laissé (`memoriserOnglet`) ; le toucher à nouveau ramène à son début ; « ? » ouvre l'aide à la bonne section (`ANCRES_AIDE`) et le retour reprend le même écran (`sessionStorage`, 10 minutes au plus). Onglet Plus en trois groupes ; fichier calendrier sous « Fonctions avancées » (`R.avancees`).
+
+## Version 6.1 (corrections après audit)
+
+- **Temps app fermée** : `d.pauseTotale` est retiré du temps affiché et de la durée enregistrée (sauf si les heures du bilan rapide sont modifiées à la main : elles font foi).
+- **Un seul chemin pour finir une séance** : ■ Fin, « Terminer », « Modifier le bilan » et les séances à compléter ouvrent tous le bilan rapide (`terminer` et `ouvrirBilan` y renvoient). L'ancien bilan détaillé, la fenêtre « Séance restée ouverte » et « Saisir après coup » sont supprimés.
+- **Bilan rapide rouvert** : la grille et les voies précises reviennent préremplies depuis les tentatives `approx` ; à l'enregistrement, elles sont **remplacées** (plus de doublons). `d.approx` n'est posé qu'en suivi léger ou pour une séance non suivie en direct.
+- **Voies « différentes »** (feux verts, app et rapport) : identité = voie de la salle (`voieId`), sinon couleur + nom ; une réussite anonyme du bilan rapide ne compte pas. Export : colonne C14 des lignes Voie = « Approx ».
+- **Modifier une séance commencée** : `remapperSaisies` fait suivre à chaque saisie (passages, coches, passées, notes, résultats, étape choisie) sa ligne, d'après son texte.
+- **Restauration** : une sauvegarde d'un autre programme (`programme-actif` différent) est signalée ; on peut ne restaurer que réglages, salles et favoris (`CLES_SAISIES` exclues).
+- **Fluidité** : bandeau réduit pendant la séance, pas de glissement vers une autre séance pendant une séance en cours, toucher un nom d'exercice déplie aussi l'étape, texte complet et fiches dans l'étape dépliée en suivi léger, zones tactiles de 44 px, case visible en mode sombre, noms de couleurs échappés.
+
 ## Version 6.0
 
 - **Phases** : la durée d'une phase vient de `(durée X min)` si elle est écrite, sinon passages × durée indicative (`temps_voie`, `temps_bloc` dans Paramètres) + repos. Plus de temps mesuré par voie ni de moyennes (`noterMoyenne` ne fait plus rien). Ligne du temps : `friseSeance`. Une pause : `1× Pause récupération (durée 10 min)`.
@@ -130,7 +149,7 @@ Pour un nouveau **bloc** du même programme, il suffit d'ajouter ses lignes à l
 
 - **Mode de suivi** par séance (`d.mode` : `leger` ou `detaille`), mémorisé par activité (`R.modes`), modifiable à tout moment. En léger : pas de fenêtre de résultat ni de repos après un passage, liste compacte.
 - **Étapes** : terminée (`etapeFinie` : tous les passages, ou `d.finies` après « Étape suivante »), passée (`d.passees`), choisie (`d.focus`, « Aller à cette étape ») ; `prochain()` en tient compte.
-- **Bilan rapide** (`ouvrirBilanRapide`) : heures, état de chaque étape, grille par cotation (tentatives marquées `approx`), voies de la salle, effort, douleur, notes. La séance est marquée `d.approx` : hors moyennes de temps (`noterMoyenne`), et « Suivi léger (approximatif) » dans les notes de l'export (colonne Suivi du rapport).
+- **Bilan rapide** (`ouvrirBilanRapide`) : heures, état de chaque étape, grille par cotation (tentatives marquées `approx`), voies de la salle, effort, douleur, notes. La séance est marquée `d.approx` en suivi léger : « Suivi léger (approximatif) » dans les notes de l'export (colonne Suivi du rapport).
 - **Repos manuel par défaut** (`R.auto = false`, appliqué une fois aux réglages existants) ; le chrono du passage a été supprimé.
 
 ## Modifier le programme dans l'app (version 5.3)
@@ -157,7 +176,7 @@ Une semaine contenant des séances commencées n'est jamais écrasée par une co
 | L'écran séance (bandeau avec version et ▶ Commencer), la carte Maintenant, les types d'étape | Section 7 |
 | Les fenêtres (résultat, circuit, récupération, compétences, séance sautée, déplacer, menu ⋯…) | Section 9 |
 | Le minuteur (`placerMinuteur` : dans la carte Maintenant ou en pastille), le chrono du passage | Section 10 |
-| L'onglet Programme (vues Semaine et Programme), l'écran Repos, la création de séance | Section 13 |
+| L'onglet Programme (`afficherProgramme`, `detailSemaine`), Progrès, l'écran Repos, la création de séance | Section 13 |
 | L'onglet Plus, la bibliothèque, les réglages | Section 14 |
 | L'export, la sauvegarde, le calendrier | Section 15 |
 | Les onglets, l'en-tête, le balayage | Section 17 |
