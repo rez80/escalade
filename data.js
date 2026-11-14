@@ -1,6 +1,6 @@
 // Fichier généré par escalade.py à partir de Programme.xlsx — ne pas modifier à la main.
 
-const VERSION_PROGRAMME = "14/11/2026 21:24";
+const VERSION_PROGRAMME = "14/11/2026 21:57";
 
 const DATE_DEBUT = "2026-11-09";
 

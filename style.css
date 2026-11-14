@@ -673,3 +673,40 @@ body.grand .petits-boutons button { font-size:16px; min-height:44px; }
 .barre-sem { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
 .barre-sem button { flex:1; min-height:44px; border:1.5px solid var(--bord); border-radius:10px; background:var(--carte); font-weight:600; font-size:14px; white-space:nowrap; }
 @media (max-width:360px) { .barre-sem { flex-wrap:nowrap; } .barre-sem button { font-size:13px; padding:0 6px; min-width:0; } .barre-sem button:first-child { flex:0 0 auto; } }
+
+/* ======================= Version 6.4 ======================= */
+/* Liste des salles : toutes les lignes sur toute la largeur */
+.ligne-menu.grande { width:100%; }
+/* Profil : pictogramme d'inclinaison */
+.picto-profil { width:15px; height:17px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+.picto-profil .sol { stroke-width:1.4; opacity:.6; }
+.tuile-voie .picto-profil { position:absolute; bottom:3px; right:4px; width:12px; height:14px; opacity:.85; }
+.choix-profil button { display:inline-flex; align-items:center; gap:6px; }
+/* Cotation : le chiffre, puis la lettre */
+.cot-chiffres button { min-width:44px; font-weight:800; }
+.cot-chiffres button.actif { background:var(--texte); border-color:var(--texte); color:var(--carte); }
+.cot-lettres { margin-top:6px; padding:6px; border-radius:10px; background:var(--info); }
+.cot-lettres button { min-width:52px; font-weight:700; }
+.br-ajout-cot { margin-top:10px; }
+/* Mur : en-têtes, rangement, sélection */
+.ts-btn.ts-texte { width:auto; padding:0 10px; font-size:14px; font-weight:700; }
+.ts-nom.sans { border-style:dashed; background:transparent; }
+.filtre-type { margin:6px 0 8px; }
+.tuiles-voies.rangement .tuile-voie { touch-action:none; cursor:grab; user-select:none; -webkit-user-select:none; outline:2px dashed var(--doux); outline-offset:-3px; }
+.tuile-voie.glisse { z-index:9; cursor:grabbing; box-shadow:0 8px 20px rgba(0,0,0,.3); opacity:.95; transition:none; }
+.barre-bas { position:fixed; left:12px; right:12px; bottom:calc(72px + env(safe-area-inset-bottom)); z-index:8; display:flex; align-items:center; gap:8px;
+  background:var(--carte); border:1.5px solid var(--bord); border-radius:14px; padding:8px 10px; box-shadow:0 6px 20px rgba(0,0,0,.18); }
+.barre-bas span { flex:1; font-size:14px; font-weight:600; }
+.barre-bas button { min-height:44px; padding:0 14px; border-radius:10px; font-weight:700; }
+body:has(.barre-bas) #ecran { padding-bottom:150px; }
+/* Réglages des cotations */
+.titre-disc { margin:12px 0 4px; }
+.ordre-couleurs { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0; }
+.puce-coul { display:inline-flex; align-items:center; gap:4px; font-size:13px; border:1px solid var(--bord); border-radius:12px; padding:2px 8px; background:var(--carte); }
+/* Passage noté après coup */
+.carte.ancien { border:1.5px solid var(--bord); margin:8px 0; }
+/* Séance : thème dans le bandeau, consignes regroupées */
+.theme-seance { margin-top:8px; font-size:14px; font-weight:600; line-height:1.4; }
+.theme-seance .exo { color:var(--texte); }
+.bandeau-seance.reduit .theme-seance { display:none; }
+.bloc-consignes { margin:-2px 0 10px; }

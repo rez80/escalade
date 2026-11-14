@@ -9,13 +9,21 @@
 // =====================================================================
 // 1. RÉGLAGES DU PROGRAMME (modifiables dans le code)
 // =====================================================================
-const APP_VERSION = "6.3";
+const APP_VERSION = "6.4";
 const REPOS_DEFAUT = { Voie: 300, Bloc: 180, Maison: 90 };   // secondes, si la ligne n'indique rien
-const COTATIONS = { Voie: ["3","4","4c","5a","5b","5c","6a","6b","6c"], Bloc: ["2","3","4","5","6","7"] };
+const FR = [3, 4, 5, 6, 7, 8, 9].flatMap(n => n === 3 ? ["3"] : n === 4 ? ["4a", "4b", "4c"] : ["a", "b", "c"].flatMap(l => [n + l, n + l + "+"]));
+const FONT = ["2", "3", "4", "4+", "5", "5+", ...[6, 7, 8].flatMap(n => ["A", "B", "C"].flatMap(l => [n + l, n + l + "+"]))];
+const COTATIONS = { Voie: FR, Bloc: FONT };                      // voies : cotation française ; blocs : Fontainebleau
 COTATIONS["Escalade extérieur"] = COTATIONS.Voie;               // se note comme une voie
 const ACTIVITES_LIBRES = ["Voie","Bloc","Maison","Course","Escalade extérieur","Autre sport"];
 const JOURS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
-const PROFILS = ["Dalle", "Vertical", "Léger dévers", "Dévers", "Toit"];
+const PROFILS = ["Dalle", "Vertical", "Léger dévers", "Dévers", "Fort dévers", "Toit"];
+// Pictogramme d'inclinaison (vu de côté : le sol, puis le mur)
+const PICTO = { "Dalle": "M8 18 L13 2", "Vertical": "M11 18 L11 2", "Léger dévers": "M13 18 L9 2", "Dévers": "M15 18 L6 2", "Fort dévers": "M16 18 L3 5", "Toit": "M16 18 L16 8 L2 8" };
+const pictoProfil = p => PICTO[p] ? `<svg class="picto-profil" viewBox="0 0 18 20" role="img" aria-label="${p}"><path class="sol" d="M1 19 H17"/><path d="${PICTO[p]}"/></svg>` : "";
+// Choix du profil : pictogramme + nom, sur plusieurs lignes si besoin
+const choixProfil = (attr, champ, valeur, extra = "") => `<div class="choix compact choix-profil">${PROFILS.map(p =>
+  `<button data-${attr}="${champ}" data-valeur="${p}" ${extra} class="${valeur === p ? "choisi" : ""}">${pictoProfil(p)}${p}</button>`).join("")}</div>`;
 const STYLES = ["À vue", "Flash", "Après travail"];
 const CAUSES = ["Lecture", "Pieds", "Placement ou gainage", "Force", "Endurance", "Peur"];
 const COULEURS = [["Rouge", "#D93636"], ["Rose", "#F48FB1"], ["Fuchsia", "#D81B60"], ["Orange", "#F28C28"], ["Jaune", "#F2D34B"], ["Vert clair", "#9CCC65"],
@@ -24,7 +32,9 @@ const COULEURS = [["Rouge", "#D93636"], ["Rose", "#F48FB1"], ["Fuchsia", "#D81B6
 // Couleurs d'une salle : la palette commune + celles ajoutées dans la salle (Réglages)
 const couleursDe = sid => [...COULEURS, ...(((sid && salleDe(sid)) || {}).couleurs || []).map(x => [x.nom, x.hex])];
 const ESCALADE = ["Voie", "Bloc", "Escalade extérieur"];
-const enDevers = p => ["Léger dévers", "Dévers", "Toit"].includes(p);
+const enDevers = p => ["Léger dévers", "Dévers", "Fort dévers", "Toit"].includes(p);
+const baseCot = c => String(c ?? "").replace(/\+$/, "");          // 5b+ compte comme 5b pour les feux verts
+const cotAff = v => v.cot || v.cotSalle || "?";                  // cotation lisible d'une tentative
 const reussi = v => v.res === "Enchaînée" || v.res === "Réussi";
 const URL_GUIDE = "aide.html";                     // guide d'utilisation (❓ Aide), dans le dossier de l'app
 // Paramètres réglables dans Programme.xlsx (onglet Paramètres), transmis par data.js
@@ -442,8 +452,8 @@ const rang = (act, cot) => (COTATIONS[act] || COTATIONS.Voie).indexOf(String(cot
 const relevable = (s, d, e) => COTATIONS[actReleve(s, d)] && !e.travail && !e.intervalle && /voie|bloc|essai|projet|circuit/i.test(e.texte);
 function cotationDe(texte, act) {          // cotation proposée d'après le texte de la ligne
   const liste = COTATIONS[act] || [];
-  if (act === "Bloc") { const m = texte.match(/niveau\s*(\d)/i); return m && liste.includes(m[1]) ? m[1] : ""; }
-  return (texte.match(/\b\d[abc]?\b/g) || []).find(c => liste.includes(c)) || "";
+  if (act === "Bloc") { const m = texte.match(/(?:niveau|bloc)\s*(\d[ABC]?\+?)(?![\dabc])/i); return !m ? "" : liste.includes(m[1]) ? m[1] : liste.includes(m[1] + "A") ? m[1] + "A" : ""; }
+  return (texte.match(/\b\d[abc]?\+?/g) || []).find(c => liste.includes(c)) || "";
 }
 function autoPerf(d, act) {               // voie ou bloc le plus dur réussi
   const ok = (d.voies || []).filter(v => (v.act || act) === act && (v.res === "Enchaînée" || v.res === "Réussi"));
@@ -459,7 +469,7 @@ function autoSec(d) {                     // nb de « sec » sur la voie en dév
 }
 const perfFinale = (d, act) => vide(d.perf) ? (COTATIONS[act] ? autoPerf(d, act) : "") : d.perf;
 const secFinal = d => vide(d.sec) ? autoSec(d) : d.sec;
-const resume = v => `${v.cot} ${(v.profil || "Vertical").toLowerCase()}${v.couleur ? " " + v.couleur.toLowerCase() : ""} ${v.res === "Avec sec" ? v.sec + " sec" : v.res.toLowerCase()}`;
+const resume = v => `${cotAff(v)} ${(v.profil || "Vertical").toLowerCase()}${v.couleur ? " " + v.couleur.toLowerCase() : ""} ${v.res === "Avec sec" ? v.sec + " sec" : v.res.toLowerCase()}`;
 
 function autoSemaine(sem) {               // valeurs automatiques de la semaine
   const seances = LISTE.filter(s => s.semaine === sem);
@@ -579,7 +589,9 @@ function afficherSeance() {
   const sousTitre = d.fin ? `✓ Faite en ${hm((d.fin - d.debut) / 1000)} · prévu ≈ ${hm(dureeTotale(s, d))}`
     : sautee ? "Séance sautée" : `≈ ${hm(dureeTotale(s, d))} · ${etapes.length} phase${etapes.length > 1 ? "s" : ""}`;
   const avant = !d.debut && !sautee && !d.fin;
-  let h = `<div class="bandeau-seance ${d.debut && !d.fin ? "reduit" : ""}"><h1>${esc(act)}</h1><div class="phase">${esc(s.phase)}${s.modifie ? " · modifiée" : ""}</div><div class="sous-titre">${sousTitre}</div>
+  const kTheme = elements.findIndex(e => e.type === "info" && /^thème/i.test(e.texte));
+  const theme = kTheme >= 0 ? `<div class="theme-seance">🎯 ${lier(elements[kTheme].texte.replace(/^thème[^:]*:\s*/i, ""), kTheme)}</div>` : "";
+  let h = `<div class="bandeau-seance ${d.debut && !d.fin ? "reduit" : ""}"><h1>${esc(act)}</h1><div class="phase">${esc(s.phase)}${s.modifie ? " · modifiée" : ""}</div><div class="sous-titre">${sousTitre}</div>${theme}
     ${avant && versions.length > 1 ? `<div class="segment segment-bandeau">${versions.map((v, n) =>
       `<button data-version="${n}" class="${(d.version || 0) === n ? "choisi" : ""}">${esc(v.nom.replace(/\s*\(.*\)\s*$/, ""))}</button>`).join("")}</div>` : ""}
     ${avant ? `<button class="blanc commencer" data-action="demarrer">▶ Commencer</button>
@@ -615,22 +627,21 @@ function afficherSeance() {
     : enCours && k > 0 ? elements.map((e, i) => i).filter(i => i < k && elements[i].type !== "info" && faite(elements[i], i)) : [];
   h += `<div class="liste-etapes">`;
   if (s.libre && !elements.length) h += `<p class="petit">Séance libre : pas de programme, note simplement ce que tu fais.</p>`;
-  if (modeDe(s, d) === "leger" && !d.fin && elements.some(e => e.type === "info"))
-    h += `<button class="ligne-pliee" data-plier="consignes">${ouverts.has("consignes") ? "▾" : "▸"} Consignes de la séance</button>`;
+  const infos = elements.map((e, i) => ({ e, i })).filter(x => x.e.type === "info");     // toutes les consignes, ensemble, en haut
+  if (infos.length) h += `<button class="ligne-pliee" data-plier="consignes">${ouverts.has("consignes") ? "▾" : "▸"} Consignes de la séance (${infos.length})</button>`
+    + (ouverts.has("consignes") ? `<div class="bloc-consignes">${infos.map(x => `<div class="ligne info">${lier(x.e.texte, x.i)}</div>`).join("")}</div>` : "");
   if (repliables.length && !(modeDe(s, d) === "leger" && !d.fin)) h += `<button class="ligne-pliee" data-plier="faites">${ouverts.has("faites") ? "▾" : "▸"} ${repliables.length} phase${repliables.length > 1 ? "s" : ""} ${d.fin ? "" : "faite" + (repliables.length > 1 ? "s" : "")}</button>`;
   elements.forEach((e, i) => {
     if (repliables.includes(i) && !ouverts.has("faites") && !(modeDe(s, d) === "leger" && !d.fin)) return;   // en suivi léger, toute la séance reste visible
-    if (d.fin && e.type === "info" && !ouverts.has("faites")) return;
+    if (e.type === "info") return;                                   // déjà dans « Consignes de la séance »
     const num = numeros[i] ? { n: numeros[i], etat: i === k && !d.fin ? "▶" : faite(e, i) ? "✓" : "○", duree: dureeElement(s, d, e), type: typeEtape(e) } : null;
     if (modeDe(s, d) === "leger" && !d.fin) {                         // suivi léger : une ligne par étape, consignes repliées
-      if (e.type === "info") { if (ouverts.has("consignes")) h += `<div class="ligne info">${lier(e.texte, i)}</div>`; return; }
       const fin = etapeFinie(d, i, e), passee = etapePassee(d, i);
       h += `<div class="ligne etape compacte type-${num.type} ${fin || passee ? "finie" : ""} ${i === k ? "actuelle" : ""}" data-el="${i}">
         <div class="txt">${entete(num)}<span class="titre-compact">${esc(e.type === "routine" ? e.nom : titreAction(e))}${passee ? " <span class=\"petit\">(passée)</span>" : ""} <span class="petit">${depliee(i) ? "▾" : "▸"}</span></span>${depliee(i) ? panneauEtape(s, d, e, i) : ""}</div>
         <button class="case ${fin ? "ok" : ""}" data-compact="${i}" aria-label="Étape faite">✓</button></div>`;
       return;
     }
-    if (e.type === "info") h += `<div class="ligne info">${lier(e.texte, i)}${explication(i)}</div>`;
     if (e.type === "routine") h += ligneRoutine(e, i, d, i === k && !d.fin, num);
     if (e.type === "action") h += ligneAction(s, d, e, i, i === k && !d.fin, num);
   });
@@ -648,7 +659,8 @@ function afficherSeance() {
 // =====================================================================
 let cacheFeux = null;
 function toutesVoies() {
-  return LISTE.flatMap(s => (lire(s).voies || []).map(v => ({ ...v, act: v.act || s.activite, seance: cle(s) })));
+  return [...LISTE.flatMap(s => (lire(s).voies || []).map(v => ({ ...v, act: v.act || s.activite, seance: cle(s) }))),
+          ...lirePassagesAnciens().map(v => ({ ...v, seance: "ancien-" + v.date }))];
 }
 function feuxVerts() {
   if (cacheFeux) return cacheFeux;
@@ -657,7 +669,7 @@ function feuxVerts() {
   // Identité d'une voie : celle de la salle, sinon couleur + nom ; une réussite anonyme du bilan rapide (approximative) ne compte pas comme « différente »
   const id = v => v.voieId ? v.voieId : v.couleur || v.nom ? `${v.act}|${v.cot}|${v.couleur || ""}|${v.nom || ""}` : v.approx ? null : "#" + (n++);
   const differentes = l => new Set(l.map(id).filter(x => x !== null)).size;
-  const de = (act, cot, filtre = () => true) => vs.filter(v => v.act === act && String(v.cot) === cot && filtre(v));
+  const de = (act, cot, filtre = () => true) => vs.filter(v => v.act === act && baseCot(v.cot) === cot && filtre(v));
   const taux = l => l.length ? l.filter(reussi).length / l.length : 0;
   const crit = (t, val, cible, pct = false) => ({ t, val, cible, pct, ok: val >= cible });
   const v5b = de("Voie", "5b"), b5 = de("Bloc", "5");
@@ -669,19 +681,19 @@ function feuxVerts() {
   const ancien = (Date.now() - new Date(debutProgramme() + "T00:00:00").getTime()) / 864e5;
   const niveau = (act, cots) => { let niv = cots[0];
     for (let k = 0; k < cots.length - 1; k++) if (differentes(de(act, cots[k], v => enDevers(v.profil) && reussi(v))) >= PA("feu_devers", 3)) niv = cots[k + 1]; return niv; };
-  const nivVoie = niveau("Voie", ["5a", "5b", "5c", "6a"]), nivBloc = niveau("Bloc", ["4", "5", "6"]);
-  const prochain = (act, niv) => differentes(de(act, niv === "6a" || niv === "6" ? niv : niv, v => enDevers(v.profil) && reussi(v)));
+  const nivVoie = niveau("Voie", ["5a", "5b", "5c", "6a"]), nivBloc = niveau("Bloc", ["4", "5", "6A"]);
+  const prochain = (act, niv) => differentes(de(act, niv, v => enDevers(v.profil) && reussi(v)));
   cacheFeux = [
     { id: "voie5c", titre: "Projet en voie 5c", criteres: [crit("Voies 5b différentes réussies sans « sec »", differentes(v5b.filter(v => v.res === "Enchaînée")), PA("feu_5c_voies", 10)),
                                                            crit("Réussite en 5b", Math.round(taux(v5b) * 100), Math.round(PA("feu_5c_taux", 0.7) * 100), true)] },
     { id: "voie6a", titre: "Premier essai en 6a", criteres: [crit("Voies 5c différentes réussies", differentes(de("Voie", "5c", reussi)), PA("feu_6a_voies", 3))] },
-    { id: "bloc6", titre: "Projet de bloc 6", criteres: [crit("Réussite en bloc 5", Math.round(taux(b5) * 100), Math.round(PA("feu_bloc6_taux", 0.8) * 100), true),
+    { id: "bloc6", titre: "Projet de bloc 6A", criteres: [crit("Réussite en bloc 5", Math.round(taux(b5) * 100), Math.round(PA("feu_bloc6_taux", 0.8) * 100), true),
                                                         crit("Blocs 5 différents réussis", differentes(b5.filter(reussi)), PA("feu_bloc6_blocs", 15)),
                                                         crit("Séances avec un bloc 5 réussi", new Set(b5.filter(reussi).map(v => v.seance)).size, PA("feu_bloc6_seances", 4))] },
     { id: "deversVoie", titre: `Voie en dévers : travailler le ${nivVoie}`, info: true,
       criteres: nivVoie === "6a" ? [] : [crit(`Voies ${nivVoie} différentes réussies en dévers`, prochain("Voie", nivVoie), PA("feu_devers", 3))] },
     { id: "deversBloc", titre: `Bloc en dévers : travailler le ${nivBloc}`, info: true,
-      criteres: nivBloc === "6" ? [] : [crit(`Blocs ${nivBloc} différents réussis en dévers`, prochain("Bloc", nivBloc), PA("feu_devers", 3))] },
+      criteres: nivBloc === "6A" ? [] : [crit(`Blocs ${nivBloc} différents réussis en dévers`, prochain("Bloc", nivBloc), PA("feu_devers", 3))] },
     { id: "volume", titre: "Plus de volume", criteres: [crit(`Douleur max sur ${PA("feu_volume_jours", 28)} jours (≤ ${PA("feu_volume_douleur", 2)})`, dmax <= PA("feu_volume_douleur", 2) ? 1 : 0, 1), crit("Jours de programme", Math.max(0, Math.floor(ancien)), PA("feu_volume_jours", 28))] },
   ].map(f => ({ ...f, ok: f.criteres.every(c => c.ok) }));
   return cacheFeux;
@@ -783,7 +795,6 @@ function panneauEtape(s, d, e, i) {
     const [tete, reste] = teteReste(e), repos = reposDe(s, e);
     if (/«/.test(tete) && modeDe(s, d) === "leger" && !d.fin) g += `<p>${lier(tete, i)}</p>`;   // liste compacte : les fiches du titre
     if (reste) g += `<p>${lier(reste, i)}</p>`;
-    g += explication(i);
     if (e.intervalle) g += `<div class="outils"><button data-chrono="${i}">▶ ${mmss(e.intervalle.course)} / ${mmss(e.intervalle.marche)}</button></div>`;
     else if (e.travail) g += `<div class="outils"><button data-chrono="${i}">▶ ${duree(e.travail)}${e.cotes ? " × 2 côtés" : ""}</button></div>`;
     if (repos) g += `<p class="petit">Repos ${duree(repos)}${e.serie ? ` · série de ${e.serie}` : ""}</p>`;
@@ -853,13 +864,6 @@ function noteDerniereFois(e) {
   }
   return "";
 }
-function explication(i) {
-  const k = [...ouverts].find(o => o.startsWith(`e${i}-`));
-  if (!k) return "";
-  const x = EXERCICES[Number(k.split("-")[1])];
-  return `<div class="explic"><b>${esc(x.nom)}</b>${corpsFiche(x, false)}</div>`;
-}
-
 // « La dernière fois » : une ligne repliée, le détail au toucher
 function ligneDerniereFois(s) {
   for (let k = index - 1; k >= 0; k--) {
@@ -901,11 +905,11 @@ function carteReleve(d, act) {
     <button class="petit-bouton" data-form="ouvrir">+ ${voie ? "Voie" : "Bloc"}</button></div>`;
   if (ouverts.has("releve")) liste.forEach(({ v, k }) => {
     const res = v.res === "Avec sec" ? `${v.sec} « sec »` : v.res;
-    h += `<div class="voie"><button class="lien" data-editer="${k}"><b>${esc(v.cot)}</b> · ${v.profil} · ${res} ✎</button><button data-suppr="${k}">✕</button></div>`;
+    h += `<div class="voie"><button class="lien" data-editer="${k}"><b>${esc(cotAff(v))}</b> · ${v.profil} · ${res} ✎</button><button data-suppr="${k}">✕</button></div>`;
   });
   if (ouverts.has("releve") && liste.length) h += `<p class="petit">Touche un résultat pour le corriger.</p>`;
   if (formVoie) h += formulaireResultat(formVoie, act, "form") + `<div class="actions"><button data-form="annuler">Annuler</button>
-    <button data-form="ajouter" class="principal" ${formVoie.cot && formVoie.res ? "" : "disabled"}>Ajouter</button></div>`;
+    <button data-form="ajouter" class="principal" ${formVoie.res ? "" : "disabled"}>Ajouter</button></div>`;
   return h + `</div>`;
 }
 // Formulaire commun : cotation, profil, résultat (et nombre de « sec »)
@@ -920,9 +924,9 @@ function formulaireResultat(f, act, attr) {
   const pastilles = `<div class="pastilles">${couleursDe(f.salle).map(([n, c]) =>
     `<button data-${attr}="couleur" data-valeur="${esc(n)}" class="pastille ${f.couleur === n ? "choisi" : ""}" style="background:${c}" aria-label="${esc(n)}"></button>`).join("")}</div>`;
   const echec = f.res && !reussi(f);
-  return `${f.salle ? choixVoiesSalle(f, act, attr) : ""}<label class="champ">Cotation${f.salle ? ` <span class="petit">(échelle de la salle)</span>` : ""}</label>${choix("cot", f.salle ? gradesSalle(f.salle, act) : COTATIONS[act])}
+  return `${f.salle ? choixVoiesSalle(f, act, attr) : ""}<label class="champ">Cotation <span class="petit">(facultatif${f.salle ? ", échelle de la salle" : ""})</span></label>${selecteurCot({ attr, champ: "cot", chiffreChamp: "chiffreCot", valeur: f.cot, chiffre: f.chiffreCot, act, sid: f.salle })}
     <details class="plus-details" ${f.details ? "open" : ""}><summary>Plus de détails ▸ <span class="petit">${esc(f.profil || "")} · ${esc(f.style || "")}${f.couleur ? " · " + esc(f.couleur) : ""}</span></summary>
-    <label class="champ">Profil</label>${segment("profil", PROFILS)}
+    <label class="champ">Profil</label>${choixProfil(attr, "profil", f.profil)}
     <label class="champ">Style</label>${segment("style", STYLES)}
     <label class="champ">Couleur et nom <span class="petit">(facultatif)</span></label>${pastilles}
     <input type="text" id="${attr}-nom" value="${esc(f.nom || "")}" placeholder="Nom ou numéro (facultatif)"></details>
@@ -938,10 +942,26 @@ function formulaireResultat(f, act, attr) {
 // =====================================================================
 const discDe = act => estVoie(act) ? "Voie" : "Bloc";
 function salleParDefaut() {
-  const bloc = COTATIONS.Bloc || ["2", "3", "4", "5", "6", "7"], min = Number(bloc[0]), max = Number(bloc[bloc.length - 1]);
-  return { id: "s" + Date.now(), nom: "Ma salle", type: "Bloc et voie", secteurs: [], voies: [],
-           echelles: { Bloc: ["1", "2", "3", "4", "5", "6", "7", "8", "9"].map(g => ({ salle: g, app: String(Math.min(max, Math.max(min, Number(g)))) })),
-                       Voie: (COTATIONS.Voie || []).map(c => ({ salle: c, app: c })) } };
+  return { id: "s" + Date.now(), nom: "Ma salle", type: "Bloc et voie", secteurs: [], voies: [], modes: { Bloc: "standard", Voie: "standard" }, echelles: { Bloc: [], Voie: [] } };
+}
+// Façons de coter d'une salle : classique (5c, 6a+… ou 6A), une liste à elle (1 à 9, A B C…), les couleurs, ou rien
+const MODES_ECHELLE = [["standard", "Classique"], ["liste", "Numéros ou liste"], ["couleurs", "Couleurs"], ["aucune", "Pas de cotation"]];
+const modeEchelle = (sa, disc) => ((sa && sa.modes) || {})[disc] || (sa && (sa.echelles[disc] || []).length ? "liste" : "standard");
+const discsSalle = sa => sa.type === "Bloc" ? ["Bloc"] : sa.type === "Voie" ? ["Voie"] : ["Bloc", "Voie"];
+const UN_A_NEUF = ["1", "2", "3", "4", "5", "6", "7", "8", "9"].map(g => ({ salle: g, app: "" }));
+// Sélecteur de cotation, jamais obligatoire (un 2e appui efface) : classique en deux rangées (chiffre, puis lettre), liste de la salle, ou couleurs
+function selecteurCot(o) {                     // o = { attr, champ, chiffreChamp, valeur, chiffre, act, sid, extra }
+  const sa = o.sid && salleDe(o.sid), disc = discDe(o.act), mode = sa ? modeEchelle(sa, disc) : "standard", ex = o.extra || "";
+  const bouton = g => `<button data-${o.attr}="${o.champ}" data-valeur="${esc(g)}" ${ex} class="${String(o.valeur) === String(g) ? "choisi" : ""}">${esc(g)}</button>`;
+  if (mode === "aucune") return `<p class="petit">Pas de cotation dans cette salle : la couleur, le repère ou le nom suffisent.</p>`;
+  if (mode === "couleurs") { const hex = Object.fromEntries(couleursDe(o.sid));
+    return `<div class="pastilles">${gradesSalle(o.sid, o.act).map(n => `<button data-${o.attr}="${o.champ}" data-valeur="${esc(n)}" ${ex} class="pastille ${o.valeur === n ? "choisi" : ""}"
+      style="background:${hex[n] || COULEUR_HEX(n)}" aria-label="${esc(n)}"></button>`).join("")}</div>`; }
+  if (mode === "liste") return `<div class="choix compact">${gradesSalle(o.sid, o.act).map(bouton).join("") || `<span class="petit">Liste vide : règle-la dans Salle › Réglages.</span>`}</div>`;
+  const liste = COTATIONS[disc], chiffres = [...new Set(liste.map(g => g[0]))], actif = o.chiffre || (o.valeur ? String(o.valeur)[0] : "");
+  return `<div class="selecteur-cot"><div class="choix compact cot-chiffres">${chiffres.map(c =>
+    `<button data-${o.attr}="${o.chiffreChamp}" data-valeur="${c}" ${ex} class="chiffre ${actif === c ? "actif" : ""}">${c}</button>`).join("")}</div>
+    ${actif ? `<div class="choix compact cot-lettres">${liste.filter(g => g[0] === actif).map(bouton).join("")}</div>` : ""}</div>`;
 }
 function lireSalles() {
   let x = JSON.parse(localStorage.getItem("salles") || "null");
@@ -953,16 +973,49 @@ function lireSalles() {
   if (!x) { x = { liste: [salleParDefaut()], derniere: {} }; localStorage.setItem("salles", JSON.stringify(x)); }
   return x;
 }
+// Version 6.4 : voie « 4 » → 4a, bloc 6 → 6A, 7 → 7A ; chaque salle reçoit sa façon de coter
+const ANCIENNES = { Voie: { "4": "4a" }, Bloc: { "6": "6A", "7": "7A" } };
+const convCot = (disc, c) => (ANCIENNES[disc] || {})[String(c ?? "")] || c;
+function migrer64() {
+  if (localStorage.getItem("migration-64")) return;
+  Object.keys(localStorage).filter(k => /^(seance-|libre-)/.test(k)).forEach(k => {
+    let d; try { d = JSON.parse(localStorage.getItem(k)); } catch (e) { return; }
+    if (!d || !(d.voies || []).length) return;
+    const actCle = k.split("-").pop();
+    d.voies.forEach(v => { const disc = discDe(v.act || actCle), avant = v.cot; v.cot = convCot(disc, v.cot); if (v.cotSalle === avant && v.cotSalle !== undefined) v.cotSalle = v.cot; });
+    localStorage.setItem(k, JSON.stringify(d));
+  });
+  const x = JSON.parse(localStorage.getItem("salles") || "null");
+  if (x) { x.liste.forEach(sa => { sa.modes = sa.modes || {};
+    ["Bloc", "Voie"].forEach(disc => { const e = sa.echelles[disc] || [];
+      const standard = !e.length || e.every(z => z.salle === z.app);
+      if (standard) { sa.modes[disc] = "standard"; sa.echelles[disc] = []; sa.voies.forEach(v => { if (v.discipline === disc) v.cot = convCot(disc, v.cot); }); }
+      else { sa.modes[disc] = "liste"; e.forEach(z => z.app = convCot(disc, z.app)); } }); });
+    localStorage.setItem("salles", JSON.stringify(x)); }
+  localStorage.setItem("migration-64", "1");
+}
 const ecrireSalles = x => { localStorage.setItem("salles", JSON.stringify(x)); cacheFeux = null; };
 const salleDe = id => lireSalles().liste.find(x => x.id === id) || null;
 const salleParDefautPour = act => { const x = lireSalles(); return x.derniere[discDe(act)] || x.derniere.tout || (x.liste[0] || {}).id; };
-const gradesSalle = (sid, act) => { const sa = salleDe(sid); return sa && sa.echelles[discDe(act)] && sa.echelles[discDe(act)].length ? sa.echelles[discDe(act)].map(x => x.salle) : COTATIONS[act]; };
-const versApp = (sid, act, g) => { const sa = salleDe(sid), e = sa && (sa.echelles[discDe(act)] || []).find(x => x.salle === String(g)); return e ? e.app : String(g); };
-const versSalle = (sid, act, g) => { const sa = salleDe(sid), e = sa && (sa.echelles[discDe(act)] || []).find(x => x.app === String(g)); return e ? e.salle : String(g); };
+// Cotations d'une salle (ses valeurs à elle) ; l'équivalent dans l'app peut rester inconnu ("")
+function gradesSalle(sid, act) {
+  const sa = salleDe(sid), disc = discDe(act), mode = modeEchelle(sa, disc), e = sa ? sa.echelles[disc] || [] : [];
+  if (!sa || mode === "standard") return COTATIONS[act] || COTATIONS[disc];
+  if (mode === "aucune") return [];
+  if (mode === "couleurs") return e.length ? e.map(x => x.salle) : couleursDe(sid).map(x => x[0]);
+  return e.map(x => x.salle);
+}
+const versApp = (sid, act, g) => { const sa = salleDe(sid); g = String(g ?? "");
+  if (!sa || modeEchelle(sa, discDe(act)) === "standard") return g;
+  const e = (sa.echelles[discDe(act)] || []).find(x => x.salle === g); return e ? e.app || "" : ""; };
+const versSalle = (sid, act, g) => { const sa = salleDe(sid); g = String(g ?? "");
+  if (!sa || modeEchelle(sa, discDe(act)) === "standard") return g;
+  const e = g && (sa.echelles[discDe(act)] || []).find(x => x.app === g); return e ? e.salle : ""; };
 const nomSecteur = (sa, id) => ((sa && sa.secteurs.find(x => x.id === id)) || {}).nom || "";
 const secteursDe = (sa, disc) => sa ? sa.secteurs.filter(z => !disc || z.type === disc) : [];
 // Identité lisible d'une voie : « Jaune 5 « Le toit » · Grotte · n° 7 »
-const identite = (v, sa) => [`${v.couleur ? v.couleur + " " : ""}${v.cot}${v.nom ? ` « ${v.nom} »` : ""}`, nomSecteur(sa, v.secteur), v.repere ? `n° ${v.repere}` : ""].filter(Boolean).join(" · ");
+const identite = (v, sa) => [[v.couleur, v.cot && v.cot !== v.couleur ? v.cot : "", v.nom ? `« ${v.nom} »` : ""].filter(Boolean).join(" ") || "Sans cotation",
+  nomSecteur(sa, v.secteur), v.repere ? `n° ${v.repere}` : ""].filter(Boolean).join(" · ");
 // Historique d'une voie de l'inventaire (toutes séances)
 const essaisVoie = id => toutesVoies().filter(v => v.voieId === id);
 // Projets en cours : voies en place essayées, jamais réussies
@@ -973,11 +1026,12 @@ function projetsEnCours(sid, disc) {
 }
 // Résultat → tentative : cotation de l'app + cotation de la salle, salle, voie ; l'inventaire se complète tout seul
 function finaliserTentative(etat, act) {
-  const sid = etat.salle, grade = String(etat.cot);
-  const v = { cot: sid ? versApp(sid, act, grade) : grade, profil: etat.profil, res: etat.res, act, ligne: etat.ligne, style: etat.style || "À vue" };
+  const sid = etat.salle, grade = String(etat.cot ?? "");
+  const v = { cot: sid ? versApp(sid, act, grade) : grade, profil: etat.profil || "Vertical", res: etat.res, act, ligne: etat.ligne, style: etat.style || "À vue" };
   if (sid) { v.salle = sid; v.cotSalle = grade; }
   if (etat.res === "Avec sec") v.sec = etat.sec;
-  if (etat.couleur) v.couleur = etat.couleur;
+  const parCouleur = sid && grade && modeEchelle(salleDe(sid), discDe(act)) === "couleurs";
+  if (etat.couleur || parCouleur) v.couleur = etat.couleur || grade;
   if ((etat.nom || "").trim()) v.nom = etat.nom.trim();
   if (etat.cause && !reussi(v)) v.cause = etat.cause;
   if (sid && (etat.voieId || etat.nouvelle || v.couleur || v.nom)) {
@@ -1020,7 +1074,7 @@ function choisirVoie(f, id, act) {
   const sa = salleDe(f.salle), v = sa && sa.voies.find(x => x.id === id); if (!v) return;
   if (f.voieId === id) { f.voieId = ""; return; }
   Object.assign(f, { voieId: id, nouvelle: false, cot: v.cot, couleur: v.couleur, nom: v.nom,
-    profil: v.profil || ((sa.secteurs.find(x => x.id === v.secteur) || {}).profil) || f.profil,
+    profil: v.profil || f.profil,
     style: essaisVoie(id).length ? "Après travail" : "À vue" });
 }
 // Rappel des projets en cours sur les lignes de projet
@@ -1095,12 +1149,7 @@ $("ecran").addEventListener("click", e => {
     return compter(i, compte(lire(s), i) + 1);
   }
   if (b && t.editer !== undefined) return ouvrirResultat(null, Number(t.editer));
-  if (b && t.exo !== undefined) {                          // explication : 1 appui ouvre, 2e ferme
-    const k = `e${t.ligne}-${t.exo}`, etaitOuvert = ouverts.has(k);
-    [...ouverts].filter(o => o.startsWith(`e${t.ligne}-`)).forEach(o => ouverts.delete(o));
-    if (!etaitOuvert) { ouverts.add(k); ouverts.add("e" + t.ligne); }   // le nom ouvre son explication et déplie l'étape
-    return afficher(false);
-  }
+  if (b && t.exo !== undefined) return ouvrirModal({ type: "ficheExo", k: Number(t.exo) });   // ⓘ : la fiche dans une fenêtre du bas
   if (b && t.plier) { basculer(t.plier); return afficher(false); }
   if (b && t.detail !== undefined) { basculer("d" + t.detail); return afficher(false); }
   if (b && t.routine !== undefined) return cocherRoutine(Number(t.routine));
@@ -1226,6 +1275,7 @@ function actionFormVoie(t) {
   else if (t.form === "filtreCouleur") formVoie.filtreCouleur = formVoie.filtreCouleur === t.valeur ? "" : t.valeur;
   else if (t.form === "nouvelle") { formVoie.nouvelle = !formVoie.nouvelle; formVoie.voieId = ""; }
   else if (t.form === "couleur") formVoie.couleur = formVoie.couleur === t.valeur ? "" : t.valeur;
+  else if (["cot", "chiffreCot"].includes(t.form)) { formVoie[t.form] = formVoie[t.form] === t.valeur ? "" : t.valeur; if (t.form === "cot") formVoie.chiffreCot = ""; }
   else formVoie[t.form] = t.valeur;
   afficher(false);
 }
@@ -1330,7 +1380,7 @@ function afficherModal() {
   if (M.type === "resultat") h = `<h2>${M.edit !== undefined ? "Corriger ce résultat" : "Résultat de ce passage"}</h2>` + formulaireResultat(M, M.act, "m") +
       `<p class="petit">Touche le résultat pour l'enregistrer directement.</p>
        <div class="actions"><button data-m="fermer">Passer</button>
-       ${M.res === "Avec sec" || !M.cot ? `<button data-m="ok" class="principal" ${M.cot && M.res ? "" : "disabled"}>Enregistrer</button>` : ""}</div>`;
+       ${M.res === "Avec sec" || !M.res ? `<button data-m="ok" class="principal" ${M.res ? "" : "disabled"}>Enregistrer</button>` : ""}</div>`;
   if (M.type === "douleur") h = `<h2>Signaler une douleur</h2><p class="petit">Séance : ${esc(courant().jour)} ${esc(courant().activite)}</p>
       <label class="champ">Zone</label>${choix("zone", zones)}
       <label class="champ">Niveau</label>${echelle("niv", 1)}
@@ -1379,6 +1429,15 @@ function afficherModal() {
   if (M.type === "copier") h = htmlCopier();
   if (M.type === "secteur2") h = htmlSecteurSheet();
   if (M.type === "voie2") h = htmlVoieSheet();
+  if (M.type === "ficheExo") { const x = EXERCICES[M.k];
+    h = `<h2>${esc(x.nom)}</h2><p class="petit">${esc([x.discipline, x.categorie, x.niveau].filter(Boolean).join(" · "))}</p>${corpsFiche(x, true)}
+      <div class="actions"><button data-m="fav-exo" data-valeur="${esc(x.nom)}">${estFavori(x.nom) ? "★ Favori" : "☆ Favori"}</button><button data-m="fermer" class="principal">Fermer</button></div>`; }
+  if (M.type === "classer") { const sa = salleDe(M.sid);
+    h = `<h2>Mettre ${M.ids.length} ${M.disc === "Voie" ? "voie" : "bloc"}${M.ids.length > 1 ? "s" : ""} dans…</h2>
+      <div class="menu-liste">${secteursDe(sa, M.disc).map(z => `<button class="ligne-menu" data-m="cl-sec" data-valeur="${z.id}"><span class="titre-menu">${esc(z.nom)}</span></button>`).join("")
+        || `<p class="petit">Aucun secteur de ${M.disc === "Voie" ? "voies" : "blocs"} pour l'instant.</p>`}</div>
+      <label class="champ">Nouveau secteur</label><div class="ajout-secteur"><input type="text" id="cl-nom" placeholder="ex. Grotte"><button class="principal" data-m="cl-nouveau">Créer et y mettre</button></div>
+      <div class="actions"><button data-m="fermer">Annuler</button></div>`; }
   if (M.type === "restauration") {
     const n = Object.keys(M.donnees).filter(k => /^seance-/.test(k)).length;
     h = M.autre ? `<h2>Sauvegarde d'un autre programme</h2>
@@ -1435,9 +1494,9 @@ function afficherModal() {
   if (M.type === "circuit") {
     const res = estVoie(M.act) ? ["Enchaînée", "Pas finie"] : ["Réussi", "Raté"];
     h = `<h2>Série ${M.serie} sur ${M.n} · ${M.items.length} ${estVoie(M.act) ? "voies" : "blocs"}</h2>
-      <label class="champ">Profil</label>${choix("profil", PROFILS)}
+      <label class="champ">Profil</label>${choixProfil("m", "profil", M.profil)}
       ${M.items.map((it, j) => `<div class="circuit-ligne"><b>${estVoie(M.act) ? "Voie" : "Bloc"} ${j + 1}</b>
-        <div class="choix compact">${(M.salle ? gradesSalle(M.salle, M.act) : COTATIONS[M.act]).map(c => `<button data-m="ccot" data-j="${j}" data-valeur="${c}" class="${String(it.cot) === c ? "choisi" : ""}">${c}</button>`).join("")}</div>
+        ${selecteurCot({ attr: "m", champ: "ccot", chiffreChamp: "cchiffre", valeur: it.cot, chiffre: it.chiffre, act: M.act, sid: M.salle, extra: `data-j="${j}"` })}
         <div class="choix compact">${res.map((r, n) => `<button data-m="cok" data-j="${j}" data-valeur="${n === 0}" class="${n === 0 ? "res-ok" : "res-non"} ${it.ok === (n === 0) ? "choisi" : ""}">${n === 0 ? "✓ " : "✗ "}${r}</button>`).join("")}</div></div>`).join("")}
       <div class="actions"><button data-m="fermer">Passer</button><button data-m="tout">Tout réussi</button><button data-m="ok" class="principal">Enregistrer</button></div>`;
   }
@@ -1485,6 +1544,8 @@ $("modal").addEventListener("click", e => {
     if (t.m === "br-g") { const x = M.grille[t.g] = M.grille[t.g] || { ok: 0, ko: 0 }; x[t.k] = Math.max(0, x[t.k] + Number(t.pas)); return afficherModal(); }
     if (t.m === "br-voie") { const r = M.voiesSalle[t.valeur]; M.voiesSalle[t.valeur] = !r ? "ok" : r === "ok" ? "ko" : ""; return afficherModal(); }
     if (t.m === "br-details") { M.details = !M.details; return afficherModal(); }
+    if (t.m === "br-chiffre") { M.brChiffre = M.brChiffre === t.valeur ? "" : t.valeur; return afficherModal(); }
+    if (t.m === "br-addcot") { M.lignesCot = [...(M.lignesCot || []), t.valeur]; M.brChiffre = ""; return afficherModal(); }
     if (t.m === "br-cot") { M.ouvrirCot = M.ouvrirCot === t.g ? null : t.g; return afficherModal(); }
     if (t.m === "br-ok") return enregistrerBilanRapide();
   }
@@ -1500,29 +1561,44 @@ $("modal").addEventListener("click", e => {
       annulableSalles("Secteur supprimé", () => majSalle(sid, sa => { sa.secteurs = sa.secteurs.filter(z => z.id !== secId); sa.voies.forEach(v => { if (v.secteur === secId) v.secteur = ""; }); }));
       return afficher(false); }
     majSalle(sid, sa => { const z = sa.secteurs.find(y => y.id === secId);
-      if (t.m === "secProf") z.profil = t.valeur;
       if (t.m === "secType") { z.type = t.valeur; sa.voies.forEach(v => { if (v.secteur === z.id) v.discipline = t.valeur; }); } });
     afficher(false); return afficherModal();
   }
   if (type === "voie2" && t.m && t.m !== "fermer") {
     const sid = M.sid, id = M.voieId;
+    if (t.m === "vChiffre") { M.vChiffre = M.vChiffre === t.valeur ? "" : t.valeur; return afficherModal(); }
+    if (t.m === "anOuvrir") { M.ancien = { res: "ok", essais: 1, style: "À vue", date: isoDate(new Date()) }; return afficherModal(); }
+    if (t.m === "anAnnuler") { M.ancien = null; return afficherModal(); }
+    if (t.m === "anRes") { M.ancien.res = t.valeur; return afficherModal(); }
+    if (t.m === "anStyle") { M.ancien.style = t.valeur; return afficherModal(); }
+    if (t.m === "anEssais") { M.ancien.essais = Math.max(1, Math.min(50, M.ancien.essais + Number(t.pas))); return afficherModal(); }
+    if (t.m === "anOk") { enregistrerPassageAncien(); afficher(false); return afficherModal(); }
     if (t.m === "vSuppr") { fermerModal(); annulableSalles("Voie supprimée", () => majSalle(sid, sa => sa.voies = sa.voies.filter(v => v.id !== id))); return afficher(false); }
     majSalle(sid, sa => { const v = sa.voies.find(x => x.id === id);
       if (t.m === "vEtoile") v.etoile = etoileAujourdhui(v) ? "" : isoDate(new Date());
       if (t.m === "vCouleur") v.couleur = v.couleur === t.valeur ? "" : t.valeur;
       if (t.m === "vStatut") { v.statut = t.valeur; v.demontage = t.valeur === "Démontée" ? isoDate(new Date()) : ""; }
-      if (t.m === "vSecteur") { v.secteur = t.valeur; v.ordre = prochainOrdre(sa, t.valeur); const x = sa.secteurs.find(z => z.id === t.valeur); if (x) v.profil = x.profil; }
-      if (t.m === "vCot") v.cot = t.valeur;
+      if (t.m === "vSecteur") { v.secteur = t.valeur; v.ordre = prochainOrdre(sa, t.valeur); }
+      if (t.m === "vCot") { v.cot = v.cot === t.valeur ? "" : t.valeur; M.vChiffre = ""; if (modeEchelle(sa, v.discipline) === "couleurs") v.couleur = v.cot; }
       if (t.m === "vProfil") v.profil = t.valeur; });
     afficher(false); return afficherModal();
   }
-  if ((type === "voie2" || type === "secteur2") && t.m === "fermer") { fermerModal(); return afficher(false); }
+  if ((type === "voie2" || type === "secteur2" || type === "classer") && t.m === "fermer") { fermerModal(); return afficher(false); }
+  if (type === "classer" && (t.m === "cl-sec" || t.m === "cl-nouveau")) {
+    const etat = M, nom = ($("cl-nom") || {}).value || ""; if (t.m === "cl-nouveau" && !nom.trim()) return;
+    fermerModal();
+    annulableSalles("Voies classées", () => majSalle(etat.sid, sa => { let sec = t.valeur;
+      if (t.m === "cl-nouveau") { sec = "t" + Date.now(); sa.secteurs.push({ id: sec, nom: nom.trim(), type: etat.disc, maj: Date.now() }); }
+      etat.ids.forEach(id => { const v = sa.voies.find(x => x.id === id); if (v) { v.secteur = sec; v.ordre = prochainOrdre(sa, sec); } }); }));
+    SA.classer = ""; SA.selection = []; return afficher(false);
+  }
   if (type === "restauration" && (t.m === "rs-tout" || t.m === "rs-reglages")) { const x = M.donnees; fermerModal(); return appliquerRestauration(x, t.m === "rs-tout"); }
   if (type === "copier") {
     if (t.m === "cp-sem") { M.semaine = Math.max(1, M.semaine + Number(t.pas)); return afficherModal(); }
     if (t.m === "cp-jour") { M.jour = t.valeur; return afficherModal(); }
     if (t.m === "cp-ok") return copierSeance(t.valeur);
   }
+  if (type === "ficheExo" && t.m === "fav-exo") { const f = lireFavoris(), nom = t.valeur; localStorage.setItem("favoris", JSON.stringify(f.includes(nom) ? f.filter(n => n !== nom) : [...f, nom])); return afficherModal(); }
   if (type === "choixJour" && t.m === "cj-ouvrir") { const k = Number(t.valeur); fermerModal(); semaineVue = LISTE[k].semaine; progY = window.scrollY; changer(k); origine = "programme"; return afficher(); }
   if (type === "outilsSemaine") {
     if (t.m === "os-dest") { M.dest = Math.max(1, M.dest + Number(t.pas)); return afficherModal(); }
@@ -1554,10 +1630,10 @@ $("modal").addEventListener("click", e => {
   if (type === "ajoutRapide") {
     if (t.m === "couleurRapide") { M.couleur = M.couleur === t.valeur ? "" : t.valeur; return afficherModal(); }
     if (t.m === "profilRapide") { M.profil = t.valeur; return afficherModal(); }
-    if (t.m === "secteur") { const z = salleDe(M.sid).secteurs.find(y => y.id === t.valeur); M.secteur = t.valeur; if (z) { M.profil = z.profil; if (z.type !== M.disc) { M.disc = z.type; M.cot = ""; } } return afficherModal(); }
-    if (t.m === "disc") { M.disc = t.valeur; M.cot = ""; return afficherModal(); }
-    if (t.m === "ajouter-suite") { ajouterVoieRapide(); return afficherModal(); }
-    if (t.m === "ajouter-fermer") { ajouterVoieRapide(); fermerModal(); return afficher(false); }
+    if (t.m === "secteur") { M.secteur = t.valeur; M.profil = ""; return afficherModal(); }
+    if (t.m === "disc") { if (M.disc !== t.valeur) { M.disc = t.valeur; M.cot = ""; M.chiffreCot = ""; M.secteur = ""; } return afficherModal(); }
+    if (t.m === "nb") { M.nb = Math.max(1, Math.min(30, M.nb + Number(t.pas))); return afficherModal(); }
+    if (t.m === "ajouter-suite") { ajouterVoieRapide(); afficher(false); return afficherModal(); }
     if (t.m === "fermer") { fermerModal(); return afficher(false); }
   }
 
@@ -1567,7 +1643,7 @@ $("modal").addEventListener("click", e => {
     if (t.m === "as-perso") { const n = ($("as-perso").value || "").trim(); if (n && !M.secteurs.includes(n)) M.secteurs.push(n); return afficherModal(); }
     if (t.m === "as-suivant") { if (M.etape === 1) M.nom = ($("as-nom").value || "").trim(); M.etape++; return afficherModal(); }
     if (t.m === "as-retour") { M.etape--; return afficherModal(); }
-    if (t.m === "as-modele") { M.modele = t.valeur; return afficherModal(); }
+    if (t.m === "as-mode") { M.modes[t.disc] = t.valeur; return afficherModal(); }
     if (t.m === "as-fin") return finirAssistant();
   }
 
@@ -1597,8 +1673,9 @@ $("modal").addEventListener("click", e => {
     if (confirm("Effacer les séances de l'ancien programme de l'app ? As-tu bien exporté ?")) demarrerNouveauProgramme();
     return;
   }
-  if (type === "circuit" && ["ccot", "cok", "tout"].includes(t.m)) {
-    if (t.m === "ccot") M.items[Number(t.j)].cot = t.valeur;
+  if (type === "circuit" && ["ccot", "cchiffre", "cok", "tout"].includes(t.m)) {
+    if (t.m === "ccot") { const it = M.items[Number(t.j)]; it.cot = it.cot === t.valeur ? "" : t.valeur; it.chiffre = ""; }
+    if (t.m === "cchiffre") { const it = M.items[Number(t.j)]; it.chiffre = it.chiffre === t.valeur ? "" : t.valeur; }
     if (t.m === "cok") M.items[Number(t.j)].ok = t.valeur === "true";
     if (t.m === "tout") { M.items.forEach(it => it.ok = true); return enregistrerCircuit(); }
     return afficherModal();
@@ -1656,13 +1733,14 @@ $("modal").addEventListener("click", e => {
   if (t.m === "sec") M.sec = Math.max(1, M.sec + Number(t.pas));
   else if (t.m === "voie") { choisirVoie(M, t.valeur, M.act); return afficherModal(); }
   else if (t.m === "filtreCouleur") { M.filtreCouleur = M.filtreCouleur === t.valeur ? "" : t.valeur; return afficherModal(); }
-  else if (t.m === "secteurNouvelle") { M.secteurNouvelle = t.valeur; const x = (salleDe(M.salle) || { secteurs: [] }).secteurs.find(z => z.id === t.valeur); if (x) M.profil = x.profil; return afficherModal(); }
+  else if (t.m === "secteurNouvelle") { M.secteurNouvelle = t.valeur; const sa = salleDe(M.salle); if (sa) M.profil = profilHabituel(sa, t.valeur); return afficherModal(); }
   else if (t.m === "nouvelle") { M.nouvelle = !M.nouvelle; M.voieId = ""; if (M.nouvelle) { M.couleur = ""; M.nom = ""; M.style = "À vue"; } return afficherModal(); }
   else if (t.m === "couleur") { M.couleur = M.couleur === t.valeur ? "" : t.valeur; if (type === "resultat" && M.edit === undefined) M.style = stylePropose(M.act, M.cot, M.couleur, M.nom); }
+  else if (["cot", "chiffreCot"].includes(t.m)) { M[t.m] = String(M[t.m]) === t.valeur ? "" : t.valeur; if (t.m === "cot") M.chiffreCot = ""; }
   else if (t.m) M[t.m] = ["effort", "douleur", "niv", "corps", "energie", "motivation", "dAvant", "nAvant"].includes(t.m) ? Number(t.valeur) : t.valeur;   // les cotations restent du texte
   // Résultat en deux appuis : une réussite s'enregistre directement ; un échec demande la cause (un appui de plus)
-  if (type === "resultat" && t.m === "res" && reussi(M) && M.cot) return enregistrerResultat();
-  if (type === "resultat" && t.m === "cause" && M.res !== "Avec sec" && M.cot) return enregistrerResultat();
+  if (type === "resultat" && t.m === "res" && reussi(M)) return enregistrerResultat();
+  if (type === "resultat" && t.m === "cause" && M.res !== "Avec sec") return enregistrerResultat();
   afficherModal();
 });
 $("modal").addEventListener("input", e => {             // champs texte des fenêtres (sans réafficher)
@@ -1676,6 +1754,8 @@ $("modal").addEventListener("input", e => {             // champs texte des fen�
   if (e.target.id === "br-hfin") M.hfin = e.target.value;
   if (e.target.id === "br-notes") M.notes = e.target.value;
   if (e.target.id === "as-nom") M.nom = e.target.value;
+  if (e.target.id === "an-date" && M.ancien) M.ancien.date = e.target.value;
+  if (e.target.id === "ar-repere") M.repere = e.target.value;
   if (e.target.id === "sec-nom" && e.target.value.trim()) { const v = e.target.value.trim(); majSalle(M.sid, sa => sa.secteurs.find(z => z.id === M.secId).nom = v); }
   if (e.target.id === "m-hfin") M.hfin = e.target.value;
   if (e.target.dataset && e.target.dataset.tempsEtape) { M.temps[e.target.dataset.tempsEtape] = e.target.value === "" ? "" : Number(e.target.value); }
@@ -2136,7 +2216,7 @@ const basculeVue = actif => `<div class="segment vue-toggle">${[["programme", "P
 function afficherProgres() {
   $("titre-date").textContent = "Mes progrès";
   const dateDe = cleS => { const x = LISTE.find(y => cle(y) === cleS); return x ? dateSeance(x).getTime() : 0; };
-  const V = toutesVoies().map(v => ({ ...v, disc: discDe(v.act || "Voie"), date: dateDe(v.seance) }));
+  const V = toutesVoies().map(v => ({ ...v, disc: discDe(v.act || "Voie"), date: v.date ? new Date(v.date + "T12:00:00").getTime() : dateDe(v.seance) }));
   const consolide = (disc, dev) => { let niv = "—";
     (COTATIONS[disc] || []).forEach(c => { const l = V.filter(v => v.disc === disc && v.cot === c && enDevers(v.profil) === dev);
       if (l.length >= PA("consolide_essais", 5) && l.filter(reussi).length / l.length >= PA("consolide_taux", 0.7)) niv = c; });
@@ -2281,15 +2361,24 @@ function ouvrirBilanRapide() {
   const grille = {}, voiesSalle = {};
   (d.voies || []).filter(v => v.approx).forEach(v => {
     if (v.voieId) voiesSalle[v.voieId] = reussi(v) ? "ok" : "ko";
-    else { const g = v.cotSalle || v.cot, x = grille[g] = grille[g] || { ok: 0, ko: 0 }; reussi(v) ? x.ok++ : x.ko++; } });
+    else { const g = v.cotSalle || v.cot || "?", x = grille[g] = grille[g] || { ok: 0, ko: 0 }; reussi(v) ? x.ok++ : x.ko++; } });
   const hdeb = heure(debut), hfin = heure(fin);
   ouvrirModal({ type: "bilanRapide", etapes, grille, voiesSalle, hdeb, hfin, hdebInit: hdeb, hfinInit: hfin, salle, act,
     pauseMin: Math.round((d.pauseTotale || 0) / 60000), approxSeance: modeDe(s, d) === "leger" || !d.debut || !!d.approx,
     effort: d.effort ?? null, douleur: d.douleur ?? 0, zone: d.zone || "", notes: d.notes || "" });
 }
 function htmlBilanRapide() {
-  const s = courant(), d = lire(s), els = elementsDe(s, d), act = M.act, grades = M.salle ? gradesSalle(M.salle, act) : COTATIONS[act] || [];
-  const voie = estVoie(act), sa = M.salle && salleDe(M.salle);
+  const s = courant(), d = lire(s), els = elementsDe(s, d), act = M.act;
+  const voie = estVoie(act), sa = M.salle && salleDe(M.salle), mode = sa ? modeEchelle(sa, discDe(act)) : "standard";
+  const suggerees = els.map(e => e.type === "action" ? versSalle(M.salle, act, cotationDe(e.texte, act)) : "").filter(Boolean);
+  const rempli = g => { const x = M.grille[g]; return (x && (x.ok || x.ko)) || (sa && sa.voies.some(v => M.voiesSalle[v.id] && (v.cot || "?") === g)); };
+  // Lignes proposées : les cotations de la séance et celles notées récemment ; sinon une fenêtre autour du niveau débutant
+  const recentes = toutesVoies().filter(v => discDe(v.act || act) === discDe(act) && v.cot).slice(-10).map(v => v.cot);
+  const liste = COTATIONS[act] || [], proposees = new Set(recentes);
+  suggerees.forEach(g => { const k = liste.indexOf(g); if (k >= 0) liste.slice(Math.max(0, k - 1), k + 2).forEach(x => proposees.add(x)); });   // et ses voisines
+  if (!proposees.size) (estVoie(act) ? ["5a", "5b", "5c", "6a"] : ["3", "4", "4+", "5", "5+"]).forEach(g => proposees.add(g));
+  const grades = [...(mode === "standard" ? (COTATIONS[act] || []).filter(g => rempli(g) || proposees.has(g) || (M.lignesCot || []).includes(g)) : gradesSalle(M.salle, act)), "?"];
+  const hexCoul = Object.fromEntries(couleursDe(M.salle));
   const serie = (a, b) => Array.from({ length: b - a + 1 }, (_, n) => a + n);
   const echelle = (champ, a) => `<div class="echelle">${serie(a, 10).map(v => `<button data-m="${champ}" data-valeur="${v}" class="${String(M[champ]) === String(v) ? "choisi" : ""}"
     style="background:${v ? couleurEchelle(v) : "var(--carte)"};color:${v ? texteEchelle(v) : "var(--texte)"}">${v}</button>`).join("")}</div>`;
@@ -2310,16 +2399,17 @@ function htmlBilanRapide() {
       <p class="petit">Par cotation${sa ? " de la salle" : ""} : combien de réussis et de ratés ?</p>
       <div class="grille-cot"><div class="gc-tete"><span></span><span>✓ ${voie ? "enchaînées" : "réussis"}</span><span>✗ ${voie ? "pas finies" : "ratés"}</span></div>
       ${grades.map(g => { const x = M.grille[g] || { ok: 0, ko: 0 };
-        const vs = sa ? sa.voies.filter(v => v.statut !== "Démontée" && v.discipline === discDe(act) && v.cot === g) : [];
+        const vs = sa ? sa.voies.filter(v => v.statut !== "Démontée" && v.discipline === discDe(act) && (v.cot || "?") === g) : [];
         const tag = r => vs.filter(v => M.voiesSalle[v.id] === r).length, ouvert = M.ouvrirCot === g;
-        return `<div class="gc-ligne ${x.ok || x.ko || tag("ok") || tag("ko") ? "rempli" : ""}"><button class="gc-cot" data-m="br-cot" data-g="${esc(g)}" ${vs.length ? "" : "disabled"}>${esc(g)}${vs.length ? (ouvert ? " ▾" : " ▸") : ""}</button>
+        return `<div class="gc-ligne ${x.ok || x.ko || tag("ok") || tag("ko") ? "rempli" : ""}"><button class="gc-cot" data-m="br-cot" data-g="${esc(g)}" ${vs.length ? "" : "disabled"}>${mode === "couleurs" && g !== "?" ? `<span class="pastille-mini" style="background:${hexCoul[g] || COULEUR_HEX(g)}"></span>` : ""}${g === "?" ? "Sans cot." : esc(g)}${vs.length ? (ouvert ? " ▾" : " ▸") : ""}</button>
           <span class="compteur"><button data-m="br-g" data-g="${esc(g)}" data-k="ok" data-pas="-1">−</button><span>${x.ok + tag("ok")}</span><button data-m="br-g" data-g="${esc(g)}" data-k="ok" data-pas="1">+</button></span>
           <span class="compteur"><button data-m="br-g" data-g="${esc(g)}" data-k="ko" data-pas="-1">−</button><span>${x.ko + tag("ko")}</span><button data-m="br-g" data-g="${esc(g)}" data-k="ko" data-pas="1">+</button></span></div>
           ${ouvert ? `<div class="gc-voies"><p class="petit">Touche une voie : une fois = réussie, deux fois = ratée, trois fois = rien.</p>${secteursDe(sa, discDe(act)).map(z => {
             const l = vs.filter(v => v.secteur === z.id); if (!l.length) return "";
             return `<div class="petit"><b>${esc(z.nom)}</b></div><div class="tuiles-voies">${l.map(v => { const r = M.voiesSalle[v.id];
               return `<button class="tuile-voie ${styleTuile(v.couleur) ? "pleine" : ""} ${r === "ok" ? "br-ok" : r === "ko" ? "br-ko" : ""}" data-m="br-voie" data-valeur="${v.id}" style="${styleTuile(v.couleur)}">
-                <span class="t-cot">${esc(v.cot)}</span><span class="t-etat">${r === "ok" ? "✓ réussie" : r === "ko" ? "✗ ratée" : esc(v.repere ? "n° " + v.repere : v.nom || v.couleur || "")}</span></button>`; }).join("")}</div>`; }).join("")}</div>` : ""}`; }).join("")}</div>`;
+                <span class="t-cot">${esc(v.cot && v.cot !== v.couleur ? v.cot : "") || "&nbsp;"}</span><span class="t-etat">${r === "ok" ? "✓ réussie" : r === "ko" ? "✗ ratée" : esc(v.repere ? "n° " + v.repere : v.nom || v.couleur || "")}</span></button>`; }).join("")}</div>`; }).join("")}</div>` : ""}`; }).join("")}</div>
+      ${mode === "standard" ? `<div class="br-ajout-cot"><span class="petit">Une autre cotation :</span>${selecteurCot({ attr: "m", champ: "br-addcot", chiffreChamp: "br-chiffre", valeur: "", chiffre: M.brChiffre, act, sid: null })}</div>` : ""}`;
   }
   const ressenti = `<label class="champ">Effort (1 à 10)</label>${echelle("effort", 1)}
     <label class="champ">Douleur après la séance (0 à 10)</label>${echelle("douleur", 0)}
@@ -2354,7 +2444,7 @@ function enregistrerBilanRapide() {
     d.voies = (d.voies || []).filter(v => !v.approx);           // l'ancien relevé rapide est remplacé par le nouveau
     const voie = estVoie(act), res = ok => ok ? (voie ? "Enchaînée" : "Réussi") : (voie ? "Pas finie" : "Pas réussi");
     Object.entries(etat.grille).forEach(([g, x]) => {
-      for (let n = 0; n < x.ok + x.ko; n++) d.voies.push({ ...finaliserTentative({ cot: g, profil: "Vertical", res: res(n < x.ok), salle: etat.salle, style: "" }, act), approx: true });
+      for (let n = 0; n < x.ok + x.ko; n++) d.voies.push({ ...finaliserTentative({ cot: g === "?" ? "" : g, profil: "Vertical", res: res(n < x.ok), salle: etat.salle, style: "" }, act), approx: true });
     });
     const sa = etat.salle && salleDe(etat.salle);
     Object.entries(etat.voiesSalle).forEach(([id, r]) => { const v = sa && sa.voies.find(z => z.id === id); if (!v || !r) return;
@@ -2626,8 +2716,8 @@ $("ecran").addEventListener("click", e => {
 });
 
 // ---------- Salles (Plus → 🏢 Salles) ----------
-let SA = { id: null, onglet: "mur", filtre: "place", ranger: false, sel: null };
-function ouvrirSalles(id) { vue = id ? "salle" : "salles"; SA = { id: id || null, onglet: "mur", filtre: "place", ranger: false, sel: null }; afficher(); }
+let SA = { id: null, onglet: "mur", filtre: "place", ranger: "", classer: "", selection: [] };
+function ouvrirSalles(id) { vue = id ? "salle" : "salles"; SA = { id: id || null, onglet: "mur", filtre: "place", ranger: "", classer: "", selection: [] }; afficher(); }
 const majSalle = (id, f) => { const x = lireSalles(), sa = x.liste.find(y => y.id === id); f(sa, x); ecrireSalles(x); };
 const COULEUR_HEX = n => { const c = COULEURS.find(x => x[0] === n); if (c) return c[1];
   for (const sa of lireSalles().liste) { const x = (sa.couleurs || []).find(y => y.nom === n); if (x) return x.hex; } return "transparent"; };
@@ -2635,19 +2725,43 @@ const etoileAujourdhui = v => v.etoile === isoDate(new Date());
 // Ordre des voies dans un secteur : celui choisi en mode « Ranger », sinon par cotation
 const ordreVoies = l => [...l].sort((a, b) => (a.ordre ?? 1e9) - (b.ordre ?? 1e9) || String(a.cot).localeCompare(String(b.cot), "fr", { numeric: true }));
 const prochainOrdre = (sa, sec) => Math.max(-1, ...sa.voies.filter(v => (v.secteur || "") === (sec || "") && v.ordre !== undefined).map(v => v.ordre)) + 1;
-// Placer une voie avant une autre (ou en dernier dans un secteur)
-function deplacerVoie(id, cibleId, secFin) {
-  let ok = true;
-  majSalle(SA.id, sa => {
-    const v = sa.voies.find(x => x.id === id), cible = cibleId && sa.voies.find(x => x.id === cibleId);
-    const sec = cible ? cible.secteur || "" : secFin || "", z = sa.secteurs.find(y => y.id === sec);
-    if (!v || (z && z.type !== v.discipline)) { ok = false; return; }
-    const liste = ordreVoies(sa.voies.filter(x => (x.secteur || "") === sec && x.id !== id));
-    liste.splice(cible ? liste.findIndex(x => x.id === cibleId) : liste.length, 0, v);
-    v.secteur = sec; liste.forEach((x, k) => x.ordre = k);
+// Ranger : on glisse une tuile (doigt ou souris) à sa place dans le secteur ; l'ordre est enregistré au lâcher
+let glisse = null;
+document.addEventListener("pointerdown", e => {
+  const tuile = e.target.closest(".tuiles-voies.rangement .tuile-voie[data-voie-salle]"); if (!tuile) return;
+  e.preventDefault();
+  glisse = { tuile, boite: tuile.parentElement, x0: e.clientX, y0: e.clientY, bouge: false, id: e.pointerId };
+  try { tuile.setPointerCapture(e.pointerId); } catch (x) {}
+});
+document.addEventListener("pointermove", e => {
+  const g = glisse; if (!g || e.pointerId !== g.id) return;
+  if (!g.bouge && Math.hypot(e.clientX - g.x0, e.clientY - g.y0) < 6) return;
+  if (!g.bouge) { g.bouge = true; g.tuile.classList.add("glisse"); }
+  g.tuile.style.pointerEvents = "none"; const sous = document.elementFromPoint(e.clientX, e.clientY); g.tuile.style.pointerEvents = "";
+  const cible = sous && sous.closest(".tuile-voie");
+  if (cible && cible !== g.tuile && cible.parentElement === g.boite) {          // la tuile prend la place de celle qu'elle survole
+    const r = cible.getBoundingClientRect(), apres = e.clientY > r.bottom ? true : e.clientY < r.top ? false : e.clientX > r.left + r.width / 2;
+    const ol = g.tuile.offsetLeft, ot = g.tuile.offsetTop;
+    g.boite.insertBefore(g.tuile, apres ? cible.nextSibling : cible);
+    g.x0 += g.tuile.offsetLeft - ol; g.y0 += g.tuile.offsetTop - ot;
+  }
+  g.tuile.style.transform = `translate(${e.clientX - g.x0}px, ${e.clientY - g.y0}px)`;
+});
+function finirGlisse(e) {
+  const g = glisse; if (!g || (e && e.pointerId !== g.id)) return; glisse = null;
+  g.tuile.classList.remove("glisse"); g.tuile.style.transform = "";
+  if (!g.bouge) return;
+  const vus = [...g.boite.querySelectorAll(".tuile-voie[data-voie-salle]")].map(x => x.dataset.voieSalle), y = window.scrollY;
+  majSalle(SA.id, sa => {                                          // les voies cachées par le filtre gardent leur place
+    const groupe = g.boite.dataset.groupe, sec = groupe.startsWith("_") ? "" : groupe, disc = groupe.startsWith("_") ? groupe.slice(1) : null;
+    const toutes = ordreVoies(sa.voies.filter(v => (v.secteur || "") === sec && (!disc || v.discipline === disc)));
+    let k = 0; const ordre = toutes.map(v => { if (!vus.includes(v.id)) return v; const id = vus[k++]; return sa.voies.find(x => x.id === id); });
+    ordre.forEach((v, n) => v.ordre = n);
   });
-  return ok;
+  afficher(false); window.scrollTo(0, y);
 }
+document.addEventListener("pointerup", finirGlisse);
+document.addEventListener("pointercancel", finirGlisse);
 // Annuler une action sur les salles (bandeau « Annuler »)
 function annulableSalles(texte, action) {
   const avant = localStorage.getItem("salles"); action();
@@ -2665,17 +2779,19 @@ function afficherSalles() {
 function murSalle(sa, seul) {
   return ["Bloc", "Voie"].filter(x => !seul || x === seul).map(disc => {
     const enPlace = sa.voies.filter(v => v.discipline === disc && v.statut !== "Démontée"); if (!enPlace.length) return "";
-    const grades = (sa.echelles[disc] || []).map(x => x.salle).filter(g => enPlace.some(v => v.cot === g));
+    const grades = [...gradesSalle(sa.id, disc).filter(g => enPlace.some(v => v.cot === g)), ...enPlace.some(v => !v.cot) ? [""] : []];
     return `<div class="mur"><div class="mur-titre">${disc === "Bloc" ? "Blocs" : "Voies"} en place</div>${grades.map(g => {
       const l = enPlace.filter(v => v.cot === g), ok = l.filter(v => essaisVoie(v.id).some(reussi)).length;
-      return `<div class="mur-ligne"><span class="mur-cot">${esc(g)}</span><span class="mur-barre"><span style="width:${ok / l.length * 100}%"></span></span><span class="petit">${ok} / ${l.length}</span></div>`;
+      return `<div class="mur-ligne"><span class="mur-cot">${esc(g) || "?"}</span><span class="mur-barre"><span style="width:${ok / l.length * 100}%"></span></span><span class="petit">${ok} / ${l.length}</span></div>`;
     }).join("")}</div>`; }).join("");
 }
-function tuileVoie(v, sel) {
+function tuileVoie(v, sel, sa) {
   const n = essaisVoie(v.id), ok = n.some(reussi), style = styleTuile(v.couleur);
   const etat = ok ? "✓ réussi" : n.length ? `${n.length} essai${n.length > 1 ? "s" : ""}` : "à essayer";
+  const cot = v.cot ? (v.cot === v.couleur ? "" : v.cot) : sa && modeEchelle(sa, v.discipline) === "aucune" ? "" : "?";   // cotée par couleurs : la couleur suffit
   return `<button class="tuile-voie ${style ? "pleine" : ""} ${v.statut === "Démontée" ? "demontee" : ""} ${sel ? "selection" : ""}" data-voie-salle="${v.id}" style="${style}">
-    ${etoileAujourdhui(v) ? `<span class="t-etoile">★</span>` : ""}<span class="t-cot">${esc(v.cot)}</span><span class="t-etat">${etat}</span>${v.nom || v.repere ? `<span class="t-nom">${esc([v.repere ? "n° " + v.repere : "", v.nom].filter(Boolean).join(" · "))}</span>` : ""}</button>`;
+    ${etoileAujourdhui(v) ? `<span class="t-etoile">★</span>` : ""}<span class="t-cot">${esc(cot) || "&nbsp;"}</span><span class="t-etat">${etat}</span>${v.nom || v.repere ? `<span class="t-nom">${esc([v.repere ? "n° " + v.repere : "", v.nom].filter(Boolean).join(" · "))}</span>` : ""}
+    ${pictoProfil(v.profil)}</button>`;
 }
 function afficherSalle() {
   const sa = salleDe(SA.id); if (!sa) return ouvrirSalles();
@@ -2684,37 +2800,47 @@ function afficherSalle() {
   let h = `<div class="segment onglets-salle">${[["mur", "Mur"], ["reglages", "Réglages"]].map(([k, t]) =>
     `<button data-onglet-salle="${k}" class="${SA.onglet === k ? "choisi" : ""}">${t}</button>`).join("")}</div>`;
   if (SA.onglet === "mur") {
-    const types = [...new Set(sa.secteurs.map(z => z.type))], mixte = types.length > 1;
-    const disc = SA.disc && types.includes(SA.disc) ? SA.disc : types.includes("Bloc") ? "Bloc" : types[0] || "Bloc";
-    const garder = v => SA.filtre === "toutes" ? true : v.statut === "Démontée" ? false
+    const discs = [...new Set([...discsSalle(sa), ...sa.secteurs.map(z => z.type), ...sa.voies.map(v => v.discipline)])], mixte = discs.length > 1;
+    const filtre = mixte && ["Bloc", "Voie"].includes(SA.disc) ? SA.disc : mixte ? "tout" : discs[0] || "Bloc";
+    const voir = d => filtre === "tout" || filtre === d;
+    const garder = v => SA.ranger || SA.filtre === "toutes" ? true : v.statut === "Démontée" ? false
       : SA.filtre === "essayer" ? !essaisVoie(v.id).length : SA.filtre === "reussies" ? essaisVoie(v.id).some(reussi) : true;
-    const secteurs = [...sa.secteurs.map((x, k) => ({ ...x, k })).filter(x => !mixte || x.type === disc), { id: "", nom: "Sans secteur", type: disc, k: -1 }];
-    if (mixte) h += `<div class="segment">${["Bloc", "Voie"].map(t => `<button data-salle-disc="${t}" class="${disc === t ? "choisi" : ""}">${t === "Bloc" ? "Blocs" : "Voies"}</button>`).join("")}</div>`;
-    h += `<div class="barre-mur"><div class="choix compact filtres-salle">${[["place", "En place"], ["essayer", "À essayer"], ["reussies", "Réussies"], ["toutes", "Toutes"]].map(([k, t]) =>
-      `<button data-filtre-salle="${k}" class="${SA.filtre === k ? "choisi" : ""}">${t}</button>`).join("")}</div>
-      <button class="${SA.ranger ? "principal" : ""}" data-ranger="1">${SA.ranger ? "✓ Terminé" : "⇅ Ranger"}</button></div>`;
-    if (SA.ranger) h += `<p class="aide-ranger">${SA.sel ? "Touche maintenant l'endroit où la placer (la tuile ira à cette place)." : "Touche une tuile, puis l'endroit où la placer. Les ↑ ↓ rangent les secteurs."}</p>`;
-    else {
-      const projets = projetsEnCours(sa.id, mixte ? disc : null);
-      if (projets.length) h += `<div class="projets"><b>🎯 Projets en cours</b>${projets.slice(0, 3).map(p => `<button class="ligne-exo" data-voie-salle="${p.v.id}"><span><span class="pastille-mini" style="background:${COULEUR_HEX(p.v.couleur)}"></span>${esc(identite(p.v, sa))}</span><span class="badge">${p.essais.length} essai${p.essais.length > 1 ? "s" : ""}</span></button>`).join("")}</div>`;
-      const m = murSalle(sa, mixte ? disc : null);
+    // Groupes : les secteurs dans leur ordre, puis « Sans secteur » (un par type)
+    const groupes = [...sa.secteurs.map((x, k) => ({ ...x, k, cle: x.id })).filter(x => voir(x.type)),
+      ...["Bloc", "Voie"].filter(voir).map(d => ({ id: "", nom: "Sans secteur", type: d, k: -1, cle: "_" + d }))];
+    if (!SA.ranger && !SA.classer) {
+      h += `<div class="barre-mur"><div class="choix compact filtres-salle">${[["place", "En place"], ["essayer", "À essayer"], ["reussies", "Réussies"], ["toutes", "Toutes"]].map(([k, t]) =>
+        `<button data-filtre-salle="${k}" class="${SA.filtre === k ? "choisi" : ""}">${t}</button>`).join("")}</div></div>`;
+      if (mixte) h += `<div class="segment filtre-type">${[["tout", "Tout"], ["Bloc", "Blocs"], ["Voie", "Voies"]].map(([k, t]) => `<button data-salle-disc="${k}" class="${filtre === k ? "choisi" : ""}">${t}</button>`).join("")}</div>`;
+      h += `<button class="gros ${sa.voies.length ? "contour" : "go"}" data-ajout-rapide="" data-disc-ajout="${filtre === "tout" ? "" : filtre}">+ Ajouter des voies${sa.voies.length ? "" : " (encodage express)"}</button>`;
+      const projets = projetsEnCours(sa.id, filtre === "tout" ? null : filtre);
+      if (projets.length) h += `<div class="projets"><b>🎯 Projets en cours</b>${projets.slice(0, 3).map(p => `<button class="ligne-exo" data-voie-salle="${p.v.id}"><span><span class="pastille-mini" style="background:${COULEUR_HEX(p.v.couleur)}"></span>${esc(identite(p.v, sa))}</span><span class="petit">${p.essais.length} essai${p.essais.length > 1 ? "s" : ""}</span></button>`).join("")}</div>`;
+      const m = murSalle(sa, filtre === "tout" ? null : filtre);
       if (m) h += `<details class="plus-details"><summary>Le mur en un coup d'œil ▸</summary>${m}</details>`;
     }
-    h += secteurs.map(x => {
-      const toutes = ordreVoies(sa.voies.filter(v => (v.secteur || "") === x.id && (!mixte || v.discipline === disc)));
+    h += groupes.map(x => {
+      const toutes = ordreVoies(sa.voies.filter(v => (v.secteur || "") === x.id && v.discipline === x.type));
       const voies = toutes.filter(garder);
       if (!x.id && !toutes.length) return "";
-      const n = toutes.filter(v => v.statut !== "Démontée").length;
-      return `<div class="tete-secteur">${x.id ? `<button class="ts-nom" data-sec-sheet="${x.id}"><b>${esc(x.nom)}</b><span class="petit">${x.type === "Voie" ? "voies" : "blocs"} · ${esc((x.profil || "").toLowerCase())} · ${n} en place</span></button>` : `<span class="ts-nom"><b>Sans secteur</b></span>`}
-        ${SA.ranger ? (x.id ? `<span class="ed-fleches"><button data-sec-ordre="-1" data-k="${x.k}" aria-label="Monter">↑</button><button data-sec-ordre="1" data-k="${x.k}" aria-label="Descendre">↓</button></span>` : "")
-          : x.id ? `<button class="ts-btn" data-ajout-rapide="${x.id}" aria-label="Ajouter des voies">+</button><button class="ts-btn" data-sec-sheet="${x.id}" aria-label="Réglages du secteur">⚙</button>` : ""}</div>
-        <div class="tuiles-voies">${voies.map(v => tuileVoie(v, SA.sel === v.id)).join("")}${SA.ranger && SA.sel ? `<button class="tuile-voie ici" data-ranger-fin="${x.id}">→<span class="t-etat">en dernier</span></button>` : ""}</div>
-        ${!voies.length && !SA.ranger ? `<p class="petit">${toutes.length ? "Rien avec ce filtre." : "Aucune voie : touche + pour en ajouter."}</p>` : ""}`;
+      if (SA.ranger && SA.ranger !== x.cle) return "";                         // en rangement : seulement ce secteur
+      if (SA.classer && x.cle !== "_" + SA.classer) return "";
+      const n = toutes.filter(v => v.statut !== "Démontée").length, rangeant = SA.ranger === x.cle;
+      const etiquette = `${mixte ? (x.type === "Voie" ? "Voies" : "Blocs") + " · " : ""}${n} en place`;
+      const boutons = rangeant ? (x.id ? `<span class="ed-fleches"><button data-sec-ordre="-1" data-k="${x.k}" aria-label="Monter le secteur">↑</button><button data-sec-ordre="1" data-k="${x.k}" aria-label="Descendre le secteur">↓</button></span>` : "")
+        : SA.classer ? "" : `${x.id ? `<button class="ts-btn" data-ajout-rapide="${x.id}" aria-label="Ajouter des voies">+</button>` : `<button class="ts-btn ts-texte" data-classer="${x.type}">Classer</button>`}
+          ${toutes.length > 1 ? `<button class="ts-btn" data-ranger="${x.cle}" aria-label="Ranger les voies">⇅</button>` : ""}${x.id ? `<button class="ts-btn" data-sec-sheet="${x.id}" aria-label="Réglages du secteur">⚙</button>` : ""}`;
+      return `<div class="tete-secteur">${x.id ? `<button class="ts-nom" data-sec-sheet="${x.id}"><b>${esc(x.nom)}</b><span class="petit">${etiquette}</span></button>`
+          : `<div class="ts-nom sans"><b>Sans secteur</b><span class="petit">${etiquette}</span></div>`}${boutons}</div>
+        <div class="tuiles-voies ${rangeant ? "rangement" : ""}" data-groupe="${x.cle}">${voies.map(v => tuileVoie(v, SA.classer ? (SA.selection || []).includes(v.id) : false, sa)).join("")}</div>
+        ${!voies.length ? `<p class="petit">${toutes.length ? "Rien avec ce filtre." : "Aucune voie : touche + pour en ajouter."}</p>` : ""}`;
     }).join("");
-    if (!SA.ranger) h += `<h3 class="sous-cat">Nouveau secteur</h3><p class="petit">Un secteur = ce que la salle renouvelle en une fois (les zones qu'elle nomme elle-même).</p>
+    if (SA.ranger) h += `<div class="barre-bas"><span>Glisse les tuiles pour les ranger (de gauche à droite).</span><button class="principal" data-ranger="">✓ Terminé</button></div>`;
+    else if (SA.classer) { const n = (SA.selection || []).length;
+      h += `<div class="barre-bas"><span>${n ? `${n} sélectionnée${n > 1 ? "s" : ""}` : "Touche les voies à classer"}</span><button data-classer="">Annuler</button><button class="principal" data-classer-ok="1" ${n ? "" : "disabled"}>Mettre dans…</button></div>`; }
+    else h += `<h3 class="sous-cat">Nouveau secteur</h3><p class="petit">Un secteur = ce que la salle renouvelle en une fois (les zones qu'elle nomme elle-même). Facultatif : les voies peuvent rester « sans secteur ».</p>
       <div class="ajout-secteur"><input type="text" id="secteur-nom" placeholder="ex. Grotte">
-        <select id="secteur-type"><option ${disc === "Voie" ? "" : "selected"}>Bloc</option><option ${disc === "Voie" ? "selected" : ""}>Voie</option></select>
-        <select id="secteur-profil">${PROFILS.map(p => `<option>${p}</option>`).join("")}</select><button class="principal" data-secteur-ajout="1">Ajouter</button></div>`;
+        ${mixte || discsSalle(sa).length > 1 ? `<select id="secteur-type"><option ${filtre === "Voie" ? "" : "selected"}>Bloc</option><option ${filtre === "Voie" ? "selected" : ""}>Voie</option></select>` : `<input type="hidden" id="secteur-type" value="${discs[0] || "Bloc"}">`}
+        <button class="principal" data-secteur-ajout="1">Ajouter</button></div>`;
   } else {
     h += `<label class="champ">Nom</label><input type="text" id="salle-nom" value="${esc(sa.nom)}">
       <label class="champ">Type</label><div class="segment">${["Bloc", "Voie", "Bloc et voie"].map(t => `<button data-salle-type="${t}" class="${sa.type === t ? "choisi" : ""}">${t}</button>`).join("")}</div>
@@ -2722,9 +2848,19 @@ function afficherSalle() {
       <h3 class="sous-cat">Couleurs propres à la salle</h3><p class="petit">En plus des ${COULEURS.length} couleurs communes (par exemple « Saumon » ou « Bicolore jaune-noir »).</p>
       ${(sa.couleurs || []).map(c => `<div class="secteur"><span><span class="pastille-mini" style="background:${c.hex}"></span>${esc(c.nom)}</span><button data-coul-suppr="${esc(c.nom)}" aria-label="Supprimer">✕</button></div>`).join("")}
       <div class="ajout-secteur"><input type="text" id="coul-nom" placeholder="Nom de la couleur"><input type="color" id="coul-hex" value="#888888" class="choix-couleur"><button class="principal" data-coul-ajout="1">Ajouter</button></div>
-      <h3 class="sous-cat">Échelles de cotation</h3><p class="petit">Les cotations affichées dans la salle, et leur équivalent dans l'app (pour comparer les salles et calculer les feux verts).</p>
-      ${["Bloc", "Voie"].map(disc => `<p><b>${disc}</b></p><input type="text" data-echelle-liste="${disc}" value="${esc((sa.echelles[disc] || []).map(x => x.salle).join(", "))}">
-        <div class="echelle-table">${(sa.echelles[disc] || []).map((x, k) => `<label>${esc(x.salle)} → <select data-echelle="${disc}" data-k="${k}">${(COTATIONS[disc] || []).map(c => `<option ${c === x.app ? "selected" : ""}>${c}</option>`).join("")}</select></label>`).join("")}</div>`).join("")}
+      <h3 class="sous-cat">Cotations</h3><p class="petit">Comment la salle cote. Rien n'est obligatoire : une voie peut toujours être notée sans cotation.</p>
+      ${discsSalle(sa).map(disc => { const mode = modeEchelle(sa, disc), e = sa.echelles[disc] || [];
+        return `<p class="titre-disc"><b>${disc === "Voie" ? "Voies" : "Blocs"}</b></p>
+        <div class="choix compact">${MODES_ECHELLE.map(([k, t]) => `<button data-mode-echelle="${k}" data-disc="${disc}" class="${mode === k ? "choisi" : ""}">${t}</button>`).join("")}</div>
+        ${mode === "standard" ? `<p class="petit">${disc === "Voie" ? "Cotation française, de 3 à 9c+." : "Fontainebleau, de 2 à 8C+."}</p>` : ""}
+        ${mode === "liste" ? `<p class="petit">Les valeurs, de la plus facile à la plus dure, séparées par des virgules.</p><input type="text" data-echelle-liste="${disc}" value="${esc(e.map(x => x.salle).join(", "))}" placeholder="ex. 1, 2, 3, 4, 5, 6, 7, 8, 9">` : ""}
+        ${mode === "couleurs" ? `<p class="petit">Touche les couleurs de la plus facile à la plus dure (sinon toutes les couleurs sont proposées).</p>
+          <div class="pastilles">${couleursDe(sa.id).map(([n, c]) => `<button data-echelle-coul="${esc(n)}" data-disc="${disc}" class="pastille ${e.some(x => x.salle === n) ? "choisi" : ""}" style="background:${c}" aria-label="${esc(n)}"></button>`).join("")}</div>
+          ${e.length ? `<div class="ordre-couleurs">${e.map((x, k) => `<span class="puce-coul"><span class="pastille-mini" style="background:${COULEUR_HEX(x.salle)}"></span>${k + 1}. ${esc(x.salle)}</span>`).join("")}</div>` : ""}` : ""}
+        ${mode === "aucune" ? `<p class="petit">Les voies se reconnaissent à leur couleur, leur repère ou leur nom.</p>` : ""}
+        ${["liste", "couleurs"].includes(mode) && e.length ? `<details class="plus-details"><summary>Équivalences avec l'app (facultatif) ▸</summary>
+          <p class="petit">Pour comparer les salles et calculer les feux verts. « ? » : la voie compte dans les totaux, pas dans les niveaux.</p>
+          <div class="echelle-table">${e.map((x, k) => `<label>${esc(x.salle)} → <select data-echelle="${disc}" data-k="${k}"><option value="" ${x.app ? "" : "selected"}>?</option>${COTATIONS[disc].map(c => `<option ${c === x.app ? "selected" : ""}>${c}</option>`).join("")}</select></label>`).join("")}</div></details>` : ""}`; }).join("")}
       ${lireSalles().liste.length > 1 ? `<button class="gros contour danger" data-salle-suppr="1">Supprimer cette salle</button>` : ""}`;
   }
   $("ecran").innerHTML = h;
@@ -2737,87 +2873,116 @@ function htmlSecteurSheet() {
     <div class="choix"><button data-m="secAjout">+ Ajouter des voies</button><button data-m="secRenouv">⟳ Renouvelé</button></div>
     <label class="champ">Nom</label><input type="text" id="sec-nom2" value="${esc(x.nom)}">
     <label class="champ">Type</label><div class="segment">${["Bloc", "Voie"].map(t => `<button data-m="secType" data-valeur="${t}" class="${x.type === t ? "choisi" : ""}">${t}</button>`).join("")}</div>
-    <label class="champ">Profil habituel <span class="petit">(proposé pour les nouvelles voies)</span></label>
-    <div class="segment">${PROFILS.map(p => `<button data-m="secProf" data-valeur="${p}" class="${x.profil === p ? "choisi" : ""}">${p}</button>`).join("")}</div>
     <div class="actions"><button data-m="secSuppr" class="danger">Supprimer le secteur</button><button data-m="fermer" class="principal">Fermer</button></div>`;
 }
 // Fenêtre du bas : fiche d'une voie
 function htmlVoieSheet() {
   const sa = salleDe(M.sid), v = sa && sa.voies.find(z => z.id === M.voieId); if (!v) return "<p>Voie introuvable.</p>";
-  const essais = essaisVoie(v.id), disc = v.discipline;
+  const essais = essaisVoie(v.id), disc = v.discipline, parCouleur = modeEchelle(sa, disc) === "couleurs", a = M.ancien;
+  const quand = e => e.date ? `${jourMois(new Date(e.date + "T12:00:00"))} · noté après coup` : (LISTE.find(x => cle(x) === e.seance) ? jourMois(dateSeance(LISTE.find(x => cle(x) === e.seance))) : "");
   return `<h2><span class="pastille-mini" style="background:${COULEUR_HEX(v.couleur)}"></span>${esc(identite(v, sa))}</h2>
     <button class="gros ${etoileAujourdhui(v) ? "go" : "contour"}" data-m="vEtoile">${etoileAujourdhui(v) ? "★ À faire aujourd'hui" : "☆ À faire aujourd'hui"}</button>
-    <label class="champ">Secteur</label><div class="choix compact">${secteursDe(sa, disc).map(x => `<button data-m="vSecteur" data-valeur="${x.id}" class="${v.secteur === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("") || `<span class="petit">Aucun secteur de ${disc === "Voie" ? "voies" : "blocs"}.</span>`}</div>
-    <label class="champ">Cotation (échelle de la salle)</label><div class="choix compact">${(sa.echelles[disc] || []).map(x => `<button data-m="vCot" data-valeur="${esc(x.salle)}" class="${v.cot === x.salle ? "choisi" : ""}">${esc(x.salle)}</button>`).join("")}</div>
-    <label class="champ">Couleur</label><div class="pastilles">${couleursDe(sa.id).map(([n, c]) => `<button data-m="vCouleur" data-valeur="${esc(n)}" class="pastille ${v.couleur === n ? "choisi" : ""}" style="background:${c}" aria-label="${esc(n)}"></button>`).join("")}</div>
-    <label class="champ">Profil</label><div class="segment">${PROFILS.map(p => `<button data-m="vProfil" data-valeur="${p}" class="${v.profil === p ? "choisi" : ""}">${p}</button>`).join("")}</div>
+    <h3 class="sous-cat">Ton historique</h3>
+    ${essais.map(e => `<div class="voie"><span>${esc(e.res)}${e.sec ? ` (${e.sec} sec)` : ""} · ${esc(e.style || "")}</span><span class="petit">${esc(quand(e))}</span></div>`).join("") || `<p class="petit">Pas encore essayée.</p>`}
+    ${a ? `<div class="carte ancien"><b>Passage noté après coup</b>
+      <div class="segment">${[["ok", disc === "Voie" ? "✓ Enchaînée" : "✓ Réussi"], ["ko", "Pas encore"]].map(([k, t]) => `<button data-m="anRes" data-valeur="${k}" class="${a.res === k ? "choisi" : ""}">${t}</button>`).join("")}</div>
+      <label class="champ">${a.res === "ok" ? "Essais en tout, réussite comprise" : "Essais"}</label>
+      <div class="compteur"><button data-m="anEssais" data-pas="-1">−</button><span>${a.essais}</span><button data-m="anEssais" data-pas="1">+</button></div>
+      ${a.res === "ok" && a.essais === 1 ? `<label class="champ">Style</label><div class="segment">${["À vue", "Flash"].map(s => `<button data-m="anStyle" data-valeur="${s}" class="${a.style === s ? "choisi" : ""}">${s}</button>`).join("")}</div>` : ""}
+      <label class="champ">Quand <span class="petit">(à peu près)</span></label><input type="date" id="an-date" value="${a.date}" max="${isoDate(new Date())}">
+      <div class="actions"><button data-m="anAnnuler">Annuler</button><button data-m="anOk" class="principal">Enregistrer</button></div></div>`
+      : `<button class="lien" data-m="anOuvrir">+ Noter un passage fait sans l'app</button>`}
+    <h3 class="sous-cat">La voie</h3>
+    <label class="champ">Secteur</label><div class="choix compact"><button data-m="vSecteur" data-valeur="" class="${v.secteur ? "" : "choisi"}">Sans secteur</button>${secteursDe(sa, disc).map(x => `<button data-m="vSecteur" data-valeur="${x.id}" class="${v.secteur === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")}</div>
+    <label class="champ">${parCouleur ? "Couleur (= le niveau)" : "Cotation"} <span class="petit">(facultatif)</span></label>${selecteurCot({ attr: "m", champ: "vCot", chiffreChamp: "vChiffre", valeur: v.cot, chiffre: M.vChiffre, act: disc, sid: sa.id })}
+    ${parCouleur ? "" : `<label class="champ">Couleur</label><div class="pastilles">${couleursDe(sa.id).map(([n, c]) => `<button data-m="vCouleur" data-valeur="${esc(n)}" class="pastille ${v.couleur === n ? "choisi" : ""}" style="background:${c}" aria-label="${esc(n)}"></button>`).join("")}</div>`}
+    <label class="champ">Profil</label>${choixProfil("m", "vProfil", v.profil)}
     <label class="champ">Repère <span class="petit">(n° de couloir ou de ligne)</span></label><input type="text" id="vs-repere" inputmode="numeric" value="${esc(v.repere || "")}">
     <label class="champ">Nom</label><input type="text" id="vs-nom" value="${esc(v.nom || "")}">
     <label class="champ">Notes (méthode, prises…)</label><textarea id="vs-notes">${esc(v.notes || "")}</textarea>
     <label class="champ">Statut</label><div class="segment">${["En place", "Démontée"].map(t => `<button data-m="vStatut" data-valeur="${t}" class="${(v.statut || "En place") === t ? "choisi" : ""}">${t}</button>`).join("")}</div>
-    <h3 class="sous-cat">Ton historique</h3>
-    ${essais.map(e => `<div class="voie"><span>${esc(e.res)}${e.sec ? ` (${e.sec} sec)` : ""} · ${esc(e.style || "")}</span><span class="petit">${esc((LISTE.find(x => cle(x) === e.seance) ? jourMois(dateSeance(LISTE.find(x => cle(x) === e.seance))) : ""))}</span></div>`).join("") || `<p class="petit">Pas encore essayée.</p>`}
     <div class="actions">${essais.length ? "" : `<button data-m="vSuppr" class="danger">Supprimer</button>`}<button data-m="fermer" class="principal">Fermer</button></div>`;
 }
+// Passages faits sans l'app : des tentatives approximatives, datées, rattachées à la voie
+const lirePassagesAnciens = () => JSON.parse(localStorage.getItem("passages-anciens") || "[]");
+function enregistrerPassageAncien() {
+  const sa = salleDe(M.sid), v = sa.voies.find(x => x.id === M.voieId), a = M.ancien, act = v.discipline, voie = act === "Voie";
+  const n = Math.max(1, a.essais), ok = a.res === "ok", l = lirePassagesAnciens();
+  for (let k = 0; k < n; k++) { const reussite = ok && k === n - 1;
+    l.push({ id: "a" + Date.now() + "-" + k, date: a.date || isoDate(new Date()), act, cot: versApp(sa.id, act, v.cot), cotSalle: v.cot || "", salle: sa.id, voieId: v.id,
+      profil: v.profil || "Vertical", couleur: v.couleur || "", nom: v.nom || "", approx: true,
+      res: reussite ? (voie ? "Enchaînée" : "Réussi") : (voie ? "Pas finie" : "Pas réussi"), style: k === 0 ? (reussite ? a.style : "À vue") : "Après travail" }); }
+  localStorage.setItem("passages-anciens", JSON.stringify(l)); cacheFeux = null; M.ancien = null;
+}
 // Ajout rapide en rafale
+// Profil proposé : le plus fréquent dans le secteur, sinon vertical
+const profilHabituel = (sa, sec) => { const c = {}; sa.voies.filter(v => sec && v.secteur === sec && v.profil).forEach(v => c[v.profil] = (c[v.profil] || 0) + 1);
+  return Object.keys(c).sort((a, b) => c[b] - c[a])[0] || "Vertical"; };
 function ouvrirAjoutRapide(secteur, discVoulue) {
-  const sa = salleDe(SA.id), sec = secteur || (secteursDe(sa, discVoulue)[0] || sa.secteurs[0] || {}).id || "";
-  const z = sa.secteurs.find(y => y.id === sec);
-  ouvrirModal({ type: "ajoutRapide", sid: sa.id, disc: z ? z.type : discVoulue || (sa.type === "Voie" ? "Voie" : "Bloc"), secteur: sec, profil: z ? z.profil : "Vertical", couleur: "", cot: "", repere: "", ajoutees: 0 });
+  const sa = salleDe(SA.id), z = secteur && sa.secteurs.find(y => y.id === secteur);
+  const disc = z ? z.type : discVoulue || (discsSalle(sa).length === 1 ? discsSalle(sa)[0] : "Bloc");
+  ouvrirModal({ type: "ajoutRapide", sid: sa.id, disc, secteur: z ? z.id : "", profil: "", couleur: "", cot: "", chiffreCot: "", repere: "", nb: 1, ajoutees: 0, dernier: "" });
 }
 function htmlAjoutRapide() {
-  const sa = salleDe(M.sid);
-  return `<h2>Ajouter des voies · ${esc(sa.nom)}</h2>
-    <label class="champ">Secteur <span class="petit">(${M.disc === "Voie" ? "voies" : "blocs"})</span></label><div class="choix compact">${sa.secteurs.map(x => `<button data-m="secteur" data-valeur="${x.id}" class="${M.secteur === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")
-      || `<span class="petit">Aucun secteur : crée-les en bas du Mur.</span>`}</div>
-    <label class="champ">Couleur</label><div class="pastilles">${couleursDe(M.sid).map(([n, c]) => `<button data-m="couleurRapide" data-valeur="${esc(n)}" class="pastille ${M.couleur === n ? "choisi" : ""}" style="background:${c}" aria-label="${esc(n)}"></button>`).join("")}</div>
-    <label class="champ">Profil de la voie</label><div class="segment">${PROFILS.map(p => `<button data-m="profilRapide" data-valeur="${p}" class="${M.profil === p ? "choisi" : ""}">${p}</button>`).join("")}</div>
-    <label class="champ">Cotation</label><div class="choix compact">${(sa.echelles[M.disc] || []).map(x => `<button data-m="cot" data-valeur="${esc(x.salle)}" class="${M.cot === x.salle ? "choisi" : ""}">${esc(x.salle)}</button>`).join("")}</div>
-    <label class="champ">Repère <span class="petit">(facultatif : n° de couloir ou de ligne)</span></label><input type="text" id="ar-repere" inputmode="numeric" value="${esc(M.repere)}">
-    ${M.ajoutees ? `<p class="ajout-ok">✓ ${M.ajoutees} ajoutée${M.ajoutees > 1 ? "s" : ""}</p>` : ""}
-    <div class="actions"><button data-m="ajouter-fermer" ${M.cot ? "" : "disabled"}>Ajouter</button><button data-m="ajouter-suite" class="principal" ${M.cot ? "" : "disabled"}>Ajouter et continuer</button></div>
-    <p class="centre"><button class="lien" data-m="fermer">Terminé</button></p>`;
+  const sa = salleDe(M.sid), parCouleur = modeEchelle(sa, M.disc) === "couleurs", mot = M.disc === "Voie" ? "voies" : "blocs";
+  return `<h2>Ajouter des ${mot} · ${esc(sa.nom)}</h2>
+    <p class="petit">Tout est facultatif : une couleur et une cotation suffisent. Le secteur, le profil et le repère peuvent attendre.</p>
+    ${discsSalle(sa).length > 1 ? `<div class="segment">${["Bloc", "Voie"].map(d => `<button data-m="disc" data-valeur="${d}" class="${M.disc === d ? "choisi" : ""}">${d === "Voie" ? "Voies" : "Blocs"}</button>`).join("")}</div>` : ""}
+    ${parCouleur ? "" : `<label class="champ">Couleur</label><div class="pastilles">${couleursDe(M.sid).map(([n, c]) => `<button data-m="couleurRapide" data-valeur="${esc(n)}" class="pastille ${M.couleur === n ? "choisi" : ""}" style="background:${c}" aria-label="${esc(n)}"></button>`).join("")}</div>`}
+    <label class="champ">${parCouleur ? "Couleur (= le niveau)" : "Cotation"}</label>${selecteurCot({ attr: "m", champ: "cot", chiffreChamp: "chiffreCot", valeur: M.cot, chiffre: M.chiffreCot, act: M.disc, sid: M.sid })}
+    <label class="champ">Combien de ${mot} comme ça ?</label><div class="compteur"><button data-m="nb" data-pas="-1">−</button><span>${M.nb}</span><button data-m="nb" data-pas="1">+</button></div>
+    <label class="champ">Secteur <span class="petit">(facultatif)</span></label><div class="choix compact"><button data-m="secteur" data-valeur="" class="${M.secteur ? "" : "choisi"}">Sans secteur</button>${secteursDe(sa, M.disc).map(x =>
+      `<button data-m="secteur" data-valeur="${x.id}" class="${M.secteur === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")}</div>
+    <details class="plus-details" ${M.details ? "open" : ""}><summary>Profil et repère ▸ <span class="petit">${esc(M.profil || profilHabituel(sa, M.secteur))}</span></summary>
+      <label class="champ">Profil</label>${choixProfil("m", "profilRapide", M.profil || profilHabituel(sa, M.secteur))}
+      <label class="champ">Repère <span class="petit">(n° de couloir ou de ligne)</span></label><input type="text" id="ar-repere" inputmode="numeric" value="${esc(M.repere)}"></details>
+    ${M.ajoutees ? `<p class="ajout-ok">✓ ${M.dernier} · ${M.ajoutees} ajouté${M.ajoutees > 1 ? "s" : ""} en tout</p>` : ""}
+    <div class="actions"><button data-m="fermer">Terminé</button><button data-m="ajouter-suite" class="principal">+ Ajouter${M.nb > 1 ? ` ${M.nb}` : ""}</button></div>`;
 }
 function ajouterVoieRapide() {
-  majSalle(M.sid, sa => { const sec = sa.secteurs.find(x => x.id === M.secteur);
-    sa.voies.push({ id: "v" + Date.now() + Math.floor(Math.random() * 1000), discipline: sec ? sec.type : M.disc, secteur: M.secteur, ordre: prochainOrdre(sa, M.secteur), couleur: M.couleur, cot: M.cot,
-                    profil: M.profil || (sec ? sec.profil : "Vertical"), nom: "", repere: ($("ar-repere") || {}).value || "", ouverture: isoDate(new Date()), statut: "En place", notes: "" }); });
-  M.ajoutees++; M.couleur = ""; M.cot = ""; M.repere = "";
+  const parCouleur = modeEchelle(salleDe(M.sid), M.disc) === "couleurs";
+  majSalle(M.sid, sa => { const sec = sa.secteurs.find(x => x.id === M.secteur), profil = M.profil || profilHabituel(sa, M.secteur);
+    for (let k = 0; k < M.nb; k++)
+      sa.voies.push({ id: "v" + Date.now() + "-" + k + Math.floor(Math.random() * 1000), discipline: sec ? sec.type : M.disc, secteur: M.secteur, ordre: prochainOrdre(sa, M.secteur),
+                      couleur: M.couleur || (parCouleur ? M.cot : ""), cot: M.cot, profil, nom: "", repere: M.repere || "", ouverture: isoDate(new Date()), statut: "En place", notes: "" }); });
+  M.dernier = `${[M.couleur, M.cot && M.cot !== M.couleur ? M.cot : ""].filter(Boolean).join(" ") || "sans cotation"}${M.nb > 1 ? " × " + M.nb : ""}`;
+  M.ajoutees += M.nb; M.couleur = ""; M.cot = ""; M.chiffreCot = ""; M.repere = ""; M.nb = 1;
 }
 // Création guidée d'une salle (ou compléter une salle existante)
-const SECTEURS_SUGGERES = [["Dalle", "Dalle"], ["Vertical", "Vertical"], ["Léger dévers", "Léger dévers"], ["Dévers", "Dévers"], ["Toit", "Toit"], ["Pan", "Dévers"]];
-const MODELES_ECHELLE = { "Blocs de 1 à 9": ["1", "2", "3", "4", "5", "6", "7", "8", "9"], "Blocs de 1 à 6": ["1", "2", "3", "4", "5", "6"], "Blocs comme l'app": null };
+const SECTEURS_SUGGERES = [["Dalle"], ["Vertical"], ["Dévers"], ["Toit"], ["Pan"], ["Grotte"]];
 function ouvrirAssistant(sid) {
   const sa = sid && salleDe(sid);
   ouvrirModal({ type: "assistant", sid: sid || null, etape: sa ? 2 : 1, nom: sa ? sa.nom : "", typeSalle: sa ? sa.type : "Bloc et voie",
-                secteurs: sa ? sa.secteurs.map(x => x.nom) : [], modele: null, perso: "" });
+                secteurs: sa ? sa.secteurs.map(x => x.nom) : [], modes: { ...((sa && sa.modes) || { Bloc: "standard", Voie: "standard" }) }, perso: "" });
 }
 function htmlAssistant() {
   const pas = `<div class="etapes-creation">${[1, 2, 3].map(n => `<span class="${n <= M.etape ? "fait" : ""}"></span>`).join("")}</div>`;
   if (M.etape === 1) return `<h2>Nouvelle salle</h2>${pas}<label class="champ">Nom</label><input type="text" id="as-nom" value="${esc(M.nom)}" placeholder="ex. Arkose Bruxelles">
     <label class="champ">Type</label><div class="segment">${["Bloc", "Voie", "Bloc et voie"].map(t => `<button data-m="typeSalle" data-valeur="${t}" class="${M.typeSalle === t ? "choisi" : ""}">${t}</button>`).join("")}</div>
     <div class="actions"><button data-m="fermer">Annuler</button><button data-m="as-suivant" class="principal">Suivant ›</button></div>`;
-  if (M.etape === 2) return `<h2>Secteurs</h2>${pas}<p class="petit">Touche les secteurs de la salle ; ajoute-en d'autres si besoin. Tu pourras les renommer.</p>
+  if (M.etape === 2) return `<h2>Secteurs</h2>${pas}<p class="petit">Facultatif : touche les secteurs de la salle, ajoute-en d'autres, ou passe. Tu pourras les créer plus tard.</p>
     <div class="choix">${SECTEURS_SUGGERES.map(([n]) => `<button data-m="as-secteur" data-valeur="${esc(n)}" class="${M.secteurs.includes(n) ? "choisi" : ""}">${n}</button>`).join("")}
       ${M.secteurs.filter(n => !SECTEURS_SUGGERES.some(s => s[0] === n)).map(n => `<button data-m="as-secteur" data-valeur="${esc(n)}" class="choisi">${esc(n)}</button>`).join("")}</div>
     <div class="ajout-secteur"><input type="text" id="as-perso" placeholder="Autre secteur"><button data-m="as-perso">Ajouter</button></div>
     <div class="actions"><button data-m="${M.sid ? "fermer" : "as-retour"}">${M.sid ? "Annuler" : "‹ Retour"}</button><button data-m="as-suivant" class="principal">Suivant ›</button></div>`;
-  return `<h2>Échelle des blocs</h2>${pas}<p class="petit">Comment la salle cote-t-elle ses blocs ? (Les voies gardent la cotation française.) La correspondance se règle ensuite dans Réglages.</p>
-    <div class="menu-liste">${Object.keys(MODELES_ECHELLE).map(k => `<button class="ligne-menu ${M.modele === k ? "choisi" : ""}" data-m="as-modele" data-valeur="${k}"><span class="titre-menu">${k}</span></button>`).join("")}</div>
-    <div class="actions"><button data-m="as-retour">‹ Retour</button><button data-m="as-fin" class="principal" ${M.modele ? "" : "disabled"}>${M.sid ? "Enregistrer" : "Créer la salle"}</button></div>`;
+  const discs = M.typeSalle === "Bloc" ? ["Bloc"] : M.typeSalle === "Voie" ? ["Voie"] : ["Bloc", "Voie"];
+  return `<h2>Cotations</h2>${pas}<p class="petit">Comment la salle cote-t-elle ? Tu pourras changer et régler les équivalences dans Réglages. Rien n'est obligatoire.</p>
+    ${discs.map(d => `<p class="titre-disc"><b>${d === "Voie" ? "Voies" : "Blocs"}</b></p><div class="menu-liste">${[["standard", d === "Voie" ? "Classique (5c, 6a+…)" : "Fontainebleau (5+, 6A…)"], ["liste", "Numéros (1 à 9) ou autre liste"], ["couleurs", "Couleurs : la couleur est le niveau"], ["aucune", "Pas de cotation"]].map(([k, t]) =>
+      `<button class="ligne-menu ${M.modes[d] === k ? "choisi" : ""}" data-m="as-mode" data-disc="${d}" data-valeur="${k}"><span class="titre-menu">${t}</span></button>`).join("")}</div>`).join("")}
+    <div class="actions"><button data-m="as-retour">‹ Retour</button><button data-m="as-fin" class="principal">${M.sid ? "Enregistrer" : "Créer la salle"}</button></div>`;
 }
 function finirAssistant() {
-  const bloc = COTATIONS.Bloc || [], min = Number(bloc[0]), max = Number(bloc[bloc.length - 1]);
-  const grades = MODELES_ECHELLE[M.modele] || bloc;
-  const echelleBloc = grades.map((g, k) => ({ salle: g, app: MODELES_ECHELLE[M.modele] && grades.length === 6 && M.modele === "Blocs de 1 à 6" ? bloc[k] : String(Math.min(max, Math.max(min, Number(g)))) }));
   const x = lireSalles();
   let sa = M.sid && x.liste.find(y => y.id === M.sid);
-  if (!sa) { sa = salleParDefaut(); sa.nom = M.nom.trim() || "Nouvelle salle"; sa.type = M.typeSalle; x.liste.push(sa); }
-  M.secteurs.forEach(n => { if (!sa.secteurs.some(s => s.nom === n)) sa.secteurs.push({ id: "t" + Date.now() + Math.floor(Math.random() * 1000), nom: n, type: sa.type === "Voie" ? "Voie" : "Bloc",
-    profil: (SECTEURS_SUGGERES.find(s => s[0] === n) || [n, "Vertical"])[1], maj: Date.now() }); });
-  sa.echelles.Bloc = echelleBloc; ecrireSalles(x);
+  if (!sa) { sa = salleDefautNeuve(); sa.nom = M.nom.trim() || "Nouvelle salle"; sa.type = M.typeSalle; x.liste.push(sa); }
+  M.secteurs.forEach(n => { if (!sa.secteurs.some(s => s.nom === n)) sa.secteurs.push({ id: "t" + Date.now() + Math.floor(Math.random() * 1000), nom: n, type: sa.type === "Voie" ? "Voie" : "Bloc", maj: Date.now() }); });
+  ["Bloc", "Voie"].forEach(d => { const avant = modeEchelle(sa, d), apres = M.modes[d] || "standard";
+    if (avant !== apres || !sa.modes) sa.echelles[d] = apres === "liste" ? (avant === "liste" && (sa.echelles[d] || []).length ? sa.echelles[d] : UN_A_NEUF.map(z => ({ ...z }))) : apres === avant ? sa.echelles[d] || [] : [];
+    sa.modes = { ...(sa.modes || {}), [d]: apres }; });
+  ecrireSalles(x);
   fermerModal(); ouvrirSalles(sa.id);
 }
+const salleDefautNeuve = () => salleParDefaut();
 $("ecran").addEventListener("click", e => {
   if (!["salles", "salle"].includes(vue)) return;
   const b = e.target.closest("button"); if (!b) return;
@@ -2825,24 +2990,27 @@ $("ecran").addEventListener("click", e => {
   if (t.salle) return ouvrirSalles(t.salle);
   if (t.salleAjout) return ouvrirAssistant();
   if (t.assistant) return ouvrirAssistant(t.assistant);
-  if (t.ongletSalle) { SA.onglet = t.ongletSalle; SA.ranger = false; SA.sel = null; return afficher(); }
-  if (t.ranger) { SA.ranger = !SA.ranger; SA.sel = null; }
-  else if (t.rangerFin !== undefined && SA.sel) { if (!deplacerVoie(SA.sel, null, t.rangerFin)) montrerAnnulation("Ce secteur n'a pas le même type", () => {}); SA.sel = null; }
-  else if (t.voieSalle && SA.ranger) {
-    if (!SA.sel || SA.sel === t.voieSalle) SA.sel = SA.sel ? null : t.voieSalle;
-    else { if (!deplacerVoie(SA.sel, t.voieSalle)) montrerAnnulation("Ce secteur n'a pas le même type", () => {}); SA.sel = null; }
-  }
+  if (t.ongletSalle) { SA.onglet = t.ongletSalle; SA.ranger = ""; SA.classer = ""; return afficher(); }
+  if (t.ranger !== undefined) { SA.ranger = t.ranger; SA.classer = ""; return afficher(false); }   // ranger ce secteur (vide = terminé)
+  if (t.classer !== undefined) { SA.classer = t.classer; SA.selection = []; SA.ranger = ""; return afficher(false); }
+  if (t.classerOk) return ouvrirModal({ type: "classer", sid: SA.id, disc: SA.classer, ids: [...SA.selection] });
+  if (t.voieSalle && SA.ranger) return;                                   // en rangement, on glisse
+  if (t.voieSalle && SA.classer) { const l = SA.selection || []; SA.selection = l.includes(t.voieSalle) ? l.filter(x => x !== t.voieSalle) : [...l, t.voieSalle]; }
   else if (t.voieSalle) return ouvrirModal({ type: "voie2", sid: SA.id, voieId: t.voieSalle });
   if (t.secSheet) return ouvrirModal({ type: "secteur2", sid: SA.id, secId: t.secSheet });
   if (t.filtreSalle) SA.filtre = t.filtreSalle;
-  if (t.ajoutRapide !== undefined) return ouvrirAjoutRapide(t.ajoutRapide || null, t.discAjout);
+  if (t.ajoutRapide !== undefined) return ouvrirAjoutRapide(t.ajoutRapide || null, t.discAjout || null);
+  if (t.modeEchelle) majSalle(SA.id, sa => { const d = t.disc; if (modeEchelle(sa, d) === t.modeEchelle) return;
+    sa.modes = { ...(sa.modes || {}), [d]: t.modeEchelle }; sa.echelles[d] = t.modeEchelle === "liste" ? UN_A_NEUF.map(x => ({ ...x })) : []; });
+  if (t.echelleCoul) majSalle(SA.id, sa => { const d = t.disc, e = sa.echelles[d] || [];
+    sa.echelles[d] = e.some(x => x.salle === t.echelleCoul) ? e.filter(x => x.salle !== t.echelleCoul) : [...e, { salle: t.echelleCoul, app: "" }]; });
   if (t.coulAjout) { const nom = ($("coul-nom").value || "").trim(); if (!nom) return;
     majSalle(SA.id, sa => { sa.couleurs = [...(sa.couleurs || []).filter(c => c.nom !== nom), { nom, hex: $("coul-hex").value }]; }); }
   if (t.coulSuppr) majSalle(SA.id, sa => sa.couleurs = (sa.couleurs || []).filter(c => c.nom !== t.coulSuppr));
   if (t.salleType) majSalle(SA.id, sa => sa.type = t.salleType);
   if (t.salleSuppr) { const id = SA.id; annulableSalles("Salle supprimée", () => { const x = lireSalles(); x.liste = x.liste.filter(z => z.id !== id); ecrireSalles(x); }); return ouvrirSalles(); }
   if (t.secteurAjout) { const nom = $("secteur-nom").value.trim(); if (!nom) return;
-    majSalle(SA.id, sa => sa.secteurs.push({ id: "t" + Date.now(), nom, type: $("secteur-type").value, profil: $("secteur-profil").value, maj: Date.now() })); }
+    majSalle(SA.id, sa => sa.secteurs.push({ id: "t" + Date.now(), nom, type: $("secteur-type").value, maj: Date.now() })); }
   if (t.secOrdre) { const k = Number(t.k), pas = Number(t.secOrdre);
     majSalle(SA.id, sa => { const j = k + pas; if (j < 0 || j >= sa.secteurs.length) return; [sa.secteurs[k], sa.secteurs[j]] = [sa.secteurs[j], sa.secteurs[k]]; }); }
   if (t.salleDisc) SA.disc = t.salleDisc;
@@ -2856,7 +3024,7 @@ $("ecran").addEventListener("change", e => {
   if (el.dataset.echelle) majSalle(SA.id, sa => sa.echelles[el.dataset.echelle][Number(el.dataset.k)].app = el.value);
   if (el.dataset.echelleListe) { const disc = el.dataset.echelleListe, app = COTATIONS[disc] || [];
     majSalle(SA.id, sa => { const avant = sa.echelles[disc] || [];
-      sa.echelles[disc] = el.value.split(",").map(x => x.trim()).filter(Boolean).map(g => ({ salle: g, app: (avant.find(a => a.salle === g) || {}).app || (app.includes(g) ? g : app[0]) })); });
+      sa.echelles[disc] = el.value.split(",").map(x => x.trim()).filter(Boolean).map(g => ({ salle: g, app: (avant.find(a => a.salle === g) || {}).app ?? (app.includes(g) ? g : "") })); });
     afficher(false); }
 });
 
@@ -3004,6 +3172,11 @@ function exporter() {
         v.cotSalle || "", (salleDe(v.salle) || {}).nom || "", nomSecteur(salleDe(v.salle), (((salleDe(v.salle) || { voies: [] }).voies.find(x => x.id === v.voieId)) || {}).secteur), v.voieId || "", v.approx ? "Approx" : ""]); });
     (d.douleurs || []).forEach(x => lignes.push(["Douleur", ...base, x.zone, x.niv, x.heure]));
   });
+  // Passages faits sans l'app (fiche de la voie) : datés, approximatifs
+  lirePassagesAnciens().forEach(v => { const dt = new Date(v.date + "T12:00:00"), sem = Math.floor((dt - new Date(debutProgramme() + "T12:00:00")) / 6048e5) + 1;
+    const sa = salleDe(v.salle), z = sa && sa.voies.find(x => x.id === v.voieId);
+    lignes.push(["Voie", sem >= 1 ? sem : "", JOURS[(dt.getDay() + 6) % 7], v.act, v.date, v.cot, v.profil, v.res, v.res === "Enchaînée" ? 0 : "", rang(v.act, v.cot) + 1,
+      v.style || "", v.couleur || "", v.nom || "", "", v.cotSalle || "", (sa || {}).nom || "", nomSecteur(sa, z && z.secteur), v.voieId || "", "Approx"]); });
   const derniere = Math.max(...LISTE.map(s => s.semaine));
   for (let sem = 1; sem <= derniere; sem++) {
     const m = lireMesures(sem), a = autoSemaine(sem);
@@ -3020,7 +3193,7 @@ function exporter() {
   });
   const csv = "\uFEFF" + lignes.map(l => l.map(champ).join(";")).join("\r\n");
   const sauvegarde = {};
-  Object.keys(localStorage).filter(k => /^(seance-|mesures-|libre-|competences-|libres$|reglages$|favoris$|moyennes$|programme-actif$|deplacements$|salles$|modifs-programme$)/.test(k)).forEach(k => sauvegarde[k] = localStorage.getItem(k));
+  Object.keys(localStorage).filter(k => /^(seance-|mesures-|libre-|competences-|libres$|reglages$|favoris$|moyennes$|programme-actif$|deplacements$|salles$|modifs-programme$|passages-anciens$)/.test(k)).forEach(k => sauvegarde[k] = localStorage.getItem(k));
   const jour = isoDate(new Date());
   partager([new File([csv], `export-escalade-${jour}.csv`, { type: "text/csv" }),
             new File([JSON.stringify(sauvegarde)], `sauvegarde-escalade-${jour}.json`, { type: "application/json" })],
@@ -3204,6 +3377,7 @@ document.addEventListener("touchend", e => {
   if (Math.abs(dx) > 70 && Math.abs(dy) < 50) dx > 0 ? precedent() : suivant();
 });
 
+migrer64();                                                        // une seule fois, à l'ouverture de la 6.4
 const yNav = restaurerNav();                                       // retour de l'aide : même écran, même endroit
 if (yNav === false && LISTE.length && seanceAujourdhui() < 0 && vue === "seance") vue = "repos";   // jour sans séance : écran de repos
 afficher(); if (yNav) window.scrollTo(0, yNav);
