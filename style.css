@@ -9,18 +9,18 @@
   --fond:#EEF1F2; --carte:#FFFFFF; --texte:#1C2A33; --doux:#5E6E78; --bord:#D5DCE0; --info:#E9EDEF;
   --marque:#1F4E5A;                         /* couleur par défaut (hors séance) */
   /* Activités */
-  --c-voie:#2E6FB7; --c-bloc:#C8336B; --c-course:#0E9AA7; --c-maison:#7B5EA7;
+  --c-voie:#2E6FB7; --c-bloc:#C8336B; --c-course:#0B7C87; --c-maison:#7B5EA7;
   /* Types d'étape (bande à gauche) */
   --t-echauffement:#85B7EB; --t-securite:#E24B4A; --t-facile:#F2D34B; --t-effort:#993C1D; --t-recup:#185FA5;
   /* Sens */
-  --fait:#3B8C3F; --attention:#F2711C; --danger:#C0392B; --avert:#FDEBDD;
+  --fait:#2E7D32; --attention:#F2711C; --danger:#C0392B; --avert:#FDEBDD;
   --repos:#185FA5;                          /* minuteur pendant le repos */
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --fond:#141B20; --carte:#1E282F; --texte:#E6ECEF; --doux:#9AAAB3; --bord:#33424B; --info:#26323A;
     --marque:#6FB3C2;
-    --c-voie:#4F8FD6; --c-bloc:#E0558A; --c-course:#2BB5C1; --c-maison:#9C80CF;
+    --c-voie:#4F8FD6; --c-bloc:#E0558A; --c-course:#11808B; --c-maison:#9C80CF;
     --t-echauffement:#85B7EB; --t-securite:#F07070; --t-facile:#F2D34B; --t-effort:#C25A35; --t-recup:#4F8FD6;
     --fait:#5FB563; --attention:#FF8A3D; --danger:#F07070; --avert:#3D2A1A; --repos:#2E6FB7;
   }
@@ -84,10 +84,10 @@ header button { width:44px; height:44px; flex:none; border:none; background:none
 .maintenant button.sur-couleur { background:transparent; border:1.5px solid rgba(255,255,255,.7); color:#fff; font-weight:700; min-height:50px; flex:0 0 auto; padding:0 14px; }
 .maintenant button.blanc { background:#fff; border-color:#fff; color:var(--act); font-weight:800; font-size:18px; min-height:50px; flex:1; }
 .maintenant .retard { color:#FFE0C2; }
-.barre-seance { display:flex; gap:3px; height:8px; margin:8px 0 6px; }
-.barre-seance span { background:rgba(255,255,255,.35); border-radius:4px; min-width:4px; }
-.barre-seance span.fait { background:#9BE29F; }
-.barre-seance span.encours { background:#fff; }
+
+
+
+
 /* Résumé d'une séance terminée */
 .resume-ligne { display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid var(--bord); }
 .resume .liens { margin-top:10px; font-size:15px; }
@@ -342,10 +342,10 @@ body.flash { animation:flash .5s 3; }
 .ls-dates { font-size:13px; color:var(--doux); }
 .ls-phase { font-weight:600; font-size:15px; }
 .ls-etats { display:flex; gap:3px; flex:none; }
-.mini-etat { width:20px; height:20px; border-radius:50%; font-size:11px; display:flex; align-items:center; justify-content:center; border:2px solid var(--act, var(--bord)); color:var(--doux); }
-.mini-etat.fait { background:var(--fait); border-color:var(--fait); color:#fff; }
-.mini-etat.saute { border-color:var(--bord); color:var(--danger); }
-.carte-mesures { display:flex; justify-content:space-between; align-items:center; width:100%; padding:12px 14px; margin-bottom:12px; background:var(--carte); text-align:left; font-weight:600; }
+
+
+
+
 /* Feux verts en couleur */
 .feu-pastille { display:inline-block; width:12px; height:12px; border-radius:50%; background:var(--bord); margin-right:6px; vertical-align:middle; }
 .feu-pastille.vert { background:var(--fait); }
@@ -388,7 +388,7 @@ body.flash { animation:flash .5s 3; }
 .mur-barre { flex:1; height:10px; border-radius:5px; background:var(--info); overflow:hidden; }
 .mur-barre span { display:block; height:100%; background:var(--fait); }
 .filtres-salle { margin:12px 0 4px; }
-.groupe-secteur { margin:12px 0 6px; }
+
 .tuiles-voies { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:6px; }
 .tuile-voie { position:relative; display:flex; flex-direction:column; align-items:center; padding:6px 4px; min-height:64px; border-top:6px solid var(--bord); border-radius:10px; background:var(--carte); }
 .tuile-voie.demontee { opacity:.45; }
@@ -401,7 +401,7 @@ body.flash { animation:flash .5s 3; }
 .ligne-menu.choisi { box-shadow:0 0 0 2px var(--act); }
 
 /* ---------- Version 5.3 : modifier le programme ---------- */
-.outils-semaine { display:block; margin:0 0 8px; font-size:14px; }
+
 .outil { border-top:1px solid var(--bord); padding:10px 0; }
 .ligne-outil { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:14px; }
 .ligne-outil .principal { margin-left:auto; padding:0 14px; min-height:40px; }
@@ -419,9 +419,9 @@ body.flash { animation:flash .5s 3; }
 .ed-texte { min-height:320px; font-family:ui-monospace, Menlo, monospace; font-size:13px; }
 
 /* ---------- Version 5.4 : suivi léger, bilan rapide ---------- */
-.choix-bas { margin-top:6px; }
-.choix-bas button { flex:1; min-height:40px !important; font-size:14px; }
-.mode-suivi { display:block; margin:8px auto 0; font-size:12px; }
+
+
+
 .liens-bandeau { display:flex; justify-content:center; gap:18px; flex-wrap:wrap; }
 #mn-arreter { width:100%; min-height:44px; background:transparent; border:1.5px solid rgba(255,255,255,.75); color:#fff; font-weight:800; }
 #minuteur.plein #mn-arreter { min-height:60px; font-size:19px; }
@@ -429,7 +429,7 @@ body.flash { animation:flash .5s 3; }
 .ligne.compacte { padding:8px 10px 8px 12px; }
 .ligne.compacte .titre-compact { font-weight:600; }
 .ligne.compacte.finie .titre-compact { text-decoration:line-through; text-decoration-color:var(--doux); }
-.liens-recup { text-align:center; margin:10px 0 2px; font-size:14px; }
+
 .plus-details { margin:10px 0; } .plus-details summary { color:var(--act); font-weight:600; padding:6px 0; }
 .br-etape { border-bottom:1px solid var(--bord); padding:8px 0; }
 .br-titre { font-size:15px; margin-bottom:6px; }
@@ -492,10 +492,10 @@ header button, header #titre-date { color:var(--app-texte) !important; }
 /* De vrais boutons pour tout ce qui se touche */
 .liens-bandeau .lien-blanc, [data-action="recup"].lien-blanc { border:1.5px solid rgba(255,255,255,.75); border-radius:10px; padding:8px 14px; min-height:40px; text-decoration:none; background:rgba(255,255,255,.12); }
 .liens-bandeau { margin-top:10px; gap:8px; }
-.liens-recup .lien, .panneau-etape .lien, .ed-ajouts .lien, .outils-semaine, .bilan-rapide-lien { display:inline-flex; align-items:center; justify-content:center; border:1.5px solid var(--bord); border-radius:10px;
+.panneau-etape .lien, .ed-ajouts .lien, .bilan-rapide-lien { display:inline-flex; align-items:center; justify-content:center; border:1.5px solid var(--bord); border-radius:10px;
   padding:8px 14px; min-height:40px; text-decoration:none; background:var(--carte); color:var(--act, var(--marque)); font-weight:600; }
-.outils-semaine { display:flex; width:100%; margin:0 0 10px; }
-.liens-recup { display:flex; gap:8px; justify-content:center; }
+
+
 .ligne-pliee { border:1.5px solid var(--bord); border-radius:10px; }
 /* Grand affichage */
 body.grand .maintenant-titre { font-size:26px; line-height:1.2; }
@@ -515,9 +515,9 @@ body.grand .petits-boutons button { font-size:16px; min-height:44px; }
 .barres-charge .bc span { width:100%; background:var(--marque); border-radius:4px 4px 0 0; min-height:2px; }
 .barres-charge .bc span.actuelle { background:var(--attention); }
 .barres-charge small { font-size:11px; color:var(--doux); }
-.carte.bilan-hebdo { border-left:6px solid var(--marque); }
+
 /* Salles */
-.ligne-secteur { display:flex; align-items:center; gap:6px; } .ligne-secteur .ligne-menu { flex:1; }
+
 .gc-cot { background:none; border:none; padding:0; min-height:36px; font-weight:800; text-align:left; color:var(--texte); }
 .gc-voies { padding:8px 10px; border-top:1px solid var(--bord); background:var(--carte); }
 .filtre-couleurs .pastille { width:30px; height:30px; }
@@ -632,3 +632,44 @@ body.grand .petits-boutons button { font-size:16px; min-height:44px; }
 .ajout-secteur { flex-wrap:wrap; }
 .ajout-secteur input[type=text] { flex:1 1 100%; }
 .ajout-secteur select { flex:1; }
+
+/* ======================= Version 6.3 ======================= */
+/* Carte Maintenant : tous les petits boutons ont un fond et une bordure */
+.petits-boutons { justify-content:flex-start; gap:6px; }
+.petits-boutons button { background:rgba(255,255,255,.14); border:1.5px solid rgba(255,255,255,.6); border-radius:10px; color:#fff; padding:6px 10px; font-weight:600; }
+.maintenant-haut { background:rgba(255,255,255,.12) !important; border:1.5px solid rgba(255,255,255,.45) !important; border-radius:10px; padding:4px 10px !important; align-items:center; }
+.point-forme { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:6px; vertical-align:-1px; border:1.5px solid #fff; padding:0; }
+/* Forme du jour : couleurs fixes et lisibles dans les deux thèmes */
+.forme-vert { background:#2E7D32; color:#fff; }
+.forme-orange { background:#F2711C; color:#1C1C1C; }
+.forme-rouge { background:#C0392B; color:#fff; }
+/* Bilan rapide en deux temps */
+.gros.go.choisi { background:#2E7D32; border-color:#2E7D32; }
+.br-plier { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:14px; color:var(--texte); background:var(--carte); min-height:48px; }
+.br-plier .petit { color:var(--doux); text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
+.br-details { border-left:3px solid var(--bord); padding-left:10px; margin-bottom:8px; }
+.centre { text-align:center; }
+/* Titre de l'en-tête sur deux lignes au lieu d'être coupé */
+#titre-date { white-space:normal; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; line-height:1.15; font-size:15px; }
+/* Petits écrans (320 px) : les boutons de la carte restent sur une ligne */
+@media (max-width:340px) {
+  .choix-carte button { font-size:15px; padding:0 8px !important; white-space:nowrap; }
+  .maintenant button.sur-couleur { padding:0 8px; }
+  .petits-boutons button { font-size:13px; padding:4px 8px; }
+}
+/* Deux séances le même jour : pastille « 2 » dans le coin du jour */
+.bande-jours .jour { position:relative; }
+.j-badge { position:absolute; top:2px; right:2px; min-width:16px; height:16px; border-radius:8px; background:var(--texte); color:var(--carte); font-size:11px; font-weight:800; line-height:16px; text-align:center; padding:0 3px; }
+/* Séance passée sans bilan : contour orange, « à compléter » */
+.carte-seance.acompleter { box-shadow:inset 0 0 0 2px var(--attention); }
+.carte-seance.acompleter .etat-seance { background:var(--attention); color:#1C1C1C; border:none; font-weight:800; }
+.a-completer { color:#B4500F; }
+@media (prefers-color-scheme: dark) { .a-completer { color:var(--attention); } }
+.bande-jours .jour.acompleter { box-shadow:inset 0 0 0 2px var(--attention); }
+.bande-jours .jour.acompleter .j-etat { color:var(--attention); font-weight:800; }
+.case-jour.acompleter { box-shadow:inset 0 0 0 2px var(--attention); }
+.carte-seance.oubliee, .bande-jours .jour.oubliee, .case-jour.oubliee { opacity:.55; }
+/* Outils de la semaine dépliée */
+.barre-sem { display:flex; gap:8px; flex-wrap:wrap; margin:8px 0; }
+.barre-sem button { flex:1; min-height:44px; border:1.5px solid var(--bord); border-radius:10px; background:var(--carte); font-weight:600; font-size:14px; white-space:nowrap; }
+@media (max-width:360px) { .barre-sem { flex-wrap:nowrap; } .barre-sem button { font-size:13px; padding:0 6px; min-width:0; } .barre-sem button:first-child { flex:0 0 auto; } }
