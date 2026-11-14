@@ -1,4 +1,4 @@
-# App Escalade — mode d'emploi technique (version 6.2)
+# App Escalade — mode d'emploi technique (version 6.4)
 
 Ce fichier s'adresse à toi, pour faire vivre l'app et le rapport. Le guide d'utilisation, lisible par tout le monde, est `aide.html` (bouton **Plus → ❓ Aide** dans l'app, ou l'adresse `…/aide.html`).
 
@@ -99,7 +99,7 @@ Après une modification : `python escalade.py --app`, puis envoie `data.js` et `
 ## Changer de programme
 
 1. Dans `Programme.xlsx` : la nouvelle **date de début** (Paramètres) et le nouveau contenu (Programme). `python escalade.py --app`, puis GitHub.
-2. L'app détecte le nouveau programme (`PROGRAMME_ID`) et propose : **Exporter**, puis **Démarrer** (les séances de l'ancien programme sont effacées ; réglages, favoris et moyennes gardés).
+2. L'app détecte le nouveau programme (`PROGRAMME_ID`) et propose : **Exporter**, puis **Démarrer** (les séances de l'ancien programme sont effacées ; réglages, salles et favoris gardés).
 3. Range cet export dans un dossier d'archive (par exemple `exports/programme-2/`) ; pour l'afficher dans l'onglet Historique, remplace le contenu de `exports/programme-1/` ou adapte la constante `HISTO` dans `escalade.py`.
 
 Une séance peut avoir des versions (`## Voie (avec partenaire)`, `## Remplacement bloc (pas de partenaire)`) : l'app propose le choix dans le bandeau ; une version dont le nom contient « bloc » note des blocs.
@@ -112,13 +112,35 @@ Pour un nouveau **bloc** du même programme, il suffit d'ajouter ses lignes à l
 - **Voies « différentes »** (feux verts) : par identifiant de voie quand il existe, sinon cotation + couleur + nom.
 - **Temps saisis** : `d.tempsManuel` (minutes par étape) et `d.heuresSaisies` ; prioritaires sur les mesures (`tempsReel`), marqués « saisi » dans l'export.
 
+## Version 6.4 (salles, cotations libres)
+
+- **Échelles de l'app** : voies 3 à 9c+ (`FR`), blocs Fontainebleau 2 à 8C+ (`FONT`), identiques dans `escalade.py` (`COT_VOIE`, `COT_BLOC`) et dans Programme.xlsx (onglet Listes). Migration unique `migrer64` (clé `migration-64`) : voie « 4 » → 4a, bloc 6 → 6A, 7 → 7A, dans les séances et les salles ; `escalade.py` convertit aussi les anciens exports (`ANCIENNES`). Feux verts par famille (`baseCot` : 5b+ compte comme 5b) ; le feu bloc vise le 6A.
+- **Façon de coter d'une salle** (`sa.modes[disc]`, `modeEchelle`) : `standard` (échelle de l'app), `liste` (valeurs de la salle dans `sa.echelles[disc]`, équivalence `app` facultative, "" = inconnue), `couleurs` (la couleur est le niveau ; liste ordonnée facultative), `aucune`. `versApp` rend "" quand l'équivalence est inconnue : la tentative compte dans les totaux, pas dans les niveaux.
+- **Rien d'obligatoire** : cotation facultative partout (résultat, circuit, encodage, fiche de voie). `selecteurCot` : chiffre puis lettre en mode classique, une rangée sinon ; un 2e appui efface. Une tentative sans cotation a `cot: ""` (« ? » à l'écran, « Sans cot. » dans la grille du bilan).
+- **Profils** : 6 niveaux (ajout de « Fort dévers », compté en dévers) ; `pictoProfil` dessine l'inclinaison sur les tuiles et dans les choix (`choixProfil`). Les secteurs n'ont plus de profil ; le profil proposé est le plus fréquent du secteur (`profilHabituel`).
+- **Mur** : une seule page, filtre Tout · Blocs · Voies (`SA.disc`), groupes « Sans secteur » par type. Ranger par secteur (`SA.ranger` = clé du groupe) en glisser-déposer (pointer events, `touch-action:none`, ordre enregistré au lâcher, voies masquées gardant leur place). Classer (`SA.classer`, `SA.selection`) → fenêtre `classer`. Encodage express (`ajoutRapide` : compteur `nb`, secteur facultatif).
+- **Passages faits sans l'app** : `localStorage` « passages-anciens » (tentatives datées, `approx`), dans `toutesVoies`, Progrès, l'export (ligne `Voie` datée, semaine vide si avant le programme) et la sauvegarde.
+- **Séance** : ⓘ ouvre la fiche dans une fenêtre (`ficheExo`) ; consignes regroupées en haut (« Consignes de la séance ») ; thème (« ! Thème… ») dans le bandeau. Bilan rapide : la grille ne montre que les cotations de la séance, celles déjà remplies et « Sans cot. », plus « Une autre cotation ».
+- **Rapport** : pyramides et niveau consolidé limités aux cotations tentées ; une cotation vide n'est plus signalée comme « non reconnue ».
+
+## Version 6.3 (fluidité après audit)
+
+- **Bilan rapide en deux temps** (`htmlBilanRapide`) : « Faite comme prévu », effort, douleur et Enregistrer d'abord ; heures, phases, grille et notes repliées sous « Détails » (`M.details`, résumé sur la ligne). Les valeurs restent dans `M`, repliées ou non.
+- **Carte Maintenant** : la forme du jour devient un point de couleur dans la ligne Phase (texte complet dans les détails) ; bouton « Forme ? » si la récupération n'est pas notée. Tous les petits boutons ont fond et bordure. « Aller ici » absent sur la phase en cours.
+- **États des séances** (`etatSeance`) : `acompleter` (passée sans bilan, contour orange, « ! ») et `oubliee` (facultative ou créée, passée, grisée), en plus de faite, sautee, encours, avenir.
+- **Programme** : sous la bande des jours, `📏 Mesures` et `⋯ Copier, répéter, pause` propres à chaque semaine (`data-outils-sem`) ; le ⋯ de l'en-tête ne sert plus qu'à la séance. Mesures dans « À faire » seulement le dimanche (semaine en cours) et le lundi (semaine écoulée). Deux séances le même jour : pastille « 2 » et fenêtre de choix (`choixJour`).
+- **Navigation** : la mémoire d'écran (`sessionStorage` « nav ») n'est écrite qu'en ouvrant l'aide, lue une seule fois, et garde les étapes dépliées (`ouverts`). « Créer une séance » a sa flèche retour (vers le Programme). Plus de boutons « ‹ Plus » dans les écrans : la flèche de l'en-tête suffit. Titre de la fiche = nom de l'exercice ou de la routine ; titre de l'en-tête sur deux lignes.
+- **Lisibilité** : `--c-course` #0B7C87 et `--fait` #2E7D32 (contraste ≥ 4,5:1 avec le blanc) ; forme orange en texte foncé ; à 320 px, les boutons de la carte restent sur une ligne. Le bandeau « Annuler » passe sous une fenêtre ouverte.
+- **Export** : la ligne `Inventaire` a une colonne de plus (C13 = ordre de la voie sur le mur) ; l'onglet Salles du rapport suit cet ordre.
+- **Nettoyage** : règles CSS et code mort retirés (moyennes de temps par voie, ancien chrono de passage, ancienne vue Semaine).
+
 ## Version 6.2 (couleurs, salle, programme, navigation)
 
 - **Couleurs** : couleur pleine = activité (séance faite), adoucie = à venir (`color-mix` sur `--act`) ; pastel = type de phase. Tuiles de voies : `styleTuile(couleur)` met la couleur de la prise en fond et choisit le texte (`texteSur`, noir sur les couleurs claires).
 - **Boutons** : `.lien`, `.lien-blanc` et `.exo` ont fond et bordure ; le simple texte n'en a jamais.
 - **Séance** : titre court = ce qui précède le premier « · » (`teteReste`, `titreAction`) ; la suite est dans l'étape dépliée (`panneauEtape` : contenu à gauche, actions en colonne). Carte Maintenant : une ligne « Phase · temps » qui se déplie (`ouverts` « mn »). Récupération en un appui (`ressenti` : bien 5/5/5, moyen 3/3/4, mal 2/2/3 + douleur).
 - **Salle** : onglets Mur et Réglages ; fiche de voie (`voie2`) et réglages du secteur (`secteur2`) dans une fenêtre du bas. Ordre des voies : `v.ordre` (mode Ranger, `deplacerVoie`), repris dans la liste en séance.
-- **Programme** : vues Programme et Progrès. La semaine dépliée (`detailSemaine`) : bande des 7 jours, encadré « À faire », séances. Outils de la semaine dans ⋯ (semaine dépliée en dernier = `semaineVue`). Feux verts dans Progrès.
+- **Programme** : vues Programme et Progrès. La semaine dépliée (`detailSemaine`) : bande des 7 jours, encadré « À faire », séances. Outils de la semaine dans ⋯ (remplacé en 6.3 par un bouton par semaine). Feux verts dans Progrès.
 - **Navigation** : « ‹ Programme » quand une séance est ouverte depuis le programme (`origine`, `progY`) ; chaque onglet se rouvre là où on l'a laissé (`memoriserOnglet`) ; le toucher à nouveau ramène à son début ; « ? » ouvre l'aide à la bonne section (`ANCRES_AIDE`) et le retour reprend le même écran (`sessionStorage`, 10 minutes au plus). Onglet Plus en trois groupes ; fichier calendrier sous « Fonctions avancées » (`R.avancees`).
 
 ## Version 6.1 (corrections après audit)
@@ -133,7 +155,7 @@ Pour un nouveau **bloc** du même programme, il suffit d'ajouter ses lignes à l
 
 ## Version 6.0
 
-- **Phases** : la durée d'une phase vient de `(durée X min)` si elle est écrite, sinon passages × durée indicative (`temps_voie`, `temps_bloc` dans Paramètres) + repos. Plus de temps mesuré par voie ni de moyennes (`noterMoyenne` ne fait plus rien). Ligne du temps : `friseSeance`. Une pause : `1× Pause récupération (durée 10 min)`.
+- **Phases** : la durée d'une phase vient de `(durée X min)` si elle est écrite, sinon passages × durée indicative (`temps_voie`, `temps_bloc` dans Paramètres) + repos. Plus de temps mesuré par voie ni de moyennes. Ligne du temps : `friseSeance`. Une pause : `1× Pause récupération (durée 10 min)`.
 - **Fermeture de l'app** (`visibilitychange`) : minuteur arrêté, écran libéré, `d.pause` posé sur la séance en cours ; `verifierReprise` à la réouverture (moins de 15 min : reprise ; plus : Reprendre / Terminer ; séance d'un autre jour : rien, elle reste à compléter). Aucun minuteur ne reprend au démarrage.
 - **Salles** : secteur `type` (Bloc/Voie, deviné pour les salles existantes), `profil` habituel unique, ordre = ordre de la liste ; voie `repere` ; `identite(v, sa)` ; `dernierSecteur` mémorisé par salle et discipline. Export Inventaire : colonne repère en C12.
 - **Interface** : glissement sur tout l'écran, étapes teintées, vrais boutons, en-tête et onglets à la couleur de l'app, « Exporter et sauvegarder » unique (date d'export enregistrée seulement si le partage a lieu), vue Progrès, bilan de la semaine, grand affichage (`R.grand`).
