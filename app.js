@@ -9,7 +9,7 @@
 // =====================================================================
 // 1. RÉGLAGES DU PROGRAMME (modifiables dans le code)
 // =====================================================================
-const APP_VERSION = "5.5";
+const APP_VERSION = "6.0";
 const REPOS_DEFAUT = { Voie: 300, Bloc: 180, Maison: 90 };   // secondes, si la ligne n'indique rien
 const COTATIONS = { Voie: ["3","4","4c","5a","5b","5c","6a","6b","6c"], Bloc: ["2","3","4","5","6","7"] };
 COTATIONS["Escalade extérieur"] = COTATIONS.Voie;               // se note comme une voie
@@ -221,12 +221,14 @@ function htmlEditeur() {
     return `<div class="ed-ligne ed-action"><div class="ed-haut"><span>${esc(sansGuillemets(x.corps))}</span>${fl}</div>
       <div class="ed-reglages"><span class="compteur"><button data-m="ed-n" data-k="${k}" data-pas="-1">−</button><span>${x.n}×</span><button data-m="ed-n" data-k="${k}" data-pas="1">+</button></span>
         <select data-ed-repos="${k}"><option value="">repos auto</option>${[1, 2, 3, 4, 5, 10].map(r => `<option value="${r}" ${x.repos === r ? "selected" : ""}>repos ${r} min</option>`).join("")}</select>
+        <select data-ed-duree="${k}"><option value="">durée auto</option>${[5, 10, 15, 20, 25, 30, 40, 45, 60].map(m => `<option value="${m}" ${x.duree === m ? "selected" : ""}>${m} min</option>`).join("")}</select>
         <select data-ed-tag="${k}"><option value="">type auto</option><option value="facile" ${x.tag === "facile" ? "selected" : ""}>facile</option><option value="effort" ${x.tag === "effort" ? "selected" : ""}>effort</option></select></div></div>`;
   }).join("") + `<div class="ed-ajouts">
       <button class="lien" data-m="ed-exos">📖 Voir les exercices de cette séance</button>
       <select id="ed-exo"><option value="">+ Exercice…</option>${optionsExercices("")}</select>
       <select id="ed-routine"><option value="">+ Routine…</option>${routines.map(r => `<option>${esc(r)}</option>`).join("")}</select>
-      <div class="ajout-secteur"><input type="text" id="ed-consigne" placeholder="+ Consigne"><button data-m="ed-consigne">Ajouter</button></div></div>`;
+      <div class="ajout-secteur"><input type="text" id="ed-consigne" placeholder="+ Consigne"><button data-m="ed-consigne">Ajouter</button></div>
+      <button class="gros contour" data-m="ed-pause">+ Pause (10 min de récupération)</button></div>`;
   return h + `<div class="actions"><button data-m="fermer">Annuler</button><button data-m="ed-ok" class="principal">Enregistrer</button></div>`;
 }
 function enregistrerEditeur() {
@@ -361,8 +363,7 @@ const reposDe = (s, e) => e.repos ?? REPOS_DEFAUT[s.activite] ?? 0;
 // =====================================================================
 const lireMoyennes = () => JSON.parse(localStorage.getItem("moyennes") || '{"Voie":[],"Bloc":[]}');
 function tempsParPassage(type) {                     // minutes par voie ou par bloc
-  const fixe = type === "Voie" ? R.tVoie : R.tBloc, m = lireMoyennes()[type] || [];
-  return R.ajuster && m.length >= 3 ? m.reduce((a, b) => a + b, 0) / m.length : fixe;
+  return type === "Voie" ? PA("temps_voie", 4) : PA("temps_bloc", 1.5);   // durée indicative d'un passage, pour estimer la durée d'une phase
 }
 const estEscalade = e => /voie|bloc|essai|projet|circuit/i.test(e.texte);
 // Durée prévue d'un élément de séance, en secondes
@@ -401,6 +402,7 @@ function suivreEtape(s, d) {
 }
 // Moyenne réelle par voie ou par bloc (10 dernières étapes d'escalade terminées)
 function noterMoyenne(s, d, i, ms) {
+  return;                                                      // le temps par voie ou par bloc n'est plus mesuré
   if (d.approx) return;                                        // bilan rapide : temps approximatifs, hors moyennes
   const e = elementsDe(s, d)[i];
   if (!e || e.type !== "action" || !estEscalade(e) || e.travail || e.intervalle || e.dureePrevue || compte(d, i) < e.n) return;
@@ -549,7 +551,7 @@ function typeEtape(e) {
     return "echauffement";
   }
   if (e.force) return e.force;
-  if (/retour au calme|étirement|récupération/i.test(e.texte)) return "recup";
+  if (/^pause|retour au calme|étirement|récupération/i.test(e.texte)) return "recup";
   if (/projet|essai|au point|dévers|enchaînement|tractions|pinces/i.test(e.texte)) return "effort";
   return "facile";
 }
@@ -570,6 +572,7 @@ function afficherSeance() {
       `<button data-version="${n}" class="${(d.version || 0) === n ? "choisi" : ""}">${esc(v.nom.replace(/\s*\(.*\)\s*$/, ""))}</button>`).join("")}</div>` : ""}
     ${avant ? `<button class="blanc commencer" data-action="demarrer">▶ Commencer</button>
       <div class="liens-bandeau"><button class="lien-blanc" data-action="sauter">Séance sautée</button><button class="lien-blanc" data-action="bilan-rapide">Déjà faite ? Bilan rapide</button></div>` : ""}</div>`;
+  if (elements.some(e => e.type !== "info")) h += friseSeance(s, d, k);
   h += carteMaintenant(s, d, elements, k);
   h += avertissements(s);
 
@@ -732,18 +735,15 @@ function carteMaintenant(s, d, els, k) {
     <button class="blanc" data-action="fin">■ Terminer la séance</button></div></div>`;
   const e = els[k], etapes = etapesDe(els), rang = etapes.findIndex(x => x.i === k) + 1, leger = modeDe(s, d) === "leger";
   const prevu = dureeElement(s, d, e), passe = d.debut ? tempsEtapeEnCours(d) : 0;
-  const barre = `<div class="barre-seance">${etapes.map(x => {
-    const fait = etapeReglee(d, x.i, x.e);
-    return `<span class="${x.i === k ? "encours" : fait ? "fait" : ""}" style="flex-grow:${Math.max(1, dureeElement(s, d, x.e) / 60)}"></span>`;
-  }).join("")}</div>`;
+  const barre = `<div class="barre-phase"><span style="width:${prevu ? Math.min(100, passe / prevu * 100) : 0}%"></span></div>`;   // avancement de la phase en cours
   const suivante = etapes.find(x => x.i !== k && !etapeReglee(d, x.i, x.e) && (x.i > k || d.focus === k));
-  const temps = d.debut ? `<span id="temps-etape" data-prevu="${prevu}" class="${passe > prevu ? "retard" : ""}">${hm(passe)} sur ≈ ${hm(prevu)}</span>` : `≈ ${hm(prevu)}`;
+  const temps = d.debut ? `<span id="temps-etape" data-prevu="${prevu}">${Math.round(passe / 60)} / ${Math.round(prevu / 60)} min</span>` : `≈ ${hm(prevu)}`;
   let titre, sous, boutons = "";
   if (e.type === "routine") {
-    titre = e.nom; sous = "Routine";
+    titre = e.nom; sous = NOMS_TYPES[typeEtape(e)] || "Routine";
     if (routineGuidable(e.nom)) boutons += `<button data-guide="${k}">▶ Guidé</button>`;
   } else {
-    titre = titreAction(e); sous = `Passage ${compte(d, k) + 1} sur ${e.n}`;
+    titre = titreAction(e); sous = `${NOMS_TYPES[typeEtape(e)] || ""}${e.n > 1 ? ` · ${compte(d, k)}/${e.n} passages` : ""}`;
     if (e.intervalle || e.travail) boutons += `<button data-chrono="${k}">▶ ${e.travail ? duree(e.travail * (e.cotes ? 2 : 1)) : "Fractions"}</button>`;
     else if (reposDe(s, e) > 0) boutons += `<button data-repos="${k}">⏱ Repos</button>`;
   }
@@ -751,8 +751,8 @@ function carteMaintenant(s, d, els, k) {
   const bandeauRecup = fo ? `<div class="forme forme-${fo}">${TEXTE_FORME[fo]}</div>`
     : ESCALADE.includes(s.activite) && !d.recup ? `<button class="lien-blanc" data-action="recup">Noter la récupération ▸</button>` : "";
   return `<div class="maintenant ${animer.etape ? "nouvelle" : ""}"><div class="maintenant-temps" id="temps-seance"></div>${bandeauRecup}
-    <div class="maintenant-haut"><span>Étape ${rang} sur ${etapes.length} · ${esc(sous)}</span><span>${temps}</span></div>${barre}
-    <div class="maintenant-titre">${esc(titre)}</div>
+    <div class="maintenant-haut"><span>Phase ${rang} sur ${etapes.length} · ${esc(sous)}</span><span>${temps}</span></div>${barre}
+    <div class="maintenant-titre">${esc(titre)}</div>${e.type === "action" && reposDe(s, e) ? `<div class="maintenant-suite">repos ${duree(reposDe(s, e))} entre les essais</div>` : ""}
     ${suivante ? `<div class="maintenant-suite">Ensuite : ${esc(suivante.e.type === "routine" ? suivante.e.nom : titreAction(suivante.e))}</div>` : ""}
     <div class="mn-slot"></div>
     <div class="choix choix-carte">${leger ? `<button class="blanc principal-carte" data-etape-faite="${k}">✓ Faite</button>` : `<button class="blanc principal-carte" data-fait="${k}">✓ Fait</button>`}
@@ -760,6 +760,14 @@ function carteMaintenant(s, d, els, k) {
     <div class="petits-boutons"><button data-action="douleur">⚠ Douleur</button>${boutons}<button data-action="mode">Suivi ${leger ? "léger" : "détaillé"} ⇄</button></div></div>`;
 }
 
+const NOMS_TYPES = { echauffement: "Échauffement", securite: "Sécurité", facile: "Facile", effort: "Effort", recup: "Récupération" };
+// Ligne du temps : une case par phase, large selon sa durée prévue
+function friseSeance(s, d, k) {
+  const etapes = etapesDe(elementsDe(s, d)), total = etapes.reduce((a, x) => a + dureeElement(s, d, x.e), 0);
+  return `<div class="frise-titre">Ligne du temps · ${hm(total)}</div><div class="frise">${etapes.map(x => { const m = Math.round(dureeElement(s, d, x.e) / 60);
+    return `<button class="frise-phase type-${typeEtape(x.e)} ${x.i === k && d.debut && !d.fin ? "encours" : ""} ${etapeReglee(d, x.i, x.e) ? "faite" : ""}" style="flex-grow:${Math.max(1, m)}" data-frise="${x.i}"
+      title="${esc(x.e.type === "routine" ? x.e.nom : titreAction(x.e))}">${m >= 4 ? m : ""}</button>`; }).join("")}</div>`;
+}
 // Une étape dépliée : consigne, actions, passages, note, dernière fois
 function panneauEtape(s, d, e, i) {
   const fin = etapeFinie(d, i, e), passee = etapePassee(d, i), note = (d.notesLignes || {})[ck(d, i)];
@@ -926,10 +934,14 @@ function salleParDefaut() {
            echelles: { Bloc: ["1", "2", "3", "4", "5", "6", "7", "8", "9"].map(g => ({ salle: g, app: String(Math.min(max, Math.max(min, Number(g)))) })),
                        Voie: (COTATIONS.Voie || []).map(c => ({ salle: c, app: c })) } };
 }
-const profilsSecteur = x => x ? (x.profils && x.profils.length ? x.profils : [x.profil || "Vertical"]) : ["Vertical"];
+const profilsSecteur = x => [(x && x.profil) || "Vertical"];       // un seul profil habituel par secteur
 function lireSalles() {
   let x = JSON.parse(localStorage.getItem("salles") || "null");
-  if (x) x.liste.forEach(sa => sa.secteurs.forEach(z => { if (!z.profils) z.profils = [z.profil || "Vertical"]; z.profil = z.profils[0]; }));
+  if (x) x.liste.forEach(sa => sa.secteurs.forEach(z => {
+    if (z.profils) { z.profil = z.profils[0] || z.profil || "Vertical"; delete z.profils; }
+    if (!z.type) { const vs = sa.voies.filter(v => v.secteur === z.id);              // type deviné d'après ses voies
+      z.type = vs.length ? (vs.every(v => v.discipline === "Bloc") ? "Bloc" : "Voie") : sa.type === "Voie" ? "Voie" : "Bloc"; }
+  }));
   if (!x) { x = { liste: [salleParDefaut()], derniere: {} }; localStorage.setItem("salles", JSON.stringify(x)); }
   return x;
 }
@@ -940,6 +952,9 @@ const gradesSalle = (sid, act) => { const sa = salleDe(sid); return sa && sa.ech
 const versApp = (sid, act, g) => { const sa = salleDe(sid), e = sa && (sa.echelles[discDe(act)] || []).find(x => x.salle === String(g)); return e ? e.app : String(g); };
 const versSalle = (sid, act, g) => { const sa = salleDe(sid), e = sa && (sa.echelles[discDe(act)] || []).find(x => x.app === String(g)); return e ? e.salle : String(g); };
 const nomSecteur = (sa, id) => ((sa && sa.secteurs.find(x => x.id === id)) || {}).nom || "";
+const secteursDe = (sa, disc) => sa ? sa.secteurs.filter(z => !disc || z.type === disc) : [];
+// Identité lisible d'une voie : « Jaune 5 « Le toit » · Grotte · n° 7 »
+const identite = (v, sa) => [`${v.couleur ? v.couleur + " " : ""}${v.cot}${v.nom ? ` « ${v.nom} »` : ""}`, nomSecteur(sa, v.secteur), v.repere ? `n° ${v.repere}` : ""].filter(Boolean).join(" · ");
 // Historique d'une voie de l'inventaire (toutes séances)
 const essaisVoie = id => toutesVoies().filter(v => v.voieId === id);
 // Projets en cours : voies en place essayées, jamais réussies
@@ -961,30 +976,36 @@ function finaliserTentative(etat, act) {
     const x = lireSalles(), sa = x.liste.find(y => y.id === sid), disc = discDe(act);
     let voie = etat.voieId && sa.voies.find(y => y.id === etat.voieId);
     if (!voie) voie = sa.voies.find(y => y.statut !== "Démontée" && y.discipline === disc && y.cot === grade && (y.couleur || "") === (v.couleur || "") && (y.nom || "") === (v.nom || ""));
-    if (!voie) { voie = { id: "v" + Date.now() + Math.floor(Math.random() * 1000), discipline: disc, secteur: etat.secteurNouvelle || "", couleur: v.couleur || "",
+    const secteur = etat.secteurNouvelle || etat.filtreSecteur || (x.dernierSecteur || {})[sid + disc] || (secteursDe(sa, disc)[0] || {}).id || "";
+    if (!voie) { voie = { id: "v" + Date.now() + Math.floor(Math.random() * 1000), discipline: disc, secteur, couleur: v.couleur || "",
                           cot: grade, profil: v.profil, nom: v.nom || "", ouverture: isoDate(new Date()), statut: "En place", notes: "" };
                  sa.voies.push(voie); }
     if (reussi(v) && voie.etoile) voie.etoile = "";
-    v.voieId = voie.id; x.derniere[disc] = sid; ecrireSalles(x);
+    v.voieId = voie.id; x.derniere[disc] = sid;
+    if (voie.secteur) x.dernierSecteur = { ...(x.dernierSecteur || {}), [sid + disc]: voie.secteur };
+    ecrireSalles(x);
   }
   return v;
 }
 // Liste des voies de la salle dans la fenêtre de résultat
 function choixVoiesSalle(f, act, attr) {
   const sa = salleDe(f.salle); if (!sa) return "";
-  const disc = discDe(act), secteurs = sa.secteurs;
-  const voies = sa.voies.filter(v => v.statut !== "Démontée" && v.discipline === disc && (!f.filtreSecteur || v.secteur === f.filtreSecteur))
-    .sort((a, b) => (etoileAujourdhui(b) ? 1 : 0) - (etoileAujourdhui(a) ? 1 : 0));
-  const coul = COULEUR_HEX;
+  const disc = discDe(act), secteurs = secteursDe(sa, disc);
+  const enPlace = sa.voies.filter(v => v.statut !== "Démontée" && v.discipline === disc);
+  const couleurs = [...new Set(enPlace.map(v => v.couleur).filter(Boolean))];
+  const voies = enPlace.filter(v => (!f.filtreSecteur || v.secteur === f.filtreSecteur) && (!f.filtreCouleur || v.couleur === f.filtreCouleur))
+    .sort((a, b) => (etoileAujourdhui(b) ? 1 : 0) - (etoileAujourdhui(a) ? 1 : 0) || sa.secteurs.findIndex(z => z.id === a.secteur) - sa.secteurs.findIndex(z => z.id === b.secteur));
+  const secDefaut = f.secteurNouvelle || f.filtreSecteur || (lireSalles().dernierSecteur || {})[sa.id + disc] || (secteurs[0] || {}).id;
   return `<label class="champ">${disc === "Voie" ? "Voie" : "Bloc"} de la salle <span class="petit">· ${esc(sa.nom)}</span></label>
-    ${secteurs.length ? `<div class="choix compact"><button data-${attr}="filtreSecteur" data-valeur="" class="${!f.filtreSecteur ? "choisi" : ""}">Tous</button>${secteurs.map(x =>
+    ${secteurs.length > 1 ? `<div class="choix compact"><button data-${attr}="filtreSecteur" data-valeur="" class="${!f.filtreSecteur ? "choisi" : ""}">Tous</button>${secteurs.map(x =>
       `<button data-${attr}="filtreSecteur" data-valeur="${x.id}" class="${f.filtreSecteur === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")}</div>` : ""}
+    ${couleurs.length > 1 ? `<div class="pastilles filtre-couleurs">${couleurs.map(c => `<button data-${attr}="filtreCouleur" data-valeur="${c}" class="pastille ${f.filtreCouleur === c ? "choisi" : ""}" style="background:${COULEUR_HEX(c)}" aria-label="${c}"></button>`).join("")}</div>` : ""}
     <div class="voies-salle">${voies.map(v => { const n = essaisVoie(v.id);
-      return `<button data-${attr}="voie" data-valeur="${v.id}" class="voie-salle ${f.voieId === v.id ? "choisi" : ""}">${etoileAujourdhui(v) ? "★ " : ""}<span class="pastille-mini" style="background:${coul(v.couleur)}"></span>
-        <b>${esc(v.cot)}</b> ${esc(v.nom || v.couleur || "")}<span class="petit"> ${esc(nomSecteur(sa, v.secteur))}${n.length ? ` · ${n.length} essai${n.length > 1 ? "s" : ""}${n.some(reussi) ? " ✓" : ""}` : ""}</span></button>`; }).join("")
-      || `<p class="petit">Aucune ${disc === "Voie" ? "voie" : "bloc"} encore : note la couleur ci-dessous, elle s'ajoutera à la salle.</p>`}
+      return `<button data-${attr}="voie" data-valeur="${v.id}" class="voie-salle ${f.voieId === v.id ? "choisi" : ""}">${etoileAujourdhui(v) ? "★ " : ""}<span class="pastille-mini" style="background:${COULEUR_HEX(v.couleur)}"></span>
+        ${esc(identite(v, sa))}<span class="petit">${n.length ? ` · ${n.length} essai${n.length > 1 ? "s" : ""}${n.some(reussi) ? " ✓" : ""}` : ""}</span></button>`; }).join("")
+      || `<p class="petit">Aucune ici : note la couleur ci-dessous, elle s'ajoutera à la salle.</p>`}
     <button data-${attr}="nouvelle" class="voie-salle nouvelle ${f.nouvelle ? "choisi" : ""}">+ Nouvelle</button></div>
-    ${f.nouvelle && secteurs.length ? `<div class="choix compact">${secteurs.map(x => `<button data-${attr}="secteurNouvelle" data-valeur="${x.id}" class="${f.secteurNouvelle === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")}</div>` : ""}`;
+    ${f.nouvelle && secteurs.length ? `<label class="champ">Secteur de la nouvelle voie</label><div class="choix compact">${secteurs.map(x => `<button data-${attr}="secteurNouvelle" data-valeur="${x.id}" class="${secDefaut === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")}</div>` : ""}`;
 }
 // Choisir une voie de la liste : tout se remplit
 function choisirVoie(f, id, act) {
@@ -1038,6 +1059,8 @@ $("ecran").addEventListener("click", e => {
   const b = e.target.closest("button"), t = b ? b.dataset : {};
   if (b && t.action === "menu") return ouvrirModal({ type: "menu" });
   if (b && t.action === "douleur") return ouvrirModal({ type: "douleur" });
+  if (b && t.frise !== undefined) { const i = t.frise; ouverts.add("e" + i); afficher(false);
+    const el = document.querySelector(`[data-el="${i}"]`); if (el) el.scrollIntoView({ block: "center", behavior: "smooth" }); return; }
   if (b && t.et) { const i = Number(t.i);
     if (t.et === "faite") return basculerEtape(i);
     if (t.et === "passer") return modifier(d => { d.passees = d.passees || {}; const k = ck(d, i); if (d.passees[k]) delete d.passees[k]; else d.passees[k] = true; if (d.focus === i) delete d.focus; });
@@ -1192,6 +1215,7 @@ function actionFormVoie(t) {
     const v = finaliserTentative({ ...formVoie, ligne: undefined }, act);
     formVoie = null; return modifier(d => { d.voies = d.voies || []; d.voies.push(v); });
   } else if (t.form === "voie") choisirVoie(formVoie, t.valeur, act);
+  else if (t.form === "filtreCouleur") formVoie.filtreCouleur = formVoie.filtreCouleur === t.valeur ? "" : t.valeur;
   else if (t.form === "nouvelle") { formVoie.nouvelle = !formVoie.nouvelle; formVoie.voieId = ""; }
   else if (t.form === "couleur") formVoie.couleur = formVoie.couleur === t.valeur ? "" : t.valeur;
   else formVoie[t.form] = t.valeur;
@@ -1403,6 +1427,8 @@ function afficherModal() {
   }
   if (M.type === "ajoutRapide") h = htmlAjoutRapide();
   if (M.type === "copier") h = htmlCopier();
+  if (M.type === "reprise") h = `<h2>Tu étais en séance</h2><p>Tu as quitté l'app à ${heure(M.pause)}. Tu continues ?</p>
+    <div class="actions"><button data-m="rp-fin">Terminer (bilan rapide)</button><button data-m="rp-reprendre" class="principal">Reprendre</button></div>`;
   if (M.type === "bilanRapide") h = htmlBilanRapide();
   if (M.type === "etape") {
     const s = courant(), d = lire(s), e = elementsDe(s, d)[M.i], fin = etapeFinie(d, M.i, e);
@@ -1513,12 +1539,17 @@ $("modal").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b || !M) return;
   const t = b.dataset, type = M.type;
   if (type === "menu" && t.m && t.m !== "fermer") return actionMenu(t.m);
+  if (type === "reprise") {
+    if (t.m === "rp-reprendre") { fermerModal(); garderEcran(); return afficher(false); }
+    if (t.m === "rp-fin") { const p = M.pause; fermerModal(); ouvrirBilanRapide(); M.hfin = heure(p); return afficherModal(); }
+  }
   if (type === "bilanRapide") {
     if (t.m === "br-prevu") { Object.keys(M.etapes).forEach(i => M.etapes[i] = { etat: "faite", n: (elementsDe(courant(), lire(courant()))[i] || {}).n || 1 }); return afficherModal(); }
     if (t.m === "br-etat") { const x = M.etapes[t.i]; x.etat = t.valeur; if (t.valeur === "partielle") { const e = elementsDe(courant(), lire(courant()))[t.i]; x.n = Math.max(1, Math.min(e.n - 1, x.n >= e.n ? e.n - 1 : x.n)); } return afficherModal(); }
     if (t.m === "br-n") { const e = elementsDe(courant(), lire(courant()))[t.i], x = M.etapes[t.i]; x.n = Math.max(0, Math.min(e.n, x.n + Number(t.pas))); return afficherModal(); }
     if (t.m === "br-g") { const x = M.grille[t.g] = M.grille[t.g] || { ok: 0, ko: 0 }; x[t.k] = Math.max(0, x[t.k] + Number(t.pas)); return afficherModal(); }
-    if (t.m === "br-voie") { const r = M.voiesSalle[t.valeur]; M.voiesSalle[t.valeur] = !r ? "ok" : r === "ok" ? "ko" : ""; M.ouvrirVoies = true; return afficherModal(); }
+    if (t.m === "br-voie") { const r = M.voiesSalle[t.valeur]; M.voiesSalle[t.valeur] = !r ? "ok" : r === "ok" ? "ko" : ""; return afficherModal(); }
+    if (t.m === "br-cot") { M.ouvrirCot = M.ouvrirCot === t.g ? null : t.g; return afficherModal(); }
     if (t.m === "br-ok") return enregistrerBilanRapide();
   }
   if (type === "etape") {
@@ -1550,6 +1581,7 @@ $("modal").addEventListener("click", e => {
     if (t.m === "ed-n") { const x = DECOMP(L[k]); x.n = Math.max(1, x.n + Number(t.pas)); L[k] = RECOMP(x); return afficherModal(); }
     if (t.m === "ed-consigne") { const v = ($("ed-consigne").value || "").trim(); if (v) L.push("! " + v); return afficherModal(); }
     if (t.m === "ed-ok") return enregistrerEditeur();
+    if (t.m === "ed-pause") { M.lignes.push("1× Pause récupération (durée 10 min)"); return afficherModal(); }
     if (t.m === "ed-exos") { fermerModal(); return ouvrirBiblio({ ecran: "liste", filtre: "seance" }); }
   }
   if (type === "blocSuivant" && t.m === "bs-ok") {
@@ -1561,7 +1593,7 @@ $("modal").addEventListener("click", e => {
   if (type === "ajoutRapide") {
     if (t.m === "couleurRapide") { M.couleur = M.couleur === t.valeur ? "" : t.valeur; return afficherModal(); }
     if (t.m === "profilRapide") { M.profil = t.valeur; return afficherModal(); }
-    if (t.m === "secteur") { M.secteur = t.valeur; M.profil = ""; return afficherModal(); }
+    if (t.m === "secteur") { const z = salleDe(M.sid).secteurs.find(y => y.id === t.valeur); M.secteur = t.valeur; if (z) { M.profil = z.profil; if (z.type !== M.disc) { M.disc = z.type; M.cot = ""; } } return afficherModal(); }
     if (t.m === "disc") { M.disc = t.valeur; M.cot = ""; return afficherModal(); }
     if (t.m === "ajouter-suite") { ajouterVoieRapide(); return afficherModal(); }
     if (t.m === "ajouter-fermer") { ajouterVoieRapide(); fermerModal(); return afficher(false); }
@@ -1704,6 +1736,7 @@ $("modal").addEventListener("click", e => {
   if (t.m === "dureeAj") { M.dureeAj = Number(t.valeur); return afficherModal(); }
   if (t.m === "sec") M.sec = Math.max(1, M.sec + Number(t.pas));
   else if (t.m === "voie") { choisirVoie(M, t.valeur, M.act); return afficherModal(); }
+  else if (t.m === "filtreCouleur") { M.filtreCouleur = M.filtreCouleur === t.valeur ? "" : t.valeur; return afficherModal(); }
   else if (t.m === "secteurNouvelle") { M.secteurNouvelle = t.valeur; const x = (salleDe(M.salle) || { secteurs: [] }).secteurs.find(z => z.id === t.valeur); if (x) M.profil = x.profil; return afficherModal(); }
   else if (t.m === "nouvelle") { M.nouvelle = !M.nouvelle; M.voieId = ""; if (M.nouvelle) { M.couleur = ""; M.nom = ""; M.style = "À vue"; } return afficherModal(); }
   else if (t.m === "couleur") { M.couleur = M.couleur === t.valeur ? "" : t.valeur; if (type === "resultat" && M.edit === undefined) M.style = stylePropose(M.act, M.cot, M.couleur, M.nom); }
@@ -1746,6 +1779,7 @@ $("modal").addEventListener("change", e => {
     if (el.id === "ed-exo" && el.value) { M.lignes.push(`3× « ${el.value} »`); return afficherModal(); }
     if (el.id === "ed-routine" && el.value) { M.lignes.push(`> ${el.value}`); return afficherModal(); }
     if (el.dataset.edRepos !== undefined) { const k = Number(el.dataset.edRepos), x = DECOMP(M.lignes[k]); x.repos = el.value ? Number(el.value) : undefined; M.lignes[k] = RECOMP(x); return; }
+    if (el.dataset.edDuree !== undefined) { const k = Number(el.dataset.edDuree), x = DECOMP(M.lignes[k]); x.duree = el.value ? Number(el.value) : undefined; M.lignes[k] = RECOMP(x); return; }
     if (el.dataset.edTag !== undefined) { const k = Number(el.dataset.edTag), x = DECOMP(M.lignes[k]); x.tag = el.value || undefined; M.lignes[k] = RECOMP(x); return; }
   }
 });
@@ -1994,10 +2028,26 @@ const seanceEnCours = d => d.debut && !d.fin && (Date.now() - d.debut) < DUREE_M
 async function garderEcran() { if (!seanceEnCours(dCourant())) return; try { verrou = await navigator.wakeLock.request("screen"); } catch {} }
 function libererEcran() { if (verrou) verrou.release(); verrou = null; }
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState !== "visible") return;
-  if (seanceEnCours(dCourant())) garderEcran();
-  if (T) majMinuteur();
+  if (document.visibilityState !== "visible") {                 // l'app est quittée : tout s'arrête
+    if (T) { T = null; sauverT(); majMinuteur(); }
+    libererEcran();
+    LISTE.forEach(x => { const d = lire(x); if (d.debut && !d.fin && !d.pause) { d.pause = Date.now(); localStorage.setItem(cle(x), JSON.stringify(d)); } });
+    return;
+  }
+  verifierReprise();
 });
+// Retour dans l'app : moins de 15 min, la séance reprend ; plus, Reprendre ou Terminer ; un autre jour, elle reste « à compléter »
+function verifierReprise() {
+  const k = LISTE.findIndex(x => { const d = lire(x); return d.pause && d.debut && !d.fin; }); if (k < 0) return;
+  const s = LISTE[k], d = lire(s), pause = d.pause, dt = Date.now() - pause;
+  delete d.pause; if (d.etapeEnCours) d.etapeEnCours.depuis += dt;           // le temps passé hors de l'app ne compte pas
+  d.pauseTotale = (d.pauseTotale || 0) + dt; localStorage.setItem(cle(s), JSON.stringify(d));
+  // Séance commencée un autre jour, ou quittée un autre jour : pas de reprise, elle reste « à compléter »
+  if (isoDate(new Date(pause)) !== isoDate(new Date()) || isoDate(new Date(d.debut)) !== isoDate(new Date())) return afficher(false);
+  index = k; vue = "seance"; afficher(false);
+  if (dt < 15 * 60000) { garderEcran(); return montrerAnnulation("Séance reprise", () => {}); }
+  ouvrirModal({ type: "reprise", pause });
+}
 setInterval(() => {
   const d = dCourant(), c = $("chrono");
   if (c && d.debut) c.textContent = minutes(d.debut) + " min";
@@ -2155,11 +2205,52 @@ $("ecran").addEventListener("click", e => {
 });
 
 // ---------- Onglet Programme : vue Semaine et vue Programme ----------
-const basculeVue = actif => `<div class="segment vue-toggle"><button data-vue-prog="semaine" class="${actif === "semaine" ? "choisi" : ""}">Semaine</button>
-  <button data-vue-prog="programme" class="${actif === "programme" ? "choisi" : ""}">Programme</button></div>`;
+const basculeVue = actif => `<div class="segment vue-toggle">${[["semaine", "Semaine"], ["programme", "Programme"], ["progres", "Progrès"]].map(([k, t]) =>
+  `<button data-vue-prog="${k}" class="${actif === k ? "choisi" : ""}">${t}</button>`).join("")}</div>`;
+// Mes progrès : l'essentiel du rapport, sans ordinateur
+function afficherProgres() {
+  $("titre-date").textContent = "Mes progrès";
+  const dateDe = cleS => { const x = LISTE.find(y => cle(y) === cleS); return x ? dateSeance(x).getTime() : 0; };
+  const V = toutesVoies().map(v => ({ ...v, disc: discDe(v.act || "Voie"), date: dateDe(v.seance) }));
+  const consolide = (disc, dev) => { let niv = "—";
+    (COTATIONS[disc] || []).forEach(c => { const l = V.filter(v => v.disc === disc && v.cot === c && enDevers(v.profil) === dev);
+      if (l.length >= PA("consolide_essais", 5) && l.filter(reussi).length / l.length >= PA("consolide_taux", 0.7)) niv = c; });
+    return niv; };
+  const recents = V.filter(v => v.date >= Date.now() - 28 * 864e5 && reussi(v));
+  const pyramide = disc => { const cots = (COTATIONS[disc] || []).filter(c => V.some(v => v.disc === disc && v.cot === c)); if (!cots.length) return "";
+    const n = c => V.filter(v => v.disc === disc && v.cot === c && reussi(v)).length, t = c => V.filter(v => v.disc === disc && v.cot === c).length;
+    const max = Math.max(1, ...cots.map(n));
+    return `<div class="mur"><div class="mur-titre">${disc === "Voie" ? "Voies réussies" : "Blocs réussis"} par cotation</div>${[...cots].reverse().map(c =>
+      `<div class="mur-ligne"><span class="mur-cot">${esc(c)}</span><span class="mur-barre"><span style="width:${n(c) / max * 100}%"></span></span><span class="petit">${n(c)} / ${t(c)}</span></div>`).join("")}</div>`; };
+  const sem = semaineActuelle(), charges = Array.from({ length: 8 }, (_, j) => sem - 7 + j).filter(w => w >= 1).map(w => ({ w,
+    c: LISTE.filter(x => x.semaine === w).reduce((a, x) => { const d = lire(x); return a + (d.fait === "Oui" && d.duree && d.effort ? d.duree * d.effort : 0); }, 0) }));
+  const cmax = Math.max(1, ...charges.map(x => x.c));
+  $("ecran").innerHTML = basculeVue("progres") + `<h3 class="sous-cat">Niveau consolidé</h3>
+    <table class="tableau-progres"><tr><th></th><th>Vertical</th><th>Dévers</th></tr>
+      <tr><th>Voie</th><td>${consolide("Voie", false)}</td><td>${consolide("Voie", true)}</td></tr><tr><th>Bloc</th><td>${consolide("Bloc", false)}</td><td>${consolide("Bloc", true)}</td></tr></table>
+    <p class="petit">La cotation la plus haute réussie à au moins ${Math.round(PA("consolide_taux", 0.7) * 100)} % sur ${PA("consolide_essais", 5)} essais.</p>
+    <div class="resume-progres"><div><b>${recents.filter(v => v.disc === "Voie").length}</b><span>voies réussies<br>en 4 semaines</span></div>
+      <div><b>${recents.filter(v => v.disc === "Bloc").length}</b><span>blocs réussis<br>en 4 semaines</span></div></div>
+    ${pyramide("Voie")}${pyramide("Bloc")}
+    <div class="mur"><div class="mur-titre">Charge par semaine (durée × effort)</div><div class="barres-charge">${charges.map(x =>
+      `<div class="bc"><span style="height:${x.c / cmax * 100}%" class="${x.w === sem ? "actuelle" : ""}"></span><small>S${x.w}</small></div>`).join("")}</div></div>
+    ${carteFeux()}<p class="petit">Le détail (historique, douleurs, salles) est dans le rapport Suivi.xlsx, sur l'ordinateur.</p>`;
+}
 function carteMesures(sem) {
   const m = lireMesures(sem), n = CHAMPS_MESURES.filter(([c]) => !vide(m[c])).length;
   return `<button class="carte-mesures" data-mesures-sem="${sem}"><span>📏 Mesures de la semaine ${sem}</span><span class="petit">${n ? `${n} sur ${CHAMPS_MESURES.length} remplies` : "à remplir"} ›</span></button>`;
+}
+// Bilan de la semaine : le dimanche (ou le lundi pour la semaine écoulée)
+function carteBilanSemaine(w) {
+  const auj = (new Date().getDay() + 6) % 7, act = semaineActuelle();
+  if (!((auj === 6 && w === act) || (auj === 0 && w === act - 1))) return "";
+  const l = LISTE.filter(x => x.semaine === w), faites = l.filter(x => lire(x).fait === "Oui").length;
+  const prevues = l.filter(x => !/facultati/i.test(x.contenu) || lire(x).fait === "Oui").length;
+  const vs = l.flatMap(x => lire(x).voies || []), douleur = Math.max(0, ...l.map(x => Math.max(lire(x).douleur || 0, ...((lire(x).douleurs || []).map(z => z.niv || 0)))));
+  const m = lireMesures(w), nm = CHAMPS_MESURES.filter(([c]) => !vide(m[c])).length;
+  return `<div class="carte bilan-hebdo"><b>Ta semaine ${w}</b>
+    <div class="resume-progres"><div><b>${faites}/${prevues}</b><span>séances</span></div><div><b>${vs.filter(reussi).length}</b><span>réussites</span></div><div><b>${douleur}</b><span>douleur max</span></div></div>
+    <div class="choix"><button data-mesures-sem="${w}">📏 Mesures ${nm ? `(${nm}/${CHAMPS_MESURES.length})` : "à remplir"}</button><button data-exporter-semaine="1">⬆ Exporter</button></div></div>`;
 }
 function afficherProgramme() {
   $("titre-date").textContent = "Programme";
@@ -2183,11 +2274,12 @@ function afficherProgramme() {
   const act = document.querySelector(".ligne-semaine.actuelle"); if (act) act.scrollIntoView({ block: "center" });
 }
 $("ecran").addEventListener("click", e => {
-  if (vue !== "semaine" && vue !== "programme") return;
+  if (vue !== "semaine" && vue !== "programme" && vue !== "progres") return;
   const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.vueProg) { vue = b.dataset.vueProg; return afficher(); }
   if (b.dataset.semaineProg) return ouvrirSemaine(Number(b.dataset.semaineProg));
   if (b.dataset.mesuresSem) return ouvrirModal({ type: "mesures", sem: Number(b.dataset.mesuresSem) });
+  if (b.dataset.exporterSemaine) return exporter();
   if (b.dataset.completer) { changer(Number(b.dataset.completer)); return ouvrirBilanRapide(); }
   if (b.dataset.outilsSemaine) return ouvrirModal({ type: "outilsSemaine", semaine: semaineVue, dest: semaineVue + 1, rep: 1, pause: 1 });
   if (b.dataset.blocSuivant) return ouvrirModal({ type: "blocSuivant", brouillon: brouillonBlocSuivant() });
@@ -2234,17 +2326,16 @@ function htmlBilanRapide() {
       <p class="petit">Par cotation${sa ? " de la salle" : ""} : combien de réussis et de ratés ?</p>
       <div class="grille-cot"><div class="gc-tete"><span></span><span>✓ ${voie ? "enchaînées" : "réussis"}</span><span>✗ ${voie ? "pas finies" : "ratés"}</span></div>
       ${grades.map(g => { const x = M.grille[g] || { ok: 0, ko: 0 };
-        return `<div class="gc-ligne ${x.ok || x.ko ? "rempli" : ""}"><b>${esc(g)}</b>
-          <span class="compteur"><button data-m="br-g" data-g="${esc(g)}" data-k="ok" data-pas="-1">−</button><span>${x.ok}</span><button data-m="br-g" data-g="${esc(g)}" data-k="ok" data-pas="1">+</button></span>
-          <span class="compteur"><button data-m="br-g" data-g="${esc(g)}" data-k="ko" data-pas="-1">−</button><span>${x.ko}</span><button data-m="br-g" data-g="${esc(g)}" data-k="ko" data-pas="1">+</button></span></div>`; }).join("")}</div>`;
-    if (sa) {
-      const vs = sa.voies.filter(v => v.statut !== "Démontée" && v.discipline === discDe(act)).sort((a, b) => (etoileAujourdhui(b) ? 1 : 0) - (etoileAujourdhui(a) ? 1 : 0));
-      if (vs.length) h += `<details class="plus-details" ${M.ouvrirVoies ? "open" : ""}><summary>Voies précises de la salle (projets, nouvelles…) ▸</summary>
-        <p class="petit">Touche une voie : une fois = réussie, deux fois = ratée, trois fois = rien.</p>
-        <div class="tuiles-voies">${vs.map(v => { const r = M.voiesSalle[v.id];
-          return `<button class="tuile-voie ${r === "ok" ? "br-ok" : r === "ko" ? "br-ko" : ""}" data-m="br-voie" data-valeur="${v.id}" style="border-top-color:${COULEUR_HEX(v.couleur) === "transparent" ? "var(--bord)" : COULEUR_HEX(v.couleur)}">
-            ${etoileAujourdhui(v) ? `<span class="t-etoile">★</span>` : ""}<span class="t-cot">${esc(v.cot)}</span><span class="t-etat">${r === "ok" ? "✓ réussie" : r === "ko" ? "✗ ratée" : esc(v.nom || v.couleur || "")}</span></button>`; }).join("")}</div></details>`;
-    }
+        const vs = sa ? sa.voies.filter(v => v.statut !== "Démontée" && v.discipline === discDe(act) && v.cot === g) : [];
+        const tag = r => vs.filter(v => M.voiesSalle[v.id] === r).length, ouvert = M.ouvrirCot === g;
+        return `<div class="gc-ligne ${x.ok || x.ko || tag("ok") || tag("ko") ? "rempli" : ""}"><button class="gc-cot" data-m="br-cot" data-g="${esc(g)}" ${vs.length ? "" : "disabled"}>${esc(g)}${vs.length ? (ouvert ? " ▾" : " ▸") : ""}</button>
+          <span class="compteur"><button data-m="br-g" data-g="${esc(g)}" data-k="ok" data-pas="-1">−</button><span>${x.ok + tag("ok")}</span><button data-m="br-g" data-g="${esc(g)}" data-k="ok" data-pas="1">+</button></span>
+          <span class="compteur"><button data-m="br-g" data-g="${esc(g)}" data-k="ko" data-pas="-1">−</button><span>${x.ko + tag("ko")}</span><button data-m="br-g" data-g="${esc(g)}" data-k="ko" data-pas="1">+</button></span></div>
+          ${ouvert ? `<div class="gc-voies"><p class="petit">Touche une voie : une fois = réussie, deux fois = ratée, trois fois = rien.</p>${secteursDe(sa, discDe(act)).map(z => {
+            const l = vs.filter(v => v.secteur === z.id); if (!l.length) return "";
+            return `<div class="petit"><b>${esc(z.nom)}</b></div><div class="tuiles-voies">${l.map(v => { const r = M.voiesSalle[v.id];
+              return `<button class="tuile-voie ${r === "ok" ? "br-ok" : r === "ko" ? "br-ko" : ""}" data-m="br-voie" data-valeur="${v.id}" style="border-top-color:${COULEUR_HEX(v.couleur) === "transparent" ? "var(--bord)" : COULEUR_HEX(v.couleur)}">
+                <span class="t-cot">${esc(v.cot)}</span><span class="t-etat">${r === "ok" ? "✓ réussie" : r === "ko" ? "✗ ratée" : esc(v.repere ? "n° " + v.repere : v.nom || v.couleur || "")}</span></button>`; }).join("")}</div>`; }).join("")}</div>` : ""}`; }).join("")}</div>`;
   }
   h += `<h3 class="sous-cat">Ressenti</h3><label class="champ">Effort (1 à 10)</label>${echelle("effort", 1)}
     <label class="champ">Douleur après la séance (0 à 10)</label>${echelle("douleur", 0)}
@@ -2309,7 +2400,8 @@ function afficherSemaine() {
   const prevues = items.filter(x => !/facultati/i.test(x.s.contenu) || x.d.fait === "Oui");
   const faites = items.filter(x => x.d.fait === "Oui");
   const minutesFaites = faites.reduce((t, x) => t + (x.d.fin && x.d.debut ? (x.d.fin - x.d.debut) / 1000 : (Number(x.d.duree) || 0) * 60), 0);
-  let h = basculeVue("semaine") + carteACompleter() + carteCompetences(semaineVue) + carteFeux() + carteMesures(semaineVue)
+  const bilanHebdo = carteBilanSemaine(semaineVue);
+  let h = basculeVue("semaine") + bilanHebdo + carteACompleter() + carteCompetences(semaineVue) + carteFeux() + (bilanHebdo ? "" : carteMesures(semaineVue))
     + `<button class="lien outils-semaine" data-outils-semaine="1">⋯ Outils de la semaine (copier, répéter, pause)</button>` + `<div class="bilan-semaine">${faites.length} séance${faites.length > 1 ? "s" : ""} faite${faites.length > 1 ? "s" : ""} sur ${prevues.length}${minutesFaites ? " · " + hm(minutesFaites) : ""}</div>`;
   if (!items.length) h += `<p class="petit centre">Aucune séance cette semaine.</p>`;
   const auj = isoDate(new Date());
@@ -2607,8 +2699,8 @@ function afficherSalles() {
     + `<button class="gros contour" data-salle-ajout="1">+ Nouvelle salle</button>`;
 }
 // Le mur en un coup d'œil : par cotation, ce qui est en place et ce que tu as réussi
-function murSalle(sa) {
-  return ["Bloc", "Voie"].map(disc => {
+function murSalle(sa, seul) {
+  return ["Bloc", "Voie"].filter(x => !seul || x === seul).map(disc => {
     const enPlace = sa.voies.filter(v => v.discipline === disc && v.statut !== "Démontée"); if (!enPlace.length) return "";
     const grades = (sa.echelles[disc] || []).map(x => x.salle).filter(g => enPlace.some(v => v.cot === g));
     return `<div class="mur"><div class="mur-titre">${disc === "Bloc" ? "Blocs" : "Voies"} en place</div>${grades.map(g => {
@@ -2620,7 +2712,7 @@ function tuileVoie(v) {
   const n = essaisVoie(v.id), ok = n.some(reussi);
   const etat = ok ? `<span class="t-ok">✓ réussi</span>` : n.length ? `${n.length} essai${n.length > 1 ? "s" : ""}` : "à essayer";
   return `<button class="tuile-voie ${v.statut === "Démontée" ? "demontee" : ""}" data-voie-salle="${v.id}" style="border-top-color:${COULEUR_HEX(v.couleur) === "transparent" ? "var(--bord)" : COULEUR_HEX(v.couleur)}">
-    ${etoileAujourdhui(v) ? `<span class="t-etoile">★</span>` : ""}<span class="t-cot">${esc(v.cot)}</span><span class="t-etat">${etat}</span>${v.nom ? `<span class="t-nom">${esc(v.nom)}</span>` : ""}</button>`;
+    ${etoileAujourdhui(v) ? `<span class="t-etoile">★</span>` : ""}<span class="t-cot">${esc(v.cot)}</span><span class="t-etat">${etat}</span>${v.nom || v.repere ? `<span class="t-nom">${esc([v.repere ? "n° " + v.repere : "", v.nom].filter(Boolean).join(" · "))}</span>` : ""}</button>`;
 }
 function afficherSalle() {
   const sa = salleDe(SA.id); if (!sa) return ouvrirSalles();
@@ -2631,13 +2723,15 @@ function afficherSalle() {
     `<button data-onglet-salle="${k}" class="${SA.onglet === k ? "choisi" : ""}">${t}</button>`).join("")}</div>`;
   let h = onglets;
   if (SA.onglet === "voies") {
-    const projets = projetsEnCours(sa.id);
+    const types = [...new Set(sa.secteurs.map(z => z.type))], disc = SA.disc && types.includes(SA.disc) ? SA.disc : types.includes("Bloc") ? "Bloc" : types[0] || "Bloc";
+    const projets = projetsEnCours(sa.id, types.length > 1 ? disc : null);
     const garder = v => SA.filtre === "toutes" ? true : v.statut === "Démontée" ? false
       : SA.filtre === "essayer" ? !essaisVoie(v.id).length : SA.filtre === "reussies" ? essaisVoie(v.id).some(reussi) : true;
-    const groupes = [...sa.secteurs.map(x => ({ id: x.id, nom: x.nom, profil: x.profil })), { id: "", nom: "Sans secteur", profil: "" }]
-      .map(g => ({ ...g, voies: sa.voies.filter(v => (v.secteur || "") === g.id && garder(v)).sort((a, b) => String(a.cot).localeCompare(String(b.cot), "fr", { numeric: true })) }))
+    const groupes = [...secteursDe(sa, types.length > 1 ? disc : null).map(x => ({ id: x.id, nom: x.nom, profil: x.profil })), { id: "", nom: "Sans secteur", profil: "" }]
+      .map(g => ({ ...g, voies: sa.voies.filter(v => (v.secteur || "") === g.id && garder(v) && (types.length < 2 || v.discipline === disc)).sort((a, b) => String(a.cot).localeCompare(String(b.cot), "fr", { numeric: true })) }))
       .filter(g => g.voies.length);
-    h += murSalle(sa)
+    h += (types.length > 1 ? `<div class="segment">${["Bloc", "Voie"].map(t => `<button data-salle-disc="${t}" class="${disc === t ? "choisi" : ""}">${t === "Bloc" ? "Blocs" : "Voies"}</button>`).join("")}</div>` : "")
+      + murSalle(sa, types.length > 1 ? disc : null)
       + (projets.length ? `<h3 class="sous-cat">Projets en cours</h3>${projets.slice(0, 5).map(p => `<button class="ligne-exo" data-voie-salle="${p.v.id}"><span><span class="pastille-mini" style="background:${COULEUR_HEX(p.v.couleur)}"></span><b>${esc(p.v.cot)}</b> ${esc(p.v.nom || p.v.couleur || "")}
           <span class="petit">${esc(nomSecteur(sa, p.v.secteur))}</span></span><span class="badge">${p.essais.length} essai${p.essais.length > 1 ? "s" : ""}</span></button>`).join("")}` : "")
       + `<div class="choix compact filtres-salle">${[["place", "En place"], ["essayer", "À essayer"], ["reussies", "Réussies"], ["toutes", "Toutes"]].map(([k, t]) =>
@@ -2645,13 +2739,16 @@ function afficherSalle() {
       + (groupes.map(g => `<div class="groupe-secteur"><b>${esc(g.nom)}</b>${g.profil ? ` <span class="petit">· ${esc(g.profil.toLowerCase())}</span>` : ""}</div>
           <div class="tuiles-voies">${g.voies.map(tuileVoie).join("")}</div>`).join("")
         || `<p class="petit">Rien à afficher. Les voies s'ajoutent toutes seules quand tu notes une couleur pendant une séance, ou avec le bouton ci-dessous.</p>`)
-      + `<button class="gros go" data-ajout-rapide="">+ Ajouter des voies</button>`;
+      + `<button class="gros go" data-ajout-rapide="" data-disc-ajout="${disc}">+ Ajouter des ${disc === "Voie" ? "voies" : "blocs"}</button>`;
   } else if (SA.onglet === "secteurs") {
     const jours = ts => ts ? Math.floor((Date.now() - ts) / 864e5) : null;
-    h += sa.secteurs.map(x => { const n = sa.voies.filter(v => v.secteur === x.id && v.statut !== "Démontée").length, j = jours(x.maj);
-        return `<button class="ligne-menu" data-secteur="${x.id}"><span><span class="titre-menu">${esc(x.nom)}</span>
-          <span class="sous-menu">${esc(profilsSecteur(x).join(", "))} · ${n} en place${j !== null ? ` · mis à jour il y a ${j} jour${j > 1 ? "s" : ""}` : ""}</span></span><span class="chevron">›</span></button>`; }).join("")
-      + `<div class="ajout-secteur"><input type="text" id="secteur-nom" placeholder="Nouveau secteur (ex. Grand dévers)">
+    h += `<p class="petit">Un secteur = ce que la salle renouvelle en une fois. Range-les dans l'ordre de ton tour de salle avec ↑ ↓.</p>`
+      + sa.secteurs.map((x, k) => { const n = sa.voies.filter(v => v.secteur === x.id && v.statut !== "Démontée").length, j = jours(x.maj);
+        return `<div class="ligne-secteur"><button class="ligne-menu" data-secteur="${x.id}"><span><span class="titre-menu">${esc(x.nom)}</span>
+          <span class="sous-menu">${x.type === "Voie" ? "Voies" : "Blocs"} · ${esc(x.profil)} · ${n} en place${j !== null ? ` · mis à jour il y a ${j} j` : ""}</span></span><span class="chevron">›</span></button>
+          <span class="ed-fleches"><button data-sec-ordre="-1" data-k="${k}" aria-label="Monter">↑</button><button data-sec-ordre="1" data-k="${k}" aria-label="Descendre">↓</button></span></div>`; }).join("")
+      + `<div class="ajout-secteur"><input type="text" id="secteur-nom" placeholder="Nouveau secteur (ex. Grotte)">
+        <select id="secteur-type"><option ${sa.type === "Voie" ? "" : "selected"}>Bloc</option><option ${sa.type === "Voie" ? "selected" : ""}>Voie</option></select>
         <select id="secteur-profil">${PROFILS.map(p => `<option>${p}</option>`).join("")}</select><button class="principal" data-secteur-ajout="1">Ajouter</button></div>`;
   } else {
     h += `<label class="champ">Nom</label><input type="text" id="salle-nom" value="${esc(sa.nom)}">
@@ -2670,14 +2767,15 @@ function afficherSalle() {
 function afficherVoieSalle(sa) {
   const v = sa.voies.find(x => x.id === SA.voie); if (!v) { SA.voie = null; return afficherSalle(); }
   const essais = essaisVoie(v.id), disc = v.discipline;
-  $("titre-date").textContent = `${disc} ${v.cot}`;
+  $("titre-date").textContent = identite(v, sa);
   $("ecran").innerHTML = `<button class="gros ${etoileAujourdhui(v) ? "go" : "contour"}" data-etoile="1">${etoileAujourdhui(v) ? "★ À faire aujourd'hui" : "☆ À faire aujourd'hui"}</button>
-    <label class="champ">Type</label><div class="segment">${["Voie", "Bloc"].map(t => `<button data-vs="discipline" data-valeur="${t}" class="${disc === t ? "choisi" : ""}">${t}</button>`).join("")}</div>
-    <label class="champ">Secteur</label><div class="choix compact"><button data-vs="secteur" data-valeur="" class="${!v.secteur ? "choisi" : ""}">Aucun</button>${sa.secteurs.map(x => `<button data-vs="secteur" data-valeur="${x.id}" class="${v.secteur === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")}</div>
+    ${v.secteur ? "" : `<label class="champ">Type</label><div class="segment">${["Voie", "Bloc"].map(t => `<button data-vs="discipline" data-valeur="${t}" class="${disc === t ? "choisi" : ""}">${t}</button>`).join("")}</div>`}
+    <label class="champ">Secteur</label><div class="choix compact"><button data-vs="secteur" data-valeur="" class="${!v.secteur ? "choisi" : ""}">Aucun</button>${sa.secteurs.filter(x => !v.secteur || x.type === disc).map(x => `<button data-vs="secteur" data-valeur="${x.id}" class="${v.secteur === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")}</div>
     <label class="champ">Cotation (échelle de la salle)</label><div class="choix compact">${(sa.echelles[disc] || []).map(x => `<button data-vs="cot" data-valeur="${esc(x.salle)}" class="${v.cot === x.salle ? "choisi" : ""}">${esc(x.salle)}</button>`).join("")}</div>
     <label class="champ">Couleur</label><div class="pastilles">${couleursDe(sa.id).map(([n, c]) => `<button data-vs="couleur" data-valeur="${n}" class="pastille ${v.couleur === n ? "choisi" : ""}" style="background:${c}" aria-label="${n}"></button>`).join("")}</div>
     <label class="champ">Profil</label><div class="segment">${PROFILS.map(p => `<button data-vs="profil" data-valeur="${p}" class="${v.profil === p ? "choisi" : ""}">${p}</button>`).join("")}</div>
-    <label class="champ">Nom ou numéro</label><input type="text" id="vs-nom" value="${esc(v.nom || "")}">
+    <label class="champ">Repère <span class="petit">(n° de couloir ou de ligne)</span></label><input type="text" id="vs-repere" inputmode="numeric" value="${esc(v.repere || "")}">
+    <label class="champ">Nom</label><input type="text" id="vs-nom" value="${esc(v.nom || "")}">
     <label class="champ">Notes (méthode, prises…)</label><textarea id="vs-notes">${esc(v.notes || "")}</textarea>
     <label class="champ">Statut</label><div class="segment">${["En place", "Démontée"].map(t => `<button data-vs="statut" data-valeur="${t}" class="${(v.statut || "En place") === t ? "choisi" : ""}">${t}</button>`).join("")}</div>
     <p class="petit">Ouverte le ${esc(v.ouverture || "?")}${v.demontage ? ` · démontée le ${esc(v.demontage)}` : ""}</p>
@@ -2701,33 +2799,35 @@ function afficherSecteur(sa) {
     <button class="gros contour" data-sec-renouv="${x.id}">⟳ Renouvelé : les voies ont changé</button>
     <h3 class="sous-cat">Réglages du secteur</h3>
     <label class="champ">Nom</label><input type="text" id="sec-nom2" value="${esc(x.nom)}">
-    <label class="champ">Profils <span class="petit">(un ou plusieurs ; le premier est proposé par défaut)</span></label>
-    <div class="choix">${PROFILS.map(p => `<button data-sec-prof="${p}" class="${profilsSecteur(x).includes(p) ? "choisi" : ""}">${p}</button>`).join("")}</div>
+    <label class="champ">Type</label><div class="segment">${["Bloc", "Voie"].map(t => `<button data-sec-type="${t}" class="${x.type === t ? "choisi" : ""}">${t}</button>`).join("")}</div>
+    <label class="champ">Profil habituel <span class="petit">(proposé pour les nouvelles voies ; chaque voie garde le sien)</span></label>
+    <div class="segment">${PROFILS.map(p => `<button data-sec-prof="${p}" class="${x.profil === p ? "choisi" : ""}">${p}</button>`).join("")}</div>
     <button class="gros contour danger" data-sec-suppr="${x.id}">Supprimer le secteur</button>`;
 }
 // Ajout rapide en rafale
-function ouvrirAjoutRapide(secteur) {
-  const sa = salleDe(SA.id), disc = sa.type === "Voie" ? "Voie" : "Bloc";
-  ouvrirModal({ type: "ajoutRapide", sid: sa.id, disc, secteur: secteur ?? (sa.secteurs[0] || {}).id ?? "", couleur: "", cot: "", ajoutees: 0 });
+function ouvrirAjoutRapide(secteur, discVoulue) {
+  const sa = salleDe(SA.id), sec = secteur || SA.secteur || (secteursDe(sa, discVoulue)[0] || sa.secteurs[0] || {}).id || "";
+  const z = sa.secteurs.find(y => y.id === sec);
+  ouvrirModal({ type: "ajoutRapide", sid: sa.id, disc: z ? z.type : discVoulue || (sa.type === "Voie" ? "Voie" : "Bloc"), secteur: sec, profil: z ? z.profil : "Vertical", couleur: "", cot: "", repere: "", ajoutees: 0 });
 }
 function htmlAjoutRapide() {
   const sa = salleDe(M.sid);
   return `<h2>Ajouter des voies · ${esc(sa.nom)}</h2>
-    ${sa.type === "Bloc et voie" ? `<div class="segment">${["Bloc", "Voie"].map(t => `<button data-m="disc" data-valeur="${t}" class="${M.disc === t ? "choisi" : ""}">${t}</button>`).join("")}</div>` : ""}
-    <label class="champ">Secteur</label><div class="choix compact"><button data-m="secteur" data-valeur="" class="${!M.secteur ? "choisi" : ""}">Aucun</button>${sa.secteurs.map(x => `<button data-m="secteur" data-valeur="${x.id}" class="${M.secteur === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")}</div>
+    <label class="champ">Secteur <span class="petit">(${M.disc === "Voie" ? "voies" : "blocs"})</span></label><div class="choix compact">${sa.secteurs.map(x => `<button data-m="secteur" data-valeur="${x.id}" class="${M.secteur === x.id ? "choisi" : ""}">${esc(x.nom)}</button>`).join("")
+      || `<span class="petit">Aucun secteur : crée-les dans l'onglet Secteurs.</span>`}</div>
     <label class="champ">Couleur</label><div class="pastilles">${couleursDe(M.sid).map(([n, c]) => `<button data-m="couleurRapide" data-valeur="${n}" class="pastille ${M.couleur === n ? "choisi" : ""}" style="background:${c}" aria-label="${n}"></button>`).join("")}</div>
-    ${profilsSecteur(sa.secteurs.find(z => z.id === M.secteur)).length > 1 ? `<label class="champ">Profil</label><div class="segment">${profilsSecteur(sa.secteurs.find(z => z.id === M.secteur)).map(p =>
-      `<button data-m="profilRapide" data-valeur="${p}" class="${(M.profil || profilsSecteur(sa.secteurs.find(z => z.id === M.secteur))[0]) === p ? "choisi" : ""}">${p}</button>`).join("")}</div>` : ""}
+    <label class="champ">Profil de la voie</label><div class="segment">${PROFILS.map(p => `<button data-m="profilRapide" data-valeur="${p}" class="${M.profil === p ? "choisi" : ""}">${p}</button>`).join("")}</div>
     <label class="champ">Cotation</label><div class="choix compact">${(sa.echelles[M.disc] || []).map(x => `<button data-m="cot" data-valeur="${esc(x.salle)}" class="${M.cot === x.salle ? "choisi" : ""}">${esc(x.salle)}</button>`).join("")}</div>
+    <label class="champ">Repère <span class="petit">(facultatif : n° de couloir ou de ligne)</span></label><input type="text" id="ar-repere" inputmode="numeric" value="${esc(M.repere)}">
     ${M.ajoutees ? `<p class="ajout-ok">✓ ${M.ajoutees} ajoutée${M.ajoutees > 1 ? "s" : ""}</p>` : ""}
     <div class="actions"><button data-m="ajouter-fermer" ${M.cot ? "" : "disabled"}>Ajouter</button><button data-m="ajouter-suite" class="principal" ${M.cot ? "" : "disabled"}>Ajouter et continuer</button></div>
     <p class="centre"><button class="lien" data-m="fermer">Terminé</button></p>`;
 }
 function ajouterVoieRapide() {
   majSalle(M.sid, sa => { const sec = sa.secteurs.find(x => x.id === M.secteur);
-    sa.voies.push({ id: "v" + Date.now() + Math.floor(Math.random() * 1000), discipline: M.disc, secteur: M.secteur, couleur: M.couleur, cot: M.cot,
-                    profil: M.profil && profilsSecteur(sec).includes(M.profil) ? M.profil : profilsSecteur(sec)[0], nom: "", ouverture: isoDate(new Date()), statut: "En place", notes: "" }); });
-  M.ajoutees++; M.couleur = ""; M.cot = "";
+    sa.voies.push({ id: "v" + Date.now() + Math.floor(Math.random() * 1000), discipline: sec ? sec.type : M.disc, secteur: M.secteur, couleur: M.couleur, cot: M.cot,
+                    profil: M.profil || (sec ? sec.profil : "Vertical"), nom: "", repere: ($("ar-repere") || {}).value || "", ouverture: isoDate(new Date()), statut: "En place", notes: "" }); });
+  M.ajoutees++; M.couleur = ""; M.cot = ""; M.repere = "";
 }
 // Création guidée d'une salle (ou compléter une salle existante)
 const SECTEURS_SUGGERES = [["Dalle", "Dalle"], ["Vertical", "Vertical"], ["Léger dévers", "Léger dévers"], ["Dévers", "Dévers"], ["Toit", "Toit"], ["Pan", "Dévers"]];
@@ -2758,7 +2858,7 @@ function finirAssistant() {
   const x = lireSalles();
   let sa = M.sid && x.liste.find(y => y.id === M.sid);
   if (!sa) { sa = salleParDefaut(); sa.nom = M.nom.trim() || "Nouvelle salle"; sa.type = M.typeSalle; x.liste.push(sa); }
-  M.secteurs.forEach(n => { if (!sa.secteurs.some(s => s.nom === n)) sa.secteurs.push({ id: "t" + Date.now() + Math.floor(Math.random() * 1000), nom: n,
+  M.secteurs.forEach(n => { if (!sa.secteurs.some(s => s.nom === n)) sa.secteurs.push({ id: "t" + Date.now() + Math.floor(Math.random() * 1000), nom: n, type: sa.type === "Voie" ? "Voie" : "Bloc",
     profil: (SECTEURS_SUGGERES.find(s => s[0] === n) || [n, "Vertical"])[1], maj: Date.now() }); });
   sa.echelles.Bloc = echelleBloc; ecrireSalles(x);
   fermerModal(); ouvrirSalles(sa.id);
@@ -2772,10 +2872,11 @@ $("ecran").addEventListener("click", e => {
   if (t.assistant) return ouvrirAssistant(t.assistant);
   if (t.ongletSalle) { SA.onglet = t.ongletSalle; SA.secteur = null; return afficher(); }
   if (t.filtreSalle) SA.filtre = t.filtreSalle;
-  if (t.ajoutRapide !== undefined) return ouvrirAjoutRapide();
+  if (t.ajoutRapide !== undefined) return ouvrirAjoutRapide(t.ajoutRapide || null, t.discAjout);
   if (t.secteur) { SA.secteur = t.secteur; SA.filtre = "place"; return afficher(); }
-  if (t.secProf) majSalle(SA.id, sa => { const z = sa.secteurs.find(y => y.id === SA.secteur), l = profilsSecteur(z);
-    z.profils = l.includes(t.secProf) ? (l.length > 1 ? l.filter(p => p !== t.secProf) : l) : [...l, t.secProf]; z.profil = z.profils[0]; });
+  if (t.secProf) majSalle(SA.id, sa => { sa.secteurs.find(y => y.id === SA.secteur).profil = t.secProf; });
+  if (t.secType) majSalle(SA.id, sa => { const z = sa.secteurs.find(y => y.id === SA.secteur); z.type = t.secType;
+    sa.voies.forEach(v => { if (v.secteur === z.id) v.discipline = t.secType; }); });
   if (t.secRenouv) { const sid = SA.id, secId = t.secRenouv;
     annulableSalles("Secteur renouvelé", () => majSalle(sid, sa => { sa.voies.forEach(v => { if (v.secteur === secId && v.statut !== "Démontée") { v.statut = "Démontée"; v.demontage = isoDate(new Date()); } });
       sa.secteurs.find(z => z.id === secId).maj = Date.now(); }));
@@ -2788,14 +2889,17 @@ $("ecran").addEventListener("click", e => {
   if (t.salleType) majSalle(SA.id, sa => sa.type = t.salleType);
   if (t.salleSuppr) { const id = SA.id; annulableSalles("Salle supprimée", () => { const x = lireSalles(); x.liste = x.liste.filter(z => z.id !== id); ecrireSalles(x); }); return ouvrirSalles(); }
   if (t.secteurAjout) { const nom = $("secteur-nom").value.trim(); if (!nom) return;
-    majSalle(SA.id, sa => sa.secteurs.push({ id: "t" + Date.now(), nom, profil: $("secteur-profil").value, maj: Date.now() })); }
+    majSalle(SA.id, sa => sa.secteurs.push({ id: "t" + Date.now(), nom, type: $("secteur-type").value, profil: $("secteur-profil").value, maj: Date.now() })); }
+  if (t.secOrdre) { const k = Number(t.k), pas = Number(t.secOrdre);
+    majSalle(SA.id, sa => { const j = k + pas; if (j < 0 || j >= sa.secteurs.length) return; [sa.secteurs[k], sa.secteurs[j]] = [sa.secteurs[j], sa.secteurs[k]]; }); }
+  if (t.salleDisc) SA.disc = t.salleDisc;
   if (t.voieSalle) { SA.voie = t.voieSalle; afficher(); return; }
   if (t.etoile) majSalle(SA.id, sa => { const v = sa.voies.find(x => x.id === SA.voie); v.etoile = etoileAujourdhui(v) ? "" : isoDate(new Date()); });
   if (t.vs) majSalle(SA.id, sa => { const v = sa.voies.find(x => x.id === SA.voie);
     if (t.vs === "couleur") v.couleur = v.couleur === t.valeur ? "" : t.valeur;
     else if (t.vs === "statut") { v.statut = t.valeur; v.demontage = t.valeur === "Démontée" ? isoDate(new Date()) : ""; }
     else if (t.vs === "discipline") { v.discipline = t.valeur; v.cot = (sa.echelles[t.valeur] || [{ salle: v.cot }])[0].salle; }
-    else if (t.vs === "secteur") { v.secteur = t.valeur; const x = sa.secteurs.find(z => z.id === t.valeur); if (x) v.profil = x.profil; }
+    else if (t.vs === "secteur") { v.secteur = t.valeur; const x = sa.secteurs.find(z => z.id === t.valeur); if (x) { v.profil = x.profil; v.discipline = x.type; } }
     else v[t.vs] = t.valeur; });
   if (t.vsSuppr) { const id = SA.voie, sid = SA.id; SA.voie = null; annulableSalles("Voie supprimée", () => majSalle(sid, sa => sa.voies = sa.voies.filter(v => v.id !== id))); }
   afficher(false); window.scrollTo(0, y);
@@ -2805,6 +2909,7 @@ $("ecran").addEventListener("change", e => {
   const el = e.target;
   if (el.id === "salle-nom" && el.value.trim()) majSalle(SA.id, sa => sa.nom = el.value.trim());
   if (el.id === "sec-nom2" && el.value.trim()) { majSalle(SA.id, sa => sa.secteurs.find(z => z.id === SA.secteur).nom = el.value.trim()); afficher(false); }
+  if (el.id === "vs-repere") majSalle(SA.id, sa => sa.voies.find(x => x.id === SA.voie).repere = el.value.trim());
   if (el.id === "vs-nom") majSalle(SA.id, sa => sa.voies.find(x => x.id === SA.voie).nom = el.value.trim());
   if (el.id === "vs-notes") majSalle(SA.id, sa => sa.voies.find(x => x.id === SA.voie).notes = el.value.trim());
   if (el.dataset.echelle) majSalle(SA.id, sa => sa.echelles[el.dataset.echelle][Number(el.dataset.k)].app = el.value);
@@ -2831,14 +2936,13 @@ function afficherPlus() {
   $("ecran").innerHTML = `<div class="menu-liste">
     ${ligne("biblio", "📖", "Exercices et méthodes", `${EXERCICES.length} fiches · favoris · recherche`)}
     ${ligne("salles", "🏢", "Salles", `${lireSalles().liste.length} salle${lireSalles().liste.length > 1 ? "s" : ""} · secteurs, voies, projets en cours`)}
-    ${ligne("exporter", "⬆", "Exporter", ex.texte, ex.retard ? "en-retard" : "")}
-    ${ligne("sauvegarde", "💾", "Sauvegarde", "Restaurer tes saisies")}
+    ${ligne("sauvegarde", "⬆", "Exporter et sauvegarder", ex.texte, ex.retard ? "en-retard" : "")}
     ${ligne("reglages", "⚙", "Réglages", "Programme, minuteur, son, rappels")}
     ${ligne("aide", "❓", "Aide", "Le guide d'utilisation, même hors connexion")}
     </div><p class="petit centre version">App ${APP_VERSION} · programme du ${esc(vp)}</p>`;
 }
 function afficherSauvegarde() {
-  $("titre-date").textContent = "Sauvegarde";
+  $("titre-date").textContent = "Exporter et sauvegarder";
   const ex = texteExport();
   $("ecran").innerHTML = `<button class="retour" data-plus="retour">‹ Plus</button>
     <div class="carte"><h2>Exporter</h2><p class="petit ${ex.retard ? "retard" : ""}">${ex.texte}</p>
@@ -2878,16 +2982,17 @@ function afficherReglages() {
       <label class="champ">Date de début du programme (un lundi)</label>
       <input type="date" id="date-debut" value="${esc(debutProgramme())}">
       <p class="petit">À régler une seule fois, le jour où tu commences : tes saisies sont rangées par numéro de semaine.</p>`],
+    ["affichage", "🔍 Affichage", `<label class="champ">Taille de la carte Maintenant</label>${choix("grand", [[false, "Normale"], [true, "Grande (lisible de loin, à la salle)"]])}`],
     ["minuteur", "⏱ Minuteur", `
       <label class="champ">Repos après un passage</label>${choix("auto", [[true, "Automatique"], [false, "Manuel (bouton ⏱)"]])}
       <label class="champ">Noter le résultat d'une voie ou d'un bloc</label>${choix("releve", [[true, "Oui, à chaque passage"], [false, "Non"]])}
-      <label class="champ">Temps moyen par voie (pour les durées prévues)</label>
+      <!--
       <div class="compteur"><button data-tps="tVoie" data-pas="-0.5">−</button><span>${String(R.tVoie).replace(".", ",")} min</span><button data-tps="tVoie" data-pas="0.5">+</button></div>
       <label class="champ">Temps moyen par bloc</label>
       <div class="compteur"><button data-tps="tBloc" data-pas="-0.5">−</button><span>${String(R.tBloc).replace(".", ",")} min</span><button data-tps="tBloc" data-pas="0.5">+</button></div>
       <label class="champ">Ajuster à ma moyenne réelle</label>${choix("ajuster", [[true, "Oui"], [false, "Non, garder ces valeurs"]])}
       <p class="petit">${(() => { const m = lireMoyennes(), f = (t, l) => l.length >= 3 ? `${t} : ${String(Math.round(tempsParPassage(t === "Voie" ? "Voie" : "Bloc") * 10) / 10).replace(".", ",")} min (sur ${l.length} étapes)` : `${t} : pas encore assez de séances (${l.length}/3)`;
-        return `Ta moyenne réelle — ${f("Voie", m.Voie || [])} · ${f("Bloc", m.Bloc || [])}`; })()}</p>`],
+        return `Ta moyenne réelle — ${f("Voie", m.Voie || [])} · ${f("Bloc", m.Bloc || [])}`; })()}</p>-->`],
     ["son", "🔊 Son", `
       <label class="champ">Son</label>${choix("son", [[true, "Activé"], [false, "Coupé"]])}
       <label class="champ">Volume</label>${choix("volume", [["faible", "Faible"], ["moyen", "Moyen"], ["fort", "Fort"]])}
@@ -2917,7 +3022,7 @@ $("ecran").addEventListener("click", e => {
   if (t.bascule) R[t.bascule] = !R[t.bascule];
   if (t.reglage) { const v = t.valeur; R[t.reglage] = v === "true" ? true : v === "false" ? false : isNaN(v) ? v : Number(v); }
   if (t.reglage === "mode") { sauverReglages(); reconstruire(); index = indexAujourdhui(); }
-  if (t.bascule || t.reglage) { sauverReglages(); afficherReglages(); window.scrollTo(0, y); }
+  if (t.bascule || t.reglage) { sauverReglages(); document.body.classList.toggle("grand", !!R.grand); afficherReglages(); window.scrollTo(0, y); }
 });
 $("ecran").addEventListener("change", e => {
   if (vue !== "reglages") return;
@@ -2932,9 +3037,9 @@ $("ecran").addEventListener("change", e => {
 // =====================================================================
 // 15. EXPORT, SAUVEGARDE, CALENDRIER
 // =====================================================================
-function partager(fichiers) {
-  if (navigator.canShare && navigator.canShare({ files: fichiers })) navigator.share({ files: fichiers }).catch(() => {});
-  else fichiers.forEach(f => { const a = document.createElement("a"); a.href = URL.createObjectURL(f); a.download = f.name; a.click(); });
+function partager(fichiers, apres) {
+  if (navigator.canShare && navigator.canShare({ files: fichiers })) navigator.share({ files: fichiers }).then(() => apres && apres()).catch(() => {});
+  else { fichiers.forEach(f => { const a = document.createElement("a"); a.href = URL.createObjectURL(f); a.download = f.name; a.click(); }); if (apres) apres(); }
 }
 const isoDate = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
@@ -2972,7 +3077,7 @@ function exporter() {
   lireOps().forEach(o => lignes.push(["Programme", o.semaine ?? "", o.jour || "", o.activite || "", "", o.op, o.contenu || "", o.phase || "", o.id, o.depuis ?? "", o.n ?? ""]));
   // Inventaire des salles (une ligne par voie ou bloc)
   lireSalles().liste.forEach(sa => sa.voies.forEach(v => lignes.push(["Inventaire", "", "", v.discipline, v.ouverture || "", sa.nom, nomSecteur(sa, v.secteur), v.couleur || "",
-    v.cot, versApp(sa.id, v.discipline, v.cot), v.profil || "", v.nom || "", v.statut || "En place", v.demontage || "", v.id, v.notes || ""])));
+    v.cot, versApp(sa.id, v.discipline, v.cot), v.profil || "", v.nom || "", v.statut || "En place", v.demontage || "", v.id, v.notes || "", v.repere || ""])));
   Object.keys(localStorage).filter(k => k.startsWith("competences-")).sort().forEach(k => {
     const b = JSON.parse(localStorage.getItem(k)), bloc = Number(k.split("-")[1]);
     lignes.push(["Compétences", b.semaine || bloc * 8, "", "", isoDate(new Date(b.date)), ...b.notes, bloc]);
@@ -2982,9 +3087,8 @@ function exporter() {
   Object.keys(localStorage).filter(k => /^(seance-|mesures-|libre-|competences-|libres$|reglages$|favoris$|moyennes$|programme-actif$|deplacements$|salles$|modifs-programme$)/.test(k)).forEach(k => sauvegarde[k] = localStorage.getItem(k));
   const jour = isoDate(new Date());
   partager([new File([csv], `export-escalade-${jour}.csv`, { type: "text/csv" }),
-            new File([JSON.stringify(sauvegarde)], `sauvegarde-escalade-${jour}.json`, { type: "application/json" })]);
-  localStorage.setItem("dernier-export", Date.now());
-  infoExport();
+            new File([JSON.stringify(sauvegarde)], `sauvegarde-escalade-${jour}.json`, { type: "application/json" })],
+           () => { localStorage.setItem("dernier-export", Date.now()); infoExport(); if (vue === "sauvegarde" || vue === "semaine") afficher(false); });
 }
 
 function restaurer(e) {
@@ -3070,9 +3174,9 @@ function afficher(enHaut = true) {
   const mn = $("minuteur"); if (mn.parentElement !== document.body) document.body.insertBefore(mn, $("toast"));   // à l'abri avant de redessiner
   if (vue === "seance" && !courant()) { vue = "semaine"; semaineVue = Math.max(1, semaineDe(new Date())); }
   ({ seance: afficherSeance, repos: afficherRepos, semaine: afficherSemaine, programme: afficherProgramme, creation: afficherCreation, plus: afficherPlus,
-     biblio: afficherBiblio, reglages: afficherReglages, sauvegarde: afficherSauvegarde, salles: afficherSalles, salle: afficherSalle })[vue]();
+     progres: afficherProgres, biblio: afficherBiblio, reglages: afficherReglages, sauvegarde: afficherSauvegarde, salles: afficherSalles, salle: afficherSalle })[vue]();
   // Onglet actif, flèches, menu ⋯ et ligne de temps selon l'écran
-  const onglet = { seance: "seance", repos: "seance", semaine: "semaine", programme: "semaine", creation: "semaine" }[vue] || "plus";
+  const onglet = { seance: "seance", repos: "seance", semaine: "semaine", programme: "semaine", progres: "semaine", creation: "semaine" }[vue] || "plus";
   document.querySelectorAll("#onglets button").forEach(b => b.classList.toggle("actif", b.dataset.onglet === onglet));
   const fleches = vue === "seance" || vue === "semaine" || vue === "repos";
   $("prec").style.visibility = fleches || SOUS_ECRANS.includes(vue) ? "visible" : "hidden";
@@ -3080,6 +3184,7 @@ function afficher(enHaut = true) {
   $("prec").classList.toggle("retour-entete", SOUS_ECRANS.includes(vue));
   $("btn-menu").style.display = vue === "seance" && courant() ? "" : "none";
   document.body.dataset.activite = vue === "seance" && courant() ? (actReleve(courant(), lire(courant())) === "Bloc" ? "Bloc" : courant().activite) : "";
+  document.body.classList.toggle("grand", !!R.grand);
   infoExport(); majInfosSeance(); placerMinuteur(); if (T) majMinuteur();
   if (enHaut) window.scrollTo(0, 0);
 }
@@ -3119,15 +3224,20 @@ document.querySelectorAll("#onglets button").forEach(b => b.onclick = () => {
 });
 // Balayage gauche/droite sur l'en-tête : séance (ou semaine) précédente / suivante
 let departBalayage = null;
-document.querySelector("header").addEventListener("touchstart", e => { departBalayage = e.touches[0].clientX; }, { passive: true });
-document.querySelector("header").addEventListener("touchend", e => {
+let departY = 0;
+document.addEventListener("touchstart", e => {
+  const zone = e.target.closest("#modal, .frise, .tuiles-voies, .pastilles, .segment, input, textarea, select, #minuteur");
+  departBalayage = zone || !["seance", "semaine", "repos"].includes(vue) || M ? null : e.touches[0].clientX; departY = e.touches[0].clientY;
+}, { passive: true });
+document.addEventListener("touchend", e => {
   if (departBalayage === null) return;
-  const dx = e.changedTouches[0].clientX - departBalayage; departBalayage = null;
-  if (Math.abs(dx) > 60) dx > 0 ? precedent() : suivant();
+  const dx = e.changedTouches[0].clientX - departBalayage, dy = e.changedTouches[0].clientY - departY; departBalayage = null;
+  if (Math.abs(dx) > 70 && Math.abs(dy) < 50) dx > 0 ? precedent() : suivant();
 });
 
 if (LISTE.length && seanceAujourdhui() < 0 && vue === "seance") vue = "repos";   // jour sans séance : écran de repos
 afficher();
-if (T) { if (T.fini) { T = null; sauverT(); } else boucle(); }   // reprend un minuteur en cours
+if (T) { T = null; sauverT(); }                                  // à l'ouverture, aucun minuteur ne reprend
+verifierReprise();
 if (seanceEnCours(dCourant())) garderEcran();
 if (!verifierProgramme()) verifierSeanceOuverte();                // nouveau programme, sinon séance d'un jour précédent restée ouverte

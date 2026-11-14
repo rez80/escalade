@@ -459,3 +459,65 @@ body.flash { animation:flash .5s 3; }
 .panneau-etape .ligne-outil { margin:6px 0; }
 .ligne.etape { cursor:pointer; }
 .choix-couleur { width:48px; height:42px; padding:2px; flex:none; }
+
+/* ---------- Version 6.0 ---------- */
+/* Couleur de l'app : barres du haut et du bas, fond légèrement teinté */
+:root { --app:#1F4E5A; --app-texte:#FFFFFF; --app-doux:#CFE0E4; }
+body { background:#EEF3F4; }
+@media (prefers-color-scheme: dark) { :root { --app:#163A43; --app-doux:#9DB8BF; } body { background:#121A1E; } }
+header { background:var(--app) !important; color:var(--app-texte); border-bottom:none !important; }
+header button, header #titre-date { color:var(--app-texte) !important; }
+#prec.retour-entete { color:var(--app-texte) !important; }
+#onglets { background:var(--app) !important; border-top:none !important; }
+#onglets button { color:var(--app-doux) !important; }
+#onglets button.actif, #onglets button[aria-current="page"] { color:var(--app-texte) !important; font-weight:800; }
+#onglets .pastille-export { box-shadow:0 0 0 2px var(--app); }
+/* Les étapes teintées en entier selon leur type */
+.ligne.etape.type-echauffement { background:color-mix(in srgb, #85B7EB 20%, var(--carte)); }
+.ligne.etape.type-securite { background:color-mix(in srgb, #E24B4A 14%, var(--carte)); }
+.ligne.etape.type-facile { background:color-mix(in srgb, #F2D34B 22%, var(--carte)); }
+.ligne.etape.type-effort { background:color-mix(in srgb, #993C1D 16%, var(--carte)); }
+.ligne.etape.type-recup { background:color-mix(in srgb, #185FA5 16%, var(--carte)); }
+/* Ligne du temps de la séance */
+.frise-titre { font-size:13px; color:var(--doux); margin:12px 0 4px; }
+.frise { display:flex; gap:2px; height:30px; border-radius:8px; overflow:hidden; margin-bottom:10px; }
+.frise-phase { min-width:6px; padding:0; border:none; border-radius:0; font-size:11px; font-weight:700; color:#1C2A33; min-height:0; }
+.frise-phase.type-echauffement { background:#85B7EB; } .frise-phase.type-securite { background:#E57373; } .frise-phase.type-facile { background:#F2D34B; }
+.frise-phase.type-effort { background:#D98A6A; } .frise-phase.type-recup { background:#7FAEDD; }
+.frise-phase.faite { opacity:.4; }
+.frise-phase.encours { outline:3px solid var(--texte); outline-offset:-3px; }
+/* Carte Maintenant : avancement de la phase */
+.barre-phase { height:8px; border-radius:4px; background:rgba(255,255,255,.3); margin:6px 0; overflow:hidden; }
+.barre-phase span { display:block; height:100%; background:#fff; }
+/* De vrais boutons pour tout ce qui se touche */
+.liens-bandeau .lien-blanc, [data-action="recup"].lien-blanc { border:1.5px solid rgba(255,255,255,.75); border-radius:10px; padding:8px 14px; min-height:40px; text-decoration:none; background:rgba(255,255,255,.12); }
+.liens-bandeau { margin-top:10px; gap:8px; }
+.liens-recup .lien, .panneau-etape .lien, .ed-ajouts .lien, .outils-semaine, .bilan-rapide-lien { display:inline-flex; align-items:center; justify-content:center; border:1.5px solid var(--bord); border-radius:10px;
+  padding:8px 14px; min-height:40px; text-decoration:none; background:var(--carte); color:var(--act, var(--marque)); font-weight:600; }
+.outils-semaine { display:flex; width:100%; margin:0 0 10px; }
+.liens-recup { display:flex; gap:8px; justify-content:center; }
+.ligne-pliee { border:1.5px solid var(--bord); border-radius:10px; }
+/* Grand affichage */
+body.grand .maintenant-titre { font-size:26px; line-height:1.2; }
+body.grand .maintenant .choix-carte button { min-height:66px; font-size:21px; }
+body.grand .maintenant-haut, body.grand .maintenant-suite { font-size:16px; }
+body.grand .petits-boutons button { font-size:16px; min-height:44px; }
+/* Mes progrès, bilan de la semaine */
+.tableau-progres { width:100%; border-collapse:collapse; background:var(--carte); border-radius:12px; overflow:hidden; margin-bottom:6px; }
+.tableau-progres th, .tableau-progres td { border:1px solid var(--bord); padding:10px; text-align:center; }
+.tableau-progres td { font-size:22px; font-weight:800; }
+.resume-progres { display:flex; gap:8px; margin:10px 0; }
+.resume-progres > div { flex:1; background:var(--carte); border:1px solid var(--bord); border-radius:12px; padding:10px; text-align:center; }
+.resume-progres b { display:block; font-size:24px; }
+.resume-progres span { font-size:12px; color:var(--doux); }
+.barres-charge { display:flex; align-items:flex-end; gap:6px; height:110px; }
+.barres-charge .bc { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; }
+.barres-charge .bc span { width:100%; background:var(--marque); border-radius:4px 4px 0 0; min-height:2px; }
+.barres-charge .bc span.actuelle { background:var(--attention); }
+.barres-charge small { font-size:11px; color:var(--doux); }
+.carte.bilan-hebdo { border-left:6px solid var(--marque); }
+/* Salles */
+.ligne-secteur { display:flex; align-items:center; gap:6px; } .ligne-secteur .ligne-menu { flex:1; }
+.gc-cot { background:none; border:none; padding:0; min-height:36px; font-weight:800; text-align:left; color:var(--texte); }
+.gc-voies { padding:8px 10px; border-top:1px solid var(--bord); background:var(--carte); }
+.filtre-couleurs .pastille { width:30px; height:30px; }
