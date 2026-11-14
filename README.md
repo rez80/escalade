@@ -1,4 +1,4 @@
-# App Escalade — mode d'emploi technique (version 5.5)
+# App Escalade — mode d'emploi technique (version 6.0)
 
 Ce fichier s'adresse à toi, pour faire vivre l'app et le rapport. Le guide d'utilisation, lisible par tout le monde, est `aide.html` (bouton **Plus → ❓ Aide** dans l'app, ou l'adresse `…/aide.html`).
 
@@ -111,6 +111,13 @@ Pour un nouveau **bloc** du même programme, il suffit d'ajouter ses lignes à l
 - **Salles** (`localStorage` clé `salles`, incluse dans la sauvegarde) : nom, type, échelles de cotation (cotation de la salle → équivalent dans l'app), secteurs (profil par défaut, date de mise à jour), inventaire. Une tentative garde `cot` (échelle de l'app, utilisée par toutes les analyses), `cotSalle`, `salle` et `voieId`. Une tentative notée avec une couleur ou un nom crée la voie dans l'inventaire si elle n'existe pas (`finaliserTentative`).
 - **Voies « différentes »** (feux verts) : par identifiant de voie quand il existe, sinon cotation + couleur + nom.
 - **Temps saisis** : `d.tempsManuel` (minutes par étape) et `d.heuresSaisies` ; prioritaires sur les mesures (`tempsReel`), marqués « saisi » dans l'export.
+
+## Version 6.0
+
+- **Phases** : la durée d'une phase vient de `(durée X min)` si elle est écrite, sinon passages × durée indicative (`temps_voie`, `temps_bloc` dans Paramètres) + repos. Plus de temps mesuré par voie ni de moyennes (`noterMoyenne` ne fait plus rien). Ligne du temps : `friseSeance`. Une pause : `1× Pause récupération (durée 10 min)`.
+- **Fermeture de l'app** (`visibilitychange`) : minuteur arrêté, écran libéré, `d.pause` posé sur la séance en cours ; `verifierReprise` à la réouverture (moins de 15 min : reprise ; plus : Reprendre / Terminer ; séance d'un autre jour : rien, elle reste à compléter). Aucun minuteur ne reprend au démarrage.
+- **Salles** : secteur `type` (Bloc/Voie, deviné pour les salles existantes), `profil` habituel unique, ordre = ordre de la liste ; voie `repere` ; `identite(v, sa)` ; `dernierSecteur` mémorisé par salle et discipline. Export Inventaire : colonne repère en C12.
+- **Interface** : glissement sur tout l'écran, étapes teintées, vrais boutons, en-tête et onglets à la couleur de l'app, « Exporter et sauvegarder » unique (date d'export enregistrée seulement si le partage a lieu), vue Progrès, bilan de la semaine, grand affichage (`R.grand`).
 
 ## Réorganisation (version 5.5)
 
